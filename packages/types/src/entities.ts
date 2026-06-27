@@ -78,6 +78,7 @@ export const OrderSchema = z.object({
   status: OrderStatusSchema,
   pickupCode: z.string().min(4).max(12),
   stripePaymentIntentId: z.string().nullable(),
+  reservationExpiresAt: IsoDateTimeSchema.nullable(),
   createdAt: IsoDateTimeSchema,
   collectedAt: IsoDateTimeSchema.nullable(),
   updatedAt: IsoDateTimeSchema,

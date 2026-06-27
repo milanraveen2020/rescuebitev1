@@ -30,6 +30,8 @@ export const EnvSchema = z.object({
   COOKIE_DOMAIN: z.string().min(1).optional(),
   /** Base URL used to build email verification / password-reset links. */
   APP_WEB_URL: z.string().url().default('http://localhost:3001'),
+  /** Minutes a reservation holds stock pending payment before auto-release. */
+  RESERVATION_HOLD_MINUTES: z.coerce.number().int().positive().default(15),
 
   // S3-compatible object storage for listing images. When unset, the API falls
   // back to a dev stub so the upload flow is exercisable without real storage.

@@ -50,6 +50,10 @@ export class AppConfigService {
     return this.config.get('APP_WEB_URL', { infer: true });
   }
 
+  get reservationHoldMinutes(): number {
+    return this.config.get('RESERVATION_HOLD_MINUTES', { infer: true });
+  }
+
   get s3(): {
     bucket?: string;
     region: string;

@@ -207,11 +207,15 @@ model Order {
   status                OrderStatus @default(RESERVED)
   pickupCode            String      @unique // short human-friendly collection code
   stripePaymentIntentId String?
+  // While RESERVED, stock is held until this time, then auto-released.
+  reservationExpiresAt  DateTime?
   createdAt             DateTime    @default(now())
   collectedAt           DateTime?
   updatedAt             DateTime    @updatedAt
 
   review Review?
+
+  @@index([status, reservationExpiresAt])
 
   @@index([customerId])
   @@index([storeId, status])
