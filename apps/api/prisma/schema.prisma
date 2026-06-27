@@ -1,0 +1,134 @@
+// RescueBite database schema.
+// Mirrors the domain types in @rescuebite/types. When this schema changes, update
+// the Zod entities there too — the Zod schemas remain the single source of truth
+// for API request/response validation; Prisma owns persistence only.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  customer
+  merchant
+  admin
+}
+
+enum FoodCategory {
+  bakery
+  grocery
+  restaurant
+  cafe
+  produce
+  other
+}
+
+enum ListingStatus {
+  draft
+  active
+  sold_out
+  expired
+  cancelled
+}
+
+enum ReservationStatus {
+  pending_payment
+  confirmed
+  collected
+  no_show
+  cancelled
+  refunded
+}
+
+enum PaymentStatus {
+  requires_payment
+  processing
+  succeeded
+  failed
+  refunded
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  displayName  String
+  role         UserRole      @default(customer)
+  ownedMerchant Merchant?    @relation("MerchantOwner")
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Merchant {
+  id          String        @id @default(uuid())
+  ownerUserId String        @unique
+  owner       User          @relation("MerchantOwner", fields: [ownerUserId], references: [id])
+  name        String
+  category    FoodCategory
+  description String?
+  logoUrl     String?
+  isActive    Boolean       @default(true)
+
+  // Address (flattened)
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  postalCode   String
+  countryCode  String
+  latitude     Float
+  longitude    Float
+
+  surpriseBags SurpriseBag[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model SurpriseBag {
+  id                String        @id @default(uuid())
+  merchantId        String
+  merchant          Merchant      @relation(fields: [merchantId], references: [id])
+  title             String
+  description       String?
+  category          FoodCategory
+  dietaryTags       String[]
+  // Money stored as integer minor units + ISO currency.
+  originalValueMinor Int
+  priceMinor        Int
+  currency          String
+  quantityTotal     Int
+  quantityAvailable Int
+  pickupStartsAt    DateTime
+  pickupEndsAt      DateTime
+  status            ListingStatus @default(draft)
+  imageUrl          String?
+  reservations      Reservation[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([status, pickupStartsAt])
+  @@index([merchantId])
+}
+
+model Reservation {
+  id             String            @id @default(uuid())
+  surpriseBagId  String
+  surpriseBag    SurpriseBag       @relation(fields: [surpriseBagId], references: [id])
+  customerUserId String
+  customer       User              @relation(fields: [customerUserId], references: [id])
+  quantity       Int
+  pricePaidMinor Int
+  currency       String
+  status         ReservationStatus @default(pending_payment)
+  paymentStatus  PaymentStatus     @default(requires_payment)
+  pickupCode     String
+  reservedAt     DateTime          @default(now())
+  collectedAt    DateTime?
+  updatedAt      DateTime          @updatedAt
+
+  @@index([customerUserId])
+  @@index([surpriseBagId])
+}

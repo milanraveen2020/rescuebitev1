@@ -1,0 +1,10 @@
+{
+  "extends": "@rescuebite/config/tsconfig/library.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ES2022"],
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

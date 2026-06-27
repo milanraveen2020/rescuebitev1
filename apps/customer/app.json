@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "RescueBite",
+    "slug": "rescuebite-customer",
+    "scheme": "rescuebite",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#12b76a",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rescuebite.customer"
+    },
+    "android": {
+      "package": "com.rescuebite.customer",
+      "adaptiveIcon": {
+        "backgroundColor": "#12b76a"
+      }
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:4000"
+    }
+  }
+}

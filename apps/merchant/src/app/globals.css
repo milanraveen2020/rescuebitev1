@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --primary: 152 82% 39%; /* RescueBite brand green */
+    --primary-foreground: 0 0% 100%;
+    --accent: 31 95% 50%; /* playful amber */
+    --accent-foreground: 222 47% 11%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    --border: 214 20% 90%;
+    --ring: 152 82% 39%;
+    --radius: 0.625rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family:
+      Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+}
