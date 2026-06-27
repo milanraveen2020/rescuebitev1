@@ -8,8 +8,26 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { Request, Response } from 'express';
-import { ZodError } from 'zod';
+import { ZodError, type ZodIssue } from 'zod';
 import type { ApiError, ApiErrorCode, ApiErrorResponse } from '@rescuebite/types';
+
+/**
+ * Detect a ZodError structurally as well as by instanceof. Schemas from
+ * @rescuebite/types may carry a different `zod` module instance than the API's,
+ * so `instanceof` alone can miss them; the shape check covers that.
+ */
+function asZodError(exception: unknown): { issues: ZodIssue[] } | null {
+  if (exception instanceof ZodError) return exception;
+  if (
+    typeof exception === 'object' &&
+    exception !== null &&
+    (exception as { name?: unknown }).name === 'ZodError' &&
+    Array.isArray((exception as { issues?: unknown }).issues)
+  ) {
+    return exception as { issues: ZodIssue[] };
+  }
+  return null;
+}
 
 const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   validation_error: HttpStatus.BAD_REQUEST,
@@ -57,9 +75,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 
   private normalize(exception: unknown): { status: HttpStatus; error: ApiError } {
-    if (exception instanceof ZodError) {
+    const zodError = asZodError(exception);
+    if (zodError) {
       const fieldErrors: Record<string, string[]> = {};
-      for (const issue of exception.issues) {
+      for (const issue of zodError.issues) {
         const key = issue.path.join('.') || '_';
         (fieldErrors[key] ??= []).push(issue.message);
       }

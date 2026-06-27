@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   FoodCategorySchema,
-  ListingStatusSchema,
   NotificationTypeSchema,
   OrderStatusSchema,
   StoreStatusSchema,
@@ -64,39 +63,8 @@ export const StoreSchema = z.object({
 });
 export type Store = z.infer<typeof StoreSchema>;
 
-/** A "surprise bag": discounted surplus food offered for a pickup window. */
-export const ListingSchema = z
-  .object({
-    id: IdSchema,
-    storeId: IdSchema,
-    title: z.string().min(1).max(120),
-    description: z.string().max(1000).nullable(),
-    category: FoodCategorySchema,
-    originalPrice: MinorUnitsSchema,
-    price: MinorUnitsSchema,
-    quantityTotal: z.number().int().nonnegative(),
-    quantityRemaining: z.number().int().nonnegative(),
-    pickupStart: IsoDateTimeSchema,
-    pickupEnd: IsoDateTimeSchema,
-    imageUrl: z.string().url().nullable(),
-    allergenInfo: z.string().max(500).nullable(),
-    status: ListingStatusSchema,
-    createdAt: IsoDateTimeSchema,
-    updatedAt: IsoDateTimeSchema,
-  })
-  .refine((l) => l.price <= l.originalPrice, {
-    message: 'price must not exceed originalPrice',
-    path: ['price'],
-  })
-  .refine((l) => l.quantityRemaining <= l.quantityTotal, {
-    message: 'quantityRemaining must not exceed quantityTotal',
-    path: ['quantityRemaining'],
-  })
-  .refine((l) => new Date(l.pickupStart) < new Date(l.pickupEnd), {
-    message: 'pickupStart must be before pickupEnd',
-    path: ['pickupEnd'],
-  });
-export type Listing = z.infer<typeof ListingSchema>;
+// The Listing contract lives in ./listings.ts (it carries derived fields like
+// `currency` and `discountPercent` and the merchant write/discovery schemas).
 
 export const OrderSchema = z.object({
   id: IdSchema,

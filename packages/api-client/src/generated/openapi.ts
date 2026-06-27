@@ -148,6 +148,86 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/listings/nearby': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ListingsController_findNearby'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/listings/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ListingsController_getDetail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/merchant/listings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantListingsController_listOwn'];
+    put?: never;
+    post: operations['MerchantListingsController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/merchant/listings/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantListingsController_getOwn'];
+    put?: never;
+    post?: never;
+    delete: operations['MerchantListingsController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['MerchantListingsController_update'];
+    trace?: never;
+  };
+  '/uploads/listing-image': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['UploadController_createListingImageTicket'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/health': {
     parameters: {
       query?: never;
@@ -175,6 +255,9 @@ export interface components {
     RequestPasswordResetDto: Record<string, never>;
     ResetPasswordDto: Record<string, never>;
     VerifyEmailDto: Record<string, never>;
+    CreateListingDto: Record<string, never>;
+    UpdateListingDto: Record<string, never>;
+    UploadRequestDto: Record<string, never>;
   };
   responses: never;
   parameters: never;
@@ -505,6 +588,355 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
+          };
+        };
+      };
+    };
+  };
+  ListingsController_findNearby: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            items: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              storeId: string;
+              title: string;
+              description: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              originalPrice: number;
+              price: number;
+              currency: string;
+              quantityTotal: number;
+              quantityRemaining: number;
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              allergenInfo: string | null;
+              /** @enum {string} */
+              status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'EXPIRED';
+              discountPercent: number;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              updatedAt: string;
+              distanceKm: number;
+              store: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                address: string;
+                lat: number;
+                lng: number;
+                /** Format: uri */
+                logoUrl: string | null;
+                rating: number;
+                reviewCount: number;
+              };
+            }[];
+            nextCursor: string | null;
+            hasMore: boolean;
+          };
+        };
+      };
+    };
+  };
+  ListingsController_getDetail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            storeId: string;
+            title: string;
+            description: string | null;
+            /** @enum {string} */
+            category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+            originalPrice: number;
+            price: number;
+            currency: string;
+            quantityTotal: number;
+            quantityRemaining: number;
+            /** Format: date-time */
+            pickupStart: string;
+            /** Format: date-time */
+            pickupEnd: string;
+            /** Format: uri */
+            imageUrl: string | null;
+            allergenInfo: string | null;
+            /** @enum {string} */
+            status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'EXPIRED';
+            discountPercent: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+          };
+        };
+      };
+    };
+  };
+  MerchantListingsController_listOwn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  MerchantListingsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateListingDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            storeId: string;
+            title: string;
+            description: string | null;
+            /** @enum {string} */
+            category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+            originalPrice: number;
+            price: number;
+            currency: string;
+            quantityTotal: number;
+            quantityRemaining: number;
+            /** Format: date-time */
+            pickupStart: string;
+            /** Format: date-time */
+            pickupEnd: string;
+            /** Format: uri */
+            imageUrl: string | null;
+            allergenInfo: string | null;
+            /** @enum {string} */
+            status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'EXPIRED';
+            discountPercent: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+    };
+  };
+  MerchantListingsController_getOwn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            storeId: string;
+            title: string;
+            description: string | null;
+            /** @enum {string} */
+            category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+            originalPrice: number;
+            price: number;
+            currency: string;
+            quantityTotal: number;
+            quantityRemaining: number;
+            /** Format: date-time */
+            pickupStart: string;
+            /** Format: date-time */
+            pickupEnd: string;
+            /** Format: uri */
+            imageUrl: string | null;
+            allergenInfo: string | null;
+            /** @enum {string} */
+            status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'EXPIRED';
+            discountPercent: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+    };
+  };
+  MerchantListingsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  MerchantListingsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateListingDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            storeId: string;
+            title: string;
+            description: string | null;
+            /** @enum {string} */
+            category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+            originalPrice: number;
+            price: number;
+            currency: string;
+            quantityTotal: number;
+            quantityRemaining: number;
+            /** Format: date-time */
+            pickupStart: string;
+            /** Format: date-time */
+            pickupEnd: string;
+            /** Format: uri */
+            imageUrl: string | null;
+            allergenInfo: string | null;
+            /** @enum {string} */
+            status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'EXPIRED';
+            discountPercent: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+    };
+  };
+  UploadController_createListingImageTicket: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UploadRequestDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uri */
+            uploadUrl: string;
+            /** Format: uri */
+            fileUrl: string;
+            /** @enum {string} */
+            method: 'PUT';
+            expiresIn: number;
           };
         };
       };

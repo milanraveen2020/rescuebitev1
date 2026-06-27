@@ -26,17 +26,23 @@ export interface ZodDtoStatic<TOut = unknown> {
   openApiSchema: SchemaObject;
 }
 
-export function createZodDto<TOut>(schema: z.ZodType<TOut>): ZodDtoStatic<TOut> {
+// Derive the DTO instance type from the schema's OUTPUT (so defaults are present
+// and required), not its input — keeps controller param types aligned with what
+// the pipe actually produces.
+export function createZodDto<S extends z.ZodTypeAny>(schema: S): ZodDtoStatic<z.output<S>> {
   class AugmentedZodDto {
     static zodSchema = schema;
     // `$refStrategy: 'none'` inlines every sub-schema so the resulting OpenAPI
     // schema is self-contained (no dangling $ref to a definitions section).
-    static openApiSchema = toOpenApiSchema(schema as z.ZodTypeAny, {
+    static openApiSchema = toOpenApiSchema(schema, {
       target: 'openApi3',
       $refStrategy: 'none',
     });
   }
-  return AugmentedZodDto as unknown as ZodDtoStatic<TOut>;
+  // The class is a phantom carrier for Nest's metatype reflection; its instance
+  // type can't structurally match TOut, so the cast is required at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  return AugmentedZodDto as ZodDtoStatic<z.output<S>>;
 }
 
 export function isZodDto(metatype: unknown): metatype is ZodDtoStatic {

@@ -23,12 +23,13 @@ import {
   UserRole,
   UserStatus,
 } from '@prisma/client';
-import { hashSync } from 'bcryptjs';
+import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();
 
 const SEED_PASSWORD = 'Password123!';
-const passwordHash = hashSync(SEED_PASSWORD, 10);
+// Hash with argon2 to match the auth PasswordService (so seeded users can log in).
+let passwordHash = '';
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -58,6 +59,7 @@ async function wipe(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  passwordHash = await argon2.hash(SEED_PASSWORD, { type: argon2.argon2id });
   await wipe();
 
   // --- Admin ---------------------------------------------------------------

@@ -30,6 +30,16 @@ export const EnvSchema = z.object({
   COOKIE_DOMAIN: z.string().min(1).optional(),
   /** Base URL used to build email verification / password-reset links. */
   APP_WEB_URL: z.string().url().default('http://localhost:3001'),
+
+  // S3-compatible object storage for listing images. When unset, the API falls
+  // back to a dev stub so the upload flow is exercisable without real storage.
+  S3_BUCKET: z.string().min(1).optional(),
+  S3_REGION: z.string().min(1).default('us-east-1'),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  /** Public base URL where uploaded objects are served from. */
+  S3_PUBLIC_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

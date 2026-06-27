@@ -49,4 +49,22 @@ export class AppConfigService {
   get appWebUrl(): string {
     return this.config.get('APP_WEB_URL', { infer: true });
   }
+
+  get s3(): {
+    bucket?: string;
+    region: string;
+    endpoint?: string;
+    accessKeyId?: string;
+    secretAccessKey?: string;
+    publicUrl?: string;
+  } {
+    return {
+      bucket: this.config.get('S3_BUCKET', { infer: true }),
+      region: this.config.get('S3_REGION', { infer: true }),
+      endpoint: this.config.get('S3_ENDPOINT', { infer: true }),
+      accessKeyId: this.config.get('S3_ACCESS_KEY_ID', { infer: true }),
+      secretAccessKey: this.config.get('S3_SECRET_ACCESS_KEY', { infer: true }),
+      publicUrl: this.config.get('S3_PUBLIC_URL', { infer: true }),
+    };
+  }
 }
