@@ -7,7 +7,8 @@ const preset = presetUntyped as Partial<Config>;
 
 const config: Config = {
   presets: [preset],
-  content: ['./src/**/*.{ts,tsx}'],
+  // Include the shared UI primitives' source so their Tailwind classes are generated.
+  content: ['./src/**/*.{ts,tsx}', '../../packages/ui/src/web/**/*.{ts,tsx}'],
   plugins: [animate],
 };
 

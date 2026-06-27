@@ -99,5 +99,44 @@ export const typography = {
   },
 } as const;
 
-export const tokens = { colors, spacing, radii, typography } as const;
+/**
+ * Elevation. Web uses CSS box-shadow strings; React Native uses the matching
+ * shadow* props (+ Android elevation) under `elevation`.
+ */
+export const shadows = {
+  none: 'none',
+  sm: '0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.10)',
+  md: '0 2px 4px rgba(16,24,40,0.06), 0 4px 8px rgba(16,24,40,0.08)',
+  lg: '0 4px 8px rgba(16,24,40,0.08), 0 12px 24px rgba(16,24,40,0.10)',
+  xl: '0 8px 16px rgba(16,24,40,0.10), 0 24px 48px rgba(16,24,40,0.12)',
+} as const;
+
+export const elevation = {
+  sm: { elevation: 1, shadowColor: '#101828', shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } },
+  md: { elevation: 3, shadowColor: '#101828', shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
+  lg: { elevation: 8, shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
+} as const;
+
+/**
+ * Motion: subtle and fast (150–250ms), with a gentle spring on press. Avoid
+ * gratuitous animation — respect `prefers-reduced-motion` on web.
+ */
+export const motion = {
+  duration: { fast: 150, base: 200, slow: 250 },
+  easing: {
+    standard: 'cubic-bezier(0.2, 0, 0, 1)',
+    decelerate: 'cubic-bezier(0, 0, 0, 1)',
+  },
+  /** React Native Animated.spring config for press feedback. */
+  spring: { damping: 18, stiffness: 220, mass: 0.6 },
+  /** Scale applied while a pressable is held. */
+  pressScale: 0.97,
+} as const;
+
+/** Layout constants. Interactive targets must be at least 44×44pt (WCAG AA). */
+export const layout = {
+  minTapTarget: 44,
+} as const;
+
+export const tokens = { colors, spacing, radii, typography, shadows, elevation, motion, layout } as const;
 export type Tokens = typeof tokens;

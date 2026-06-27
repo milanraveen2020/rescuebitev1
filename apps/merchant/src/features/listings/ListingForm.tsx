@@ -8,6 +8,7 @@ import {
   UpdateListingSchema,
   type Listing,
 } from '@rescuebite/types';
+import { Button, Input, PriceTag } from '@rescuebite/ui/web';
 import { ListingApiError, createListing, updateListing, uploadListingImage } from './api';
 
 interface Props {
@@ -164,14 +165,13 @@ export function ListingForm({ mode, initial }: Props) {
         </p>
       ) : null}
 
-      <Field label="Title" error={errors.title}>
-        <input
-          className={inputClass}
-          value={form.title}
-          onChange={(e) => set('title', e.target.value)}
-          placeholder="e.g. Bakery Surprise Bag"
-        />
-      </Field>
+      <Input
+        label="Title"
+        value={form.title}
+        onChange={(e) => set('title', e.target.value)}
+        errorText={errors.title}
+        placeholder="e.g. Bakery Surprise Bag"
+      />
 
       <Field label="Description" error={errors.description}>
         <textarea
@@ -198,69 +198,60 @@ export function ListingForm({ mode, initial }: Props) {
       </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Original price (€)" error={errors.originalPrice}>
-          <input
-            className={inputClass}
-            inputMode="decimal"
-            value={form.originalPrice}
-            onChange={(e) => set('originalPrice', e.target.value)}
-            placeholder="15.00"
-          />
-        </Field>
-        <Field label="Discounted price (€)" error={errors.price}>
-          <input
-            className={inputClass}
-            inputMode="decimal"
-            value={form.price}
-            onChange={(e) => set('price', e.target.value)}
-            placeholder="5.00"
-          />
-        </Field>
+        <Input
+          label="Original price (€)"
+          inputMode="decimal"
+          value={form.originalPrice}
+          onChange={(e) => set('originalPrice', e.target.value)}
+          errorText={errors.originalPrice}
+          placeholder="15.00"
+        />
+        <Input
+          label="Discounted price (€)"
+          inputMode="decimal"
+          value={form.price}
+          onChange={(e) => set('price', e.target.value)}
+          errorText={errors.price}
+          placeholder="5.00"
+        />
       </div>
 
       {preview ? (
-        <div
-          className={`rounded-md p-3 text-sm ${preview.invalid ? 'bg-red-50 text-red-600' : 'bg-brand-50 text-brand-800'}`}
-        >
-          {preview.invalid ? (
-            'Discounted price cannot exceed the original price.'
-          ) : (
-            <>
-              <span className="line-through opacity-70">€{toMajor(preview.original)}</span>{' '}
-              <span className="font-semibold">€{toMajor(preview.price)}</span>{' '}
-              <span className="font-semibold">· {preview.percent}% off</span>
-            </>
-          )}
-        </div>
+        preview.invalid ? (
+          <p className="rounded-md bg-danger-50 p-3 text-sm text-danger-600">
+            Discounted price cannot exceed the original price.
+          </p>
+        ) : (
+          <div className="rounded-md bg-brand-50 p-3">
+            <PriceTag originalMinor={preview.original} priceMinor={preview.price} />
+          </div>
+        )
       ) : null}
 
-      <Field label="Quantity available" error={errors.quantityTotal}>
-        <input
-          className={inputClass}
-          type="number"
-          min={1}
-          value={form.quantityTotal}
-          onChange={(e) => set('quantityTotal', e.target.value)}
-        />
-      </Field>
+      <Input
+        label="Quantity available"
+        type="number"
+        min={1}
+        value={form.quantityTotal}
+        onChange={(e) => set('quantityTotal', e.target.value)}
+        errorText={errors.quantityTotal}
+      />
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Pickup start" error={errors.pickupStart}>
-          <input
-            className={inputClass}
-            type="datetime-local"
-            value={form.pickupStart}
-            onChange={(e) => set('pickupStart', e.target.value)}
-          />
-        </Field>
-        <Field label="Pickup end" error={errors.pickupEnd}>
-          <input
-            className={inputClass}
-            type="datetime-local"
-            value={form.pickupEnd}
-            onChange={(e) => set('pickupEnd', e.target.value)}
-          />
-        </Field>
+        <Input
+          label="Pickup start"
+          type="datetime-local"
+          value={form.pickupStart}
+          onChange={(e) => set('pickupStart', e.target.value)}
+          errorText={errors.pickupStart}
+        />
+        <Input
+          label="Pickup end"
+          type="datetime-local"
+          value={form.pickupEnd}
+          onChange={(e) => set('pickupEnd', e.target.value)}
+          errorText={errors.pickupEnd}
+        />
       </div>
 
       <Field label="Image" error={undefined}>
@@ -287,20 +278,12 @@ export function ListingForm({ mode, initial }: Props) {
       </label>
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={submitting || uploading}
-          className="h-11 rounded-md bg-brand-500 px-6 font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
-        >
-          {submitting ? 'Saving…' : mode === 'create' ? 'Create listing' : 'Save changes'}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push('/listings')}
-          className="h-11 rounded-md border px-6 font-medium hover:bg-neutral-50"
-        >
+        <Button type="submit" loading={submitting} disabled={uploading}>
+          {mode === 'create' ? 'Create listing' : 'Save changes'}
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => router.push('/listings')}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginSchema } from '@rescuebite/types';
+import { Button, Card, Input } from '@rescuebite/ui/web';
 import { AuthError, login } from '@/lib/auth';
 
 export default function MerchantLoginPage() {
@@ -43,54 +44,41 @@ function LoginForm() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-neutral-50 p-6">
-      <form
-        onSubmit={(e) => void onSubmit(e)}
-        className="w-full max-w-sm space-y-5 rounded-lg border bg-white p-8 shadow-sm"
-        noValidate
-      >
-        <div className="space-y-1">
-          <h1 className="font-display text-2xl font-bold text-brand-700">RescueBite Merchants</h1>
-          <p className="text-sm text-muted-foreground">Sign in to manage your store.</p>
-        </div>
+      <Card className="w-full max-w-sm shadow-md">
+        <form onSubmit={(e) => void onSubmit(e)} className="space-y-5" noValidate>
+          <div className="space-y-1">
+            <h1 className="font-display text-2xl font-bold text-brand-700">RescueBite Merchants</h1>
+            <p className="text-sm text-neutral-500">Sign in to manage your store.</p>
+          </div>
 
-        {error ? (
-          <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </p>
-        ) : null}
+          {error ? (
+            <p role="alert" className="rounded-md bg-danger-50 p-3 text-sm text-danger-600">
+              {error}
+            </p>
+          ) : null}
 
-        <label className="block space-y-1">
-          <span className="text-sm font-medium text-neutral-700">Email</span>
-          <input
+          <Input
+            label="Email"
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-11 w-full rounded-md border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             placeholder="you@store.com"
           />
-        </label>
-
-        <label className="block space-y-1">
-          <span className="text-sm font-medium text-neutral-700">Password</span>
-          <input
+          <Input
+            label="Password"
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-11 w-full rounded-md border border-neutral-300 px-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             placeholder="Your password"
           />
-        </label>
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="h-11 w-full rounded-md bg-brand-500 font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
-        >
-          {submitting ? 'Signing in…' : 'Log in'}
-        </button>
-      </form>
+          <Button type="submit" loading={submitting} block>
+            Log in
+          </Button>
+        </form>
+      </Card>
     </main>
   );
 }

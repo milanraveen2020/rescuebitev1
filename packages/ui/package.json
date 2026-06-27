@@ -15,18 +15,45 @@
       "types": "./dist/tokens.d.ts",
       "default": "./dist/tokens.js"
     },
+    "./web": {
+      "types": "./src/web/index.tsx",
+      "default": "./src/web/index.tsx"
+    },
+    "./native": {
+      "types": "./src/native/index.tsx",
+      "default": "./src/native/index.tsx"
+    },
     "./tailwind-preset": "./tailwind-preset.mjs"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
+  "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.2"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "react-native": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": { "optional": true },
+    "react-native": { "optional": true }
+  },
   "devDependencies": {
     "@rescuebite/config": "workspace:*",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "^19.0.0",
     "eslint": "^9.11.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-native": "0.76.3",
     "typescript": "^5.6.2"
   }
 }

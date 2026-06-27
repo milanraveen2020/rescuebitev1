@@ -2,8 +2,14 @@
   "extends": "@rescuebite/config/tsconfig/library.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "Bundler",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }
