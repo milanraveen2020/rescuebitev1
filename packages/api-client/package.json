@@ -18,15 +18,19 @@
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "generate": "openapi-typescript ${OPENAPI_URL:-http://localhost:4000/docs-json} --output src/generated/openapi.ts && prettier --write src/generated/openapi.ts",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
     "@rescuebite/types": "workspace:*",
+    "openapi-fetch": "^0.13.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@rescuebite/config": "workspace:*",
     "eslint": "^9.11.1",
+    "openapi-typescript": "^7.4.2",
+    "prettier": "^3.3.3",
     "typescript": "^5.6.2",
     "vitest": "^2.1.1"
   }

@@ -31,15 +31,20 @@ export const ApiErrorSchema = z.object({
   code: ApiErrorCodeSchema,
   /** Safe to show the end user — friendly, never leaks stack traces or SQL. */
   message: z.string(),
-  /** Field-level validation issues, keyed by path. */
-  fieldErrors: z.record(z.string(), z.array(z.string())).optional(),
-  /** Correlation id for support / log lookups. */
-  traceId: z.string().optional(),
+  /**
+   * Optional machine-readable extra context (e.g. per-field validation issues,
+   * a correlation/trace id). Never contains stack traces or internal details.
+   */
+  details: z.record(z.string(), z.unknown()).optional(),
 });
 export type ApiError = z.infer<typeof ApiErrorSchema>;
 
-export const PaginatedSchema = <T extends z.ZodTypeAny>(item: T) =>
-  z.object({
-    items: z.array(item),
-    nextCursor: z.string().nullable(),
-  });
+/**
+ * The canonical JSON error envelope returned by the API for every non-2xx
+ * response: `{ error: { code, message, details? } }`. The server's exception
+ * filter produces exactly this shape and the api-client parses it.
+ */
+export const ApiErrorResponseSchema = z.object({
+  error: ApiErrorSchema,
+});
+export type ApiErrorResponse = z.infer<typeof ApiErrorResponseSchema>;

@@ -11,6 +11,8 @@
     "rootDir": "src",
     "declaration": false,
     "declarationMap": false,
+    "sourceMap": true,
+    "incremental": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "isolatedModules": false,

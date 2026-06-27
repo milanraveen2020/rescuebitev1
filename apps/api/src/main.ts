@@ -1,20 +1,37 @@
-import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AppConfigService } from './config/app-config.service';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule);
+  const config = app.get(AppConfigService);
 
-  const origins = (process.env.CORS_ORIGINS ?? '').split(',').filter(Boolean);
-  app.enableCors({ origin: origins.length > 0 ? origins : true, credentials: true });
+  // CORS for the three frontends (customer / merchant / admin). In dev with no
+  // configured origins, reflect the request origin to keep local setup painless.
+  app.enableCors({
+    origin: config.corsOrigins.length > 0 ? config.corsOrigins : true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  });
 
-  // Global filter normalizes every error into the @rescuebite/types ApiError envelope.
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // OpenAPI docs at /docs, raw spec at /docs-json (consumed by the api-client generator).
+  const openApiConfig = new DocumentBuilder()
+    .setTitle('RescueBite API')
+    .setDescription('Rescue surplus food — marketplace API.')
+    .setVersion('0.0.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, openApiConfig);
+  SwaggerModule.setup('docs', app, document, {
+    jsonDocumentUrl: 'docs-json',
+    swaggerOptions: { persistAuthorization: true },
+  });
 
-  const port = Number(process.env.PORT ?? 4000);
-  await app.listen(port);
-  new Logger('Bootstrap').log(`RescueBite API listening on http://localhost:${port}`);
+  await app.listen(config.port);
+  new Logger('Bootstrap').log(`RescueBite API listening on http://localhost:${config.port}`);
+  new Logger('Bootstrap').log(`API docs at http://localhost:${config.port}/docs`);
 }
 
 void bootstrap();

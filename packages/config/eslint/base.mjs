@@ -14,6 +14,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
+    files: ["**/*.{ts,tsx,mts,cts}"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
@@ -57,6 +58,13 @@ export default tseslint.config(
       eqeqeq: ["error", "always"],
       "no-console": ["warn", { allow: ["warn", "error"] }],
     },
+  },
+  {
+    // Plain JS/MJS config files (eslint.config.mjs, *.config.js, metro/babel
+    // configs) aren't part of any tsconfig, so disable type-aware linting for
+    // them — they're tooling, not application source.
+    files: ["**/*.{js,mjs,cjs}"],
+    ...tseslint.configs.disableTypeChecked,
   },
   prettier,
 );

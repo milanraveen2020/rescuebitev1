@@ -1,8 +1,15 @@
-export * from './http.js';
+export * from './client.js';
+export type { paths, components, operations } from './generated/openapi.js';
 
-/**
- * Feature-specific resource modules (e.g. `surpriseBags`, `reservations`) are
- * added here as the API grows. Each resource lives in its own file under
- * `src/resources/<resource>.ts`, takes an `ApiClient`, and returns typed
- * `Result`s validated with schemas from `@rescuebite/types`.
- */
+// Re-export the shared error envelope + Result helpers so frontends have one
+// import site for everything they need to consume the API.
+export {
+  type ApiError,
+  type ApiErrorResponse,
+  type ApiErrorCode,
+  type Result,
+  ApiErrorSchema,
+  ApiErrorResponseSchema,
+  ok,
+  err,
+} from '@rescuebite/types';
