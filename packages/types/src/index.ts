@@ -4,5 +4,6 @@ export * from './entities.js';
 export * from './auth.js';
 export * from './listings.js';
 export * from './orders.js';
+export * from './payments.js';
 export * from './pagination.js';
 export * from './result.js';

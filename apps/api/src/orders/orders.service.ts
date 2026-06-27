@@ -188,15 +188,17 @@ export class OrdersService {
   }
 
   /**
-   * Refund a paid order (invoked by the payment flow in a later prompt). Restores
-   * stock and emits a refund event.
+   * Refund an order: restores stock and sets REFUNDED. Idempotent — a no-op if
+   * the order is already refunded (so the endpoint and the charge.refunded
+   * webhook can both call it safely).
    */
-  async refund(orderId: string): Promise<OrderDetail> {
+  async markRefunded(orderId: string): Promise<OrderDetail> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { listing: true, store: true, review: true },
     });
     if (!order) throw new NotFoundException('Order not found.');
+    if (order.status === OrderStatus.REFUNDED) return toOrderDetail(order);
     if (order.status !== OrderStatus.PAID && order.status !== OrderStatus.COLLECTED) {
       throw new ConflictException('This order cannot be refunded.');
     }
@@ -210,6 +212,36 @@ export class OrdersService {
     });
     this.emitOrder(OrderEvents.Refunded, updated);
     return toOrderDetail(updated);
+  }
+
+  /** Mark an order PAID from a succeeded PaymentIntent. Idempotent. */
+  async markPaidByPaymentIntent(paymentIntentId: string): Promise<void> {
+    const order = await this.prisma.order.findFirst({
+      where: { stripePaymentIntentId: paymentIntentId },
+    });
+    if (!order || order.status !== OrderStatus.RESERVED) return;
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { status: OrderStatus.PAID, reservationExpiresAt: null },
+      include: { listing: true, store: true, review: true },
+    });
+    this.emitOrder(OrderEvents.Paid, updated);
+  }
+
+  /** Refund the order behind a PaymentIntent (from charge.refunded). Idempotent. */
+  async markRefundedByPaymentIntent(paymentIntentId: string): Promise<void> {
+    const order = await this.prisma.order.findFirst({
+      where: { stripePaymentIntentId: paymentIntentId },
+    });
+    if (order) await this.markRefunded(order.id);
+  }
+
+  /** Persist the PaymentIntent id created for an order during checkout. */
+  async attachPaymentIntent(orderId: string, paymentIntentId: string): Promise<void> {
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { stripePaymentIntentId: paymentIntentId },
+    });
   }
 
   // --- Queries -------------------------------------------------------------

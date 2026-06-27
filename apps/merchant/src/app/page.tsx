@@ -61,12 +61,20 @@ export default function MerchantHomePage() {
         Signed in as <span className="font-medium text-neutral-800">{state.user.email}</span> (
         {state.user.role}).
       </p>
-      <Link
-        href="/listings"
-        className="inline-block rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
-      >
-        Manage listings
-      </Link>
+      <div className="flex gap-3">
+        <Link
+          href="/listings"
+          className="inline-block rounded-md bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+        >
+          Manage listings
+        </Link>
+        <Link
+          href="/payouts"
+          className="inline-block rounded-md border px-4 py-2 text-sm font-semibold hover:bg-neutral-50"
+        >
+          Payouts
+        </Link>
+      </div>
     </main>
   );
 }

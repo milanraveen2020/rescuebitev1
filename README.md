@@ -87,6 +87,55 @@ pnpm --filter @rescuebite/api db:deploy     # apply migrations (prod/CI)
 The Prisma schema lives at `apps/api/prisma/schema.prisma` and mirrors the Zod domain models in
 `packages/types`. The Zod schemas remain the single source of truth for API request/response shapes.
 
+## Payments (Stripe Connect, test mode)
+
+RescueBite runs as a **marketplace**: customers pay, the platform takes a commission
+(`PLATFORM_FEE_BPS`, default 10%), and the remainder is transferred to the merchant's connected
+Stripe **Express** account. Amounts are always recomputed server-side from the order — never
+trusted from the client.
+
+### Setup
+
+1. Create a [Stripe test-mode account](https://dashboard.stripe.com/test) and enable **Connect**.
+2. Put your keys in `apps/api/.env`:
+   ```env
+   STRIPE_SECRET_KEY=sk_test_...
+   STRIPE_PUBLISHABLE_KEY=pk_test_...
+   PLATFORM_FEE_BPS=1000
+   ```
+3. Forward webhooks to the API with the [Stripe CLI](https://stripe.com/docs/stripe-cli):
+   ```bash
+   stripe login
+   stripe listen --forward-to localhost:4000/payments/webhook
+   ```
+   Copy the printed `whsec_...` signing secret into `STRIPE_WEBHOOK_SECRET` and restart the API.
+
+The webhook endpoint (`POST /payments/webhook`) verifies the Stripe signature against the raw
+request body and handles `payment_intent.succeeded` (RESERVED → PAID),
+`payment_intent.payment_failed`, `charge.refunded` (→ REFUNDED + restock), and `account.updated`
+(sets `payoutsEnabled`). Handlers are idempotent.
+
+### Flows
+
+- **Merchant onboarding:** `POST /payments/connect/onboarding` returns a Stripe onboarding URL
+  (the merchant **Payouts** page links to it). `GET /payments/connect/status` shows connection state.
+- **Customer checkout:** `POST /payments/orders/:id/checkout` creates a PaymentIntent (with
+  `application_fee_amount` + `transfer_data` to the merchant) and returns a `clientSecret`; the
+  client confirms with Stripe.js. The success webhook moves the order to PAID.
+- **Refund:** `POST /payments/orders/:id/refund` (merchant) issues a Stripe refund, restocks, and
+  sets REFUNDED.
+
+### Test cards
+
+| Card                  | Result                          |
+| --------------------- | ------------------------------- |
+| `4242 4242 4242 4242` | Payment succeeds                |
+| `4000 0000 0000 9995` | Declined (insufficient funds)   |
+| `4000 0025 0000 3155` | Requires 3DS authentication     |
+
+Use any future expiry, any CVC, any postal code. For Connect onboarding, Stripe's test mode lets
+you fast-forward with prefilled data.
+
 ## Conventions (the short version)
 
 - Strict TypeScript, **no `any`**.

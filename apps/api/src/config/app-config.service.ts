@@ -54,6 +54,22 @@ export class AppConfigService {
     return this.config.get('RESERVATION_HOLD_MINUTES', { infer: true });
   }
 
+  get stripeSecretKey(): string | undefined {
+    return this.config.get('STRIPE_SECRET_KEY', { infer: true });
+  }
+
+  get stripePublishableKey(): string {
+    return this.config.get('STRIPE_PUBLISHABLE_KEY', { infer: true });
+  }
+
+  get stripeWebhookSecret(): string | undefined {
+    return this.config.get('STRIPE_WEBHOOK_SECRET', { infer: true });
+  }
+
+  get platformFeeBps(): number {
+    return this.config.get('PLATFORM_FEE_BPS', { infer: true });
+  }
+
   get s3(): {
     bucket?: string;
     region: string;

@@ -13,6 +13,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { ListingsModule } from './listings/listings.module';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { HealthModule } from './health/health.module';
 
 /**
@@ -30,6 +31,7 @@ import { HealthModule } from './health/health.module';
     AuthModule,
     ListingsModule,
     OrdersModule,
+    PaymentsModule,
     HealthModule,
   ],
   providers: [

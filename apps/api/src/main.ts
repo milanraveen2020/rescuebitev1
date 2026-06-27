@@ -6,7 +6,9 @@ import { AppModule } from './app.module';
 import { AppConfigService } from './config/app-config.service';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  // rawBody keeps the unparsed request body available for Stripe webhook
+  // signature verification, while JSON parsing still works for other routes.
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const config = app.get(AppConfigService);
 
   app.use(cookieParser());

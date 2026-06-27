@@ -42,6 +42,14 @@ export const EnvSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   /** Public base URL where uploaded objects are served from. */
   S3_PUBLIC_URL: z.string().url().optional(),
+
+  // Stripe (test mode). When unset, payment endpoints return a clear 503 and the
+  // app still boots so non-payment features work in local dev.
+  STRIPE_SECRET_KEY: z.string().min(1).optional(),
+  STRIPE_PUBLISHABLE_KEY: z.string().min(1).default('pk_test_unset'),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
+  /** Platform commission in basis points (1000 = 10%). */
+  PLATFORM_FEE_BPS: z.coerce.number().int().min(0).max(10000).default(1000),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
