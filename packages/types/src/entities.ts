@@ -32,6 +32,7 @@ export const UserSchema = z.object({
   name: z.string().min(1).max(120),
   avatarUrl: z.string().url().nullable(),
   status: UserStatusSchema,
+  emailVerifiedAt: IsoDateTimeSchema.nullable(),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
 });

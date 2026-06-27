@@ -60,11 +60,23 @@ export default tseslint.config(
     },
   },
   {
-    // Plain JS/MJS config files (eslint.config.mjs, *.config.js, metro/babel
-    // configs) aren't part of any tsconfig, so disable type-aware linting for
-    // them — they're tooling, not application source.
-    files: ["**/*.{js,mjs,cjs}"],
+    // ESM config files (eslint.config.mjs, *.config.mjs) aren't part of any
+    // tsconfig — disable type-aware linting; they're tooling, not app source.
+    files: ["**/*.mjs"],
     ...tseslint.configs.disableTypeChecked,
+    languageOptions: { sourceType: "module", globals: { ...globals.node } },
+  },
+  {
+    // CommonJS config files (metro.config.js, babel.config.js, *.cjs).
+    files: ["**/*.{js,cjs}"],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: { sourceType: "commonjs", globals: { ...globals.node } },
+  },
+  {
+    // Separate block so this merges with (rather than replaces) the rule set
+    // turned off by disableTypeChecked above.
+    files: ["**/*.{js,cjs}"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
   },
   prettier,
 );

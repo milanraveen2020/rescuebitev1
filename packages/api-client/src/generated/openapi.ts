@@ -4,6 +4,150 @@
  */
 
 export interface paths {
+  '/auth/register/customer': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_registerCustomer'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/register/merchant': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_registerMerchant'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/login': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_login'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/refresh': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_refresh'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/logout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_logout'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AuthController_me'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/request-password-reset': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_requestPasswordReset'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/reset-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_resetPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/verify-email': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_verifyEmail'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/health': {
     parameters: {
       query?: never;
@@ -23,7 +167,15 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: never;
+  schemas: {
+    RegisterCustomerDto: Record<string, never>;
+    RegisterMerchantDto: Record<string, never>;
+    LoginDto: Record<string, never>;
+    RefreshDto: Record<string, never>;
+    RequestPasswordResetDto: Record<string, never>;
+    ResetPasswordDto: Record<string, never>;
+    VerifyEmailDto: Record<string, never>;
+  };
   responses: never;
   parameters: never;
   requestBodies: never;
@@ -32,6 +184,332 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  AuthController_registerCustomer: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RegisterCustomerDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            accessToken: string;
+            expiresIn: number;
+            refreshToken?: string;
+            user: {
+              /** Format: uuid */
+              id: string;
+              /** Format: email */
+              email: string;
+              phone: string | null;
+              /** @enum {string} */
+              role: 'CUSTOMER' | 'MERCHANT_OWNER' | 'MERCHANT_STAFF' | 'ADMIN';
+              name: string;
+              /** Format: uri */
+              avatarUrl: string | null;
+              /** @enum {string} */
+              status: 'ACTIVE' | 'SUSPENDED';
+              /** Format: date-time */
+              emailVerifiedAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              updatedAt: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  AuthController_registerMerchant: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RegisterMerchantDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            accessToken: string;
+            expiresIn: number;
+            refreshToken?: string;
+            user: {
+              /** Format: uuid */
+              id: string;
+              /** Format: email */
+              email: string;
+              phone: string | null;
+              /** @enum {string} */
+              role: 'CUSTOMER' | 'MERCHANT_OWNER' | 'MERCHANT_STAFF' | 'ADMIN';
+              name: string;
+              /** Format: uri */
+              avatarUrl: string | null;
+              /** @enum {string} */
+              status: 'ACTIVE' | 'SUSPENDED';
+              /** Format: date-time */
+              emailVerifiedAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              updatedAt: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  AuthController_login: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LoginDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            accessToken: string;
+            expiresIn: number;
+            refreshToken?: string;
+            user: {
+              /** Format: uuid */
+              id: string;
+              /** Format: email */
+              email: string;
+              phone: string | null;
+              /** @enum {string} */
+              role: 'CUSTOMER' | 'MERCHANT_OWNER' | 'MERCHANT_STAFF' | 'ADMIN';
+              name: string;
+              /** Format: uri */
+              avatarUrl: string | null;
+              /** @enum {string} */
+              status: 'ACTIVE' | 'SUSPENDED';
+              /** Format: date-time */
+              emailVerifiedAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              updatedAt: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  AuthController_refresh: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RefreshDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            accessToken: string;
+            expiresIn: number;
+            refreshToken?: string;
+            user: {
+              /** Format: uuid */
+              id: string;
+              /** Format: email */
+              email: string;
+              phone: string | null;
+              /** @enum {string} */
+              role: 'CUSTOMER' | 'MERCHANT_OWNER' | 'MERCHANT_STAFF' | 'ADMIN';
+              name: string;
+              /** Format: uri */
+              avatarUrl: string | null;
+              /** @enum {string} */
+              status: 'ACTIVE' | 'SUSPENDED';
+              /** Format: date-time */
+              emailVerifiedAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              updatedAt: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  AuthController_logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RefreshDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+          };
+        };
+      };
+    };
+  };
+  AuthController_me: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            phone: string | null;
+            /** @enum {string} */
+            role: 'CUSTOMER' | 'MERCHANT_OWNER' | 'MERCHANT_STAFF' | 'ADMIN';
+            name: string;
+            /** Format: uri */
+            avatarUrl: string | null;
+            /** @enum {string} */
+            status: 'ACTIVE' | 'SUSPENDED';
+            /** Format: date-time */
+            emailVerifiedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+    };
+  };
+  AuthController_requestPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RequestPasswordResetDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+          };
+        };
+      };
+    };
+  };
+  AuthController_resetPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResetPasswordDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+          };
+        };
+      };
+    };
+  };
+  AuthController_verifyEmail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerifyEmailDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+          };
+        };
+      };
+    };
+  };
   HealthController_check: {
     parameters: {
       query?: never;

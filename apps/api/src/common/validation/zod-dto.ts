@@ -7,7 +7,7 @@ import type { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec
 // which otherwise makes the compiler recurse (TS2589) or run out of memory.
 const toOpenApiSchema = zodToJsonSchema as unknown as (
   schema: z.ZodTypeAny,
-  options: { target: 'openApi3' },
+  options: { target: 'openApi3'; $refStrategy: 'none' },
 ) => SchemaObject;
 
 /**
@@ -29,7 +29,12 @@ export interface ZodDtoStatic<TOut = unknown> {
 export function createZodDto<TOut>(schema: z.ZodType<TOut>): ZodDtoStatic<TOut> {
   class AugmentedZodDto {
     static zodSchema = schema;
-    static openApiSchema = toOpenApiSchema(schema as z.ZodTypeAny, { target: 'openApi3' });
+    // `$refStrategy: 'none'` inlines every sub-schema so the resulting OpenAPI
+    // schema is self-contained (no dangling $ref to a definitions section).
+    static openApiSchema = toOpenApiSchema(schema as z.ZodTypeAny, {
+      target: 'openApi3',
+      $refStrategy: 'none',
+    });
   }
   return AugmentedZodDto as unknown as ZodDtoStatic<TOut>;
 }

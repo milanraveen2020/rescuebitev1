@@ -22,7 +22,14 @@ export const EnvSchema = z.object({
         .filter(Boolean),
     ),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
-  JWT_EXPIRES_IN: z.string().min(1).default('7d'),
+  /** Access-token lifetime (any `ms`-style string, e.g. "15m"). Short-lived. */
+  ACCESS_TOKEN_TTL: z.string().min(1).default('15m'),
+  /** Refresh-token lifetime in days. */
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  /** Optional cookie domain for the refresh cookie (leave unset for localhost). */
+  COOKIE_DOMAIN: z.string().min(1).optional(),
+  /** Base URL used to build email verification / password-reset links. */
+  APP_WEB_URL: z.string().url().default('http://localhost:3001'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

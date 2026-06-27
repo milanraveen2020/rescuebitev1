@@ -21,6 +21,9 @@ export default [
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
+      // Referencing a mocked method (e.g. `expect(obj.method)`) is idiomatic in tests.
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/consistent-type-imports": "off",
     },
   },
 ];

@@ -1,12 +1,15 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/app-config.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get(AppConfigService);
+
+  app.use(cookieParser());
 
   // CORS for the three frontends (customer / merchant / admin). In dev with no
   // configured origins, reflect the request origin to keep local setup painless.

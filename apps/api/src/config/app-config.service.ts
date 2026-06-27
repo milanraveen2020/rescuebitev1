@@ -34,7 +34,19 @@ export class AppConfigService {
     return this.config.get('JWT_SECRET', { infer: true });
   }
 
-  get jwtExpiresIn(): string {
-    return this.config.get('JWT_EXPIRES_IN', { infer: true });
+  get accessTokenTtl(): string {
+    return this.config.get('ACCESS_TOKEN_TTL', { infer: true });
+  }
+
+  get refreshTokenTtlDays(): number {
+    return this.config.get('REFRESH_TOKEN_TTL_DAYS', { infer: true });
+  }
+
+  get cookieDomain(): string | undefined {
+    return this.config.get('COOKIE_DOMAIN', { infer: true });
+  }
+
+  get appWebUrl(): string {
+    return this.config.get('APP_WEB_URL', { infer: true });
   }
 }
