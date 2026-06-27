@@ -1,50 +1,53 @@
 import { z } from 'zod';
 
-export const UserRoleSchema = z.enum(['customer', 'merchant', 'admin']);
+/**
+ * Enums mirror the Prisma schema in apps/api exactly (same SCREAMING_SNAKE values).
+ * These Zod enums are the single source of truth for the API boundary; the TS
+ * union types are inferred from them — never hand-write the unions.
+ */
+
+export const UserRoleSchema = z.enum(['CUSTOMER', 'MERCHANT_OWNER', 'MERCHANT_STAFF', 'ADMIN']);
 export type UserRole = z.infer<typeof UserRoleSchema>;
 
-/** Lifecycle of a single surprise bag listing for a given day. */
-export const ListingStatusSchema = z.enum(['draft', 'active', 'sold_out', 'expired', 'cancelled']);
-export type ListingStatus = z.infer<typeof ListingStatusSchema>;
+export const UserStatusSchema = z.enum(['ACTIVE', 'SUSPENDED']);
+export type UserStatus = z.infer<typeof UserStatusSchema>;
 
-/** Lifecycle of a customer reservation. */
-export const ReservationStatusSchema = z.enum([
-  'pending_payment',
-  'confirmed',
-  'collected',
-  'no_show',
-  'cancelled',
-  'refunded',
-]);
-export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
+export const StoreStatusSchema = z.enum(['PENDING', 'APPROVED', 'REJECTED']);
+export type StoreStatus = z.infer<typeof StoreStatusSchema>;
 
-export const PaymentStatusSchema = z.enum([
-  'requires_payment',
-  'processing',
-  'succeeded',
-  'failed',
-  'refunded',
-]);
-export type PaymentStatus = z.infer<typeof PaymentStatusSchema>;
-
-/** Coarse food categories used for filtering and dietary surfacing. */
 export const FoodCategorySchema = z.enum([
-  'bakery',
-  'grocery',
-  'restaurant',
-  'cafe',
-  'produce',
-  'other',
+  'BAKERY',
+  'GROCERY',
+  'RESTAURANT',
+  'CAFE',
+  'PRODUCE',
+  'OTHER',
 ]);
 export type FoodCategory = z.infer<typeof FoodCategorySchema>;
 
-export const DietaryTagSchema = z.enum([
-  'vegetarian',
-  'vegan',
-  'halal',
-  'kosher',
-  'gluten_free',
-  'dairy_free',
-  'nut_free',
+export const ListingStatusSchema = z.enum(['DRAFT', 'ACTIVE', 'SOLD_OUT', 'EXPIRED']);
+export type ListingStatus = z.infer<typeof ListingStatusSchema>;
+
+export const OrderStatusSchema = z.enum([
+  'RESERVED',
+  'PAID',
+  'COLLECTED',
+  'CANCELLED',
+  'REFUNDED',
+  'NO_SHOW',
 ]);
-export type DietaryTag = z.infer<typeof DietaryTagSchema>;
+export type OrderStatus = z.infer<typeof OrderStatusSchema>;
+
+export const NotificationTypeSchema = z.enum([
+  'ORDER_RESERVED',
+  'ORDER_PAID',
+  'PICKUP_REMINDER',
+  'ORDER_COLLECTED',
+  'ORDER_CANCELLED',
+  'STORE_APPROVED',
+  'STORE_REJECTED',
+  'NEW_LISTING',
+  'REVIEW_REQUEST',
+  'SYSTEM',
+]);
+export type NotificationType = z.infer<typeof NotificationTypeSchema>;

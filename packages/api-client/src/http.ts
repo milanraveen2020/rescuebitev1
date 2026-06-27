@@ -41,14 +41,15 @@ export class ApiClient {
     const token = await this.config.getAuthToken?.();
     if (token) headers.authorization = `Bearer ${token}`;
 
+    // Build init conditionally: under exactOptionalPropertyTypes, `fetch` rejects
+    // an explicit `undefined` for body/signal, so only set keys that have a value.
+    const init: RequestInit = { method: options.method ?? 'GET', headers };
+    if (options.body !== undefined) init.body = JSON.stringify(options.body);
+    if (options.signal !== undefined) init.signal = options.signal;
+
     let raw: Response;
     try {
-      raw = await fetchImpl(url, {
-        method: options.method ?? 'GET',
-        headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
-        signal: options.signal,
-      });
+      raw = await fetchImpl(url, init);
     } catch (cause) {
       return err({
         code: 'internal_error',
