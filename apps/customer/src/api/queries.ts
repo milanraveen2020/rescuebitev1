@@ -10,14 +10,19 @@ import type {
   CreateReviewInput,
   NearbyListingPage,
   NearbyQuery,
+  NotificationPage,
+  UpdateNotificationPreferencesInput,
 } from '@rescuebite/types';
-import { listingsApi, ordersApi } from './endpoints';
+import { listingsApi, notificationsApi, ordersApi } from './endpoints';
 
 export const queryKeys = {
   nearby: (q: NearbyFeedQuery) => ['listings', 'nearby', q] as const,
   listing: (id: string) => ['listings', id] as const,
   orders: () => ['orders'] as const,
   order: (id: string) => ['orders', id] as const,
+  notifications: () => ['notifications'] as const,
+  unreadCount: () => ['notifications', 'unread-count'] as const,
+  notificationPreferences: () => ['notifications', 'preferences'] as const,
 };
 
 export type NearbyFeedQuery = Omit<NearbyQuery, 'cursor' | 'limit'>;
@@ -84,5 +89,68 @@ export function useReviewOrder() {
       void qc.invalidateQueries({ queryKey: queryKeys.orders() });
       void qc.invalidateQueries({ queryKey: queryKeys.order(id) });
     },
+  });
+}
+
+// --- Notifications ---------------------------------------------------------
+
+/** Infinite, cursor-paginated notification inbox. */
+export function useNotifications(
+  enabled = true,
+): UseInfiniteQueryResult<{ pages: NotificationPage[]; pageParams: unknown[] }, Error> {
+  return useInfiniteQuery({
+    queryKey: queryKeys.notifications(),
+    enabled,
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) => notificationsApi.list(pageParam),
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+}
+
+/** Unread badge count; polls so the badge stays fresh while the app is open. */
+export function useUnreadCount(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.unreadCount(),
+    enabled,
+    queryFn: () => notificationsApi.unreadCount(),
+    refetchInterval: 60_000,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => notificationsApi.markRead(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.notifications() });
+      void qc.invalidateQueries({ queryKey: queryKeys.unreadCount() });
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.notifications() });
+      void qc.invalidateQueries({ queryKey: queryKeys.unreadCount() });
+    },
+  });
+}
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: queryKeys.notificationPreferences(),
+    queryFn: () => notificationsApi.getPreferences(),
+  });
+}
+
+export function useUpdateNotificationPreferences() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateNotificationPreferencesInput) =>
+      notificationsApi.updatePreferences(input),
+    onSuccess: (prefs) => qc.setQueryData(queryKeys.notificationPreferences(), prefs),
   });
 }

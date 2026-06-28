@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { OrderDetail, OrderHistory, Review } from '@rescuebite/types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -23,7 +32,10 @@ export class OrdersController {
 
   @Post()
   @ApiOkResponse({ schema: OrderDetailDto.openApiSchema })
-  reserve(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateOrderDto): Promise<OrderDetail> {
+  reserve(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateOrderDto,
+  ): Promise<OrderDetail> {
     return this.orders.reserve(user.id, dto);
   }
 

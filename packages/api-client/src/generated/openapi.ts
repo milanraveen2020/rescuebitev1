@@ -148,14 +148,14 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/listings/nearby': {
+  '/admin/overview': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations['ListingsController_findNearby'];
+    get: operations['AdminController_overview'];
     put?: never;
     post?: never;
     delete?: never;
@@ -164,14 +164,14 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/listings/{id}': {
+  '/admin/users': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations['ListingsController_getDetail'];
+    get: operations['AdminController_listUsers'];
     put?: never;
     post?: never;
     delete?: never;
@@ -180,39 +180,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/merchant/listings': {
+  '/admin/users/{id}': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations['MerchantListingsController_listOwn'];
+    get: operations['AdminController_getUser'];
     put?: never;
-    post: operations['MerchantListingsController_create'];
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/merchant/listings/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations['MerchantListingsController_getOwn'];
-    put?: never;
-    post?: never;
-    delete: operations['MerchantListingsController_remove'];
-    options?: never;
-    head?: never;
-    patch: operations['MerchantListingsController_update'];
-    trace?: never;
-  };
-  '/uploads/listing-image': {
+  '/admin/users/{id}/suspend': {
     parameters: {
       query?: never;
       header?: never;
@@ -221,7 +205,407 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations['UploadController_createListingImageTicket'];
+    post: operations['AdminController_suspendUser'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/users/{id}/reactivate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_reactivateUser'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/users/{id}/role': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['AdminController_updateUserRole'];
+    trace?: never;
+  };
+  '/admin/stores': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_listStores'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/stores/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_getStore'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/stores/{id}/approve': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_approveStore'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/stores/{id}/reject': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_rejectStore'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/stores/bulk-approve': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_bulkApproveStores'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/listings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_listListings'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/listings/{id}/unpublish': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_unpublishListing'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/listings/bulk-unpublish': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_bulkUnpublishListings'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/orders': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_listOrders'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/orders/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_getOrder'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/orders/{id}/refund': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_refundOrder'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/reviews': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_listReviews'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/reviews/{id}/hide': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_hideReview'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/reviews/{id}/unhide': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_unhideReview'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/reviews/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['AdminController_removeReview'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/audit-logs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_auditLogs'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/settings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AdminController_getSettings'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['AdminController_updateSettings'];
+    trace?: never;
+  };
+  '/payments/config': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PaymentsController_config'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payments/connect/onboarding': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PaymentsController_onboarding'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payments/connect/status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PaymentsController_connectStatus'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payments/transfers': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PaymentsController_transfers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payments/orders/{id}/checkout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PaymentsController_checkout'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payments/orders/{id}/refund': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['PaymentsController_refund'];
     delete?: never;
     options?: never;
     head?: never;
@@ -356,14 +740,14 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/payments/config': {
+  '/listings/nearby': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations['PaymentsController_config'];
+    get: operations['ListingsController_findNearby'];
     put?: never;
     post?: never;
     delete?: never;
@@ -372,30 +756,14 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/payments/connect/onboarding': {
+  '/listings/{id}': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    post: operations['PaymentsController_onboarding'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/payments/connect/status': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations['PaymentsController_connectStatus'];
+    get: operations['ListingsController_getDetail'];
     put?: never;
     post?: never;
     delete?: never;
@@ -404,23 +772,39 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/payments/orders/{id}/checkout': {
+  '/merchant/listings': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations['MerchantListingsController_listOwn'];
     put?: never;
-    post: operations['PaymentsController_checkout'];
+    post: operations['MerchantListingsController_create'];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/payments/orders/{id}/refund': {
+  '/merchant/listings/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantListingsController_getOwn'];
+    put?: never;
+    post?: never;
+    delete: operations['MerchantListingsController_remove'];
+    options?: never;
+    head?: never;
+    patch: operations['MerchantListingsController_update'];
+    trace?: never;
+  };
+  '/uploads/listing-image': {
     parameters: {
       query?: never;
       header?: never;
@@ -429,11 +813,187 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations['PaymentsController_refund'];
+    post: operations['UploadController_createListingImageTicket'];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/merchant/store': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantController_getStore'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['MerchantController_updateStore'];
+    trace?: never;
+  };
+  '/merchant/dashboard': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantController_dashboard'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/merchant/analytics': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantController_analytics'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/merchant/staff': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['MerchantController_listStaff'];
+    put?: never;
+    post: operations['MerchantController_inviteStaff'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/merchant/staff/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['MerchantController_removeStaff'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/unread-count': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_unreadCount'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/read-all': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_markAllRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_markRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/devices': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['NotificationsController_registerDevice'];
+    delete: operations['NotificationsController_unregisterDevice'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/preferences': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['NotificationsController_getPreferences'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations['NotificationsController_updatePreferences'];
     trace?: never;
   };
   '/health': {
@@ -463,12 +1023,23 @@ export interface components {
     RequestPasswordResetDto: Record<string, never>;
     ResetPasswordDto: Record<string, never>;
     VerifyEmailDto: Record<string, never>;
-    CreateListingDto: Record<string, never>;
-    UpdateListingDto: Record<string, never>;
-    UploadRequestDto: Record<string, never>;
+    SuspendUserDto: Record<string, never>;
+    UpdateUserRoleDto: Record<string, never>;
+    RejectStoreDto: Record<string, never>;
+    BulkIdsDto: Record<string, never>;
+    HideReviewDto: Record<string, never>;
+    UpdateSettingsDto: Record<string, never>;
     CreateOrderDto: Record<string, never>;
     CreateReviewDto: Record<string, never>;
     CollectOrderDto: Record<string, never>;
+    CreateListingDto: Record<string, never>;
+    UpdateListingDto: Record<string, never>;
+    UploadRequestDto: Record<string, never>;
+    UpdateStoreDto: Record<string, never>;
+    InviteStaffDto: Record<string, never>;
+    RegisterDeviceDto: Record<string, never>;
+    UnregisterDeviceDto: Record<string, never>;
+    UpdateNotificationPreferencesDto: Record<string, never>;
   };
   responses: never;
   parameters: never;
@@ -799,6 +1370,1422 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
+          };
+        };
+      };
+    };
+  };
+  AdminController_overview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_listUsers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_getUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_suspendUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SuspendUserDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_reactivateUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_updateUserRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateUserRoleDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_listStores: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_getStore: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_approveStore: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_rejectStore: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RejectStoreDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_bulkApproveStores: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BulkIdsDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_listListings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_unpublishListing: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_bulkUnpublishListings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BulkIdsDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_listOrders: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_getOrder: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_refundOrder: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_listReviews: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_hideReview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['HideReviewDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_unhideReview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_removeReview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_auditLogs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_getSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_updateSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateSettingsDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PaymentsController_config: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PaymentsController_onboarding: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PaymentsController_connectStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PaymentsController_transfers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PaymentsController_checkout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PaymentsController_refund: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  OrdersController_history: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            active: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              listingId: string;
+              /** Format: uuid */
+              storeId: string;
+              quantity: number;
+              unitPrice: number;
+              totalAmount: number;
+              currency: string;
+              /** @enum {string} */
+              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+              pickupCode: string;
+              stripePaymentIntentId: string | null;
+              /** Format: date-time */
+              reservationExpiresAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              collectedAt: string | null;
+              /** Format: date-time */
+              updatedAt: string;
+              listing: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** Format: uri */
+                imageUrl: string | null;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                /** Format: date-time */
+                pickupStart: string;
+                /** Format: date-time */
+                pickupEnd: string;
+              };
+              store: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                address: string;
+                lat: number;
+                lng: number;
+                /** Format: uri */
+                logoUrl: string | null;
+                rating: number;
+                reviewCount: number;
+              };
+              review: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                /** Format: uuid */
+                customerId: string;
+                /** Format: uuid */
+                storeId: string;
+                rating: number;
+                comment: string | null;
+                /** Format: date-time */
+                hiddenAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+              } | null;
+            }[];
+            past: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              listingId: string;
+              /** Format: uuid */
+              storeId: string;
+              quantity: number;
+              unitPrice: number;
+              totalAmount: number;
+              currency: string;
+              /** @enum {string} */
+              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+              pickupCode: string;
+              stripePaymentIntentId: string | null;
+              /** Format: date-time */
+              reservationExpiresAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              collectedAt: string | null;
+              /** Format: date-time */
+              updatedAt: string;
+              listing: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** Format: uri */
+                imageUrl: string | null;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                /** Format: date-time */
+                pickupStart: string;
+                /** Format: date-time */
+                pickupEnd: string;
+              };
+              store: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                address: string;
+                lat: number;
+                lng: number;
+                /** Format: uri */
+                logoUrl: string | null;
+                rating: number;
+                reviewCount: number;
+              };
+              review: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                /** Format: uuid */
+                customerId: string;
+                /** Format: uuid */
+                storeId: string;
+                rating: number;
+                comment: string | null;
+                /** Format: date-time */
+                hiddenAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+              } | null;
+            }[];
+          };
+        };
+      };
+    };
+  };
+  OrdersController_reserve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateOrderDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            listingId: string;
+            /** Format: uuid */
+            storeId: string;
+            quantity: number;
+            unitPrice: number;
+            totalAmount: number;
+            currency: string;
+            /** @enum {string} */
+            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+            pickupCode: string;
+            stripePaymentIntentId: string | null;
+            /** Format: date-time */
+            reservationExpiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            collectedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            listing: {
+              /** Format: uuid */
+              id: string;
+              title: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+            };
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+            review: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              orderId: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              storeId: string;
+              rating: number;
+              comment: string | null;
+              /** Format: date-time */
+              hiddenAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+            } | null;
+          };
+        };
+      };
+    };
+  };
+  OrdersController_pay: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            listingId: string;
+            /** Format: uuid */
+            storeId: string;
+            quantity: number;
+            unitPrice: number;
+            totalAmount: number;
+            currency: string;
+            /** @enum {string} */
+            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+            pickupCode: string;
+            stripePaymentIntentId: string | null;
+            /** Format: date-time */
+            reservationExpiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            collectedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            listing: {
+              /** Format: uuid */
+              id: string;
+              title: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+            };
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+            review: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              orderId: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              storeId: string;
+              rating: number;
+              comment: string | null;
+              /** Format: date-time */
+              hiddenAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+            } | null;
+          };
+        };
+      };
+    };
+  };
+  OrdersController_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            listingId: string;
+            /** Format: uuid */
+            storeId: string;
+            quantity: number;
+            unitPrice: number;
+            totalAmount: number;
+            currency: string;
+            /** @enum {string} */
+            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+            pickupCode: string;
+            stripePaymentIntentId: string | null;
+            /** Format: date-time */
+            reservationExpiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            collectedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            listing: {
+              /** Format: uuid */
+              id: string;
+              title: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+            };
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+            review: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              orderId: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              storeId: string;
+              rating: number;
+              comment: string | null;
+              /** Format: date-time */
+              hiddenAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+            } | null;
+          };
+        };
+      };
+    };
+  };
+  OrdersController_getOne: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            listingId: string;
+            /** Format: uuid */
+            storeId: string;
+            quantity: number;
+            unitPrice: number;
+            totalAmount: number;
+            currency: string;
+            /** @enum {string} */
+            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+            pickupCode: string;
+            stripePaymentIntentId: string | null;
+            /** Format: date-time */
+            reservationExpiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            collectedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            listing: {
+              /** Format: uuid */
+              id: string;
+              title: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+            };
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+            review: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              orderId: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              storeId: string;
+              rating: number;
+              comment: string | null;
+              /** Format: date-time */
+              hiddenAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+            } | null;
+          };
+        };
+      };
+    };
+  };
+  OrdersController_review: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateReviewDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            storeId: string;
+            rating: number;
+            comment: string | null;
+            /** Format: date-time */
+            hiddenAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+          };
+        };
+      };
+    };
+  };
+  MerchantOrdersController_storeOrders: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            today: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              listingId: string;
+              /** Format: uuid */
+              storeId: string;
+              quantity: number;
+              unitPrice: number;
+              totalAmount: number;
+              currency: string;
+              /** @enum {string} */
+              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+              pickupCode: string;
+              stripePaymentIntentId: string | null;
+              /** Format: date-time */
+              reservationExpiresAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              collectedAt: string | null;
+              /** Format: date-time */
+              updatedAt: string;
+              listing: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** Format: uri */
+                imageUrl: string | null;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                /** Format: date-time */
+                pickupStart: string;
+                /** Format: date-time */
+                pickupEnd: string;
+              };
+              customer: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+              };
+            }[];
+            upcoming: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              listingId: string;
+              /** Format: uuid */
+              storeId: string;
+              quantity: number;
+              unitPrice: number;
+              totalAmount: number;
+              currency: string;
+              /** @enum {string} */
+              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+              pickupCode: string;
+              stripePaymentIntentId: string | null;
+              /** Format: date-time */
+              reservationExpiresAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              collectedAt: string | null;
+              /** Format: date-time */
+              updatedAt: string;
+              listing: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** Format: uri */
+                imageUrl: string | null;
+                /** @enum {string} */
+                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                /** Format: date-time */
+                pickupStart: string;
+                /** Format: date-time */
+                pickupEnd: string;
+              };
+              customer: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+              };
+            }[];
+          };
+        };
+      };
+    };
+  };
+  MerchantOrdersController_collect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CollectOrderDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            listingId: string;
+            /** Format: uuid */
+            storeId: string;
+            quantity: number;
+            unitPrice: number;
+            totalAmount: number;
+            currency: string;
+            /** @enum {string} */
+            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+            pickupCode: string;
+            stripePaymentIntentId: string | null;
+            /** Format: date-time */
+            reservationExpiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            collectedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            listing: {
+              /** Format: uuid */
+              id: string;
+              title: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+            };
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+            review: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              orderId: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              storeId: string;
+              rating: number;
+              comment: string | null;
+              /** Format: date-time */
+              hiddenAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+            } | null;
+          };
+        };
+      };
+    };
+  };
+  MerchantOrdersController_noShow: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            /** Format: uuid */
+            listingId: string;
+            /** Format: uuid */
+            storeId: string;
+            quantity: number;
+            unitPrice: number;
+            totalAmount: number;
+            currency: string;
+            /** @enum {string} */
+            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
+            pickupCode: string;
+            stripePaymentIntentId: string | null;
+            /** Format: date-time */
+            reservationExpiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            collectedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            listing: {
+              /** Format: uuid */
+              id: string;
+              title: string;
+              /** Format: uri */
+              imageUrl: string | null;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              /** Format: date-time */
+              pickupStart: string;
+              /** Format: date-time */
+              pickupEnd: string;
+            };
+            store: {
+              /** Format: uuid */
+              id: string;
+              name: string;
+              /** @enum {string} */
+              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              address: string;
+              lat: number;
+              lng: number;
+              /** Format: uri */
+              logoUrl: string | null;
+              rating: number;
+              reviewCount: number;
+            };
+            review: {
+              /** Format: uuid */
+              id: string;
+              /** Format: uuid */
+              orderId: string;
+              /** Format: uuid */
+              customerId: string;
+              /** Format: uuid */
+              storeId: string;
+              rating: number;
+              comment: string | null;
+              /** Format: date-time */
+              hiddenAt: string | null;
+              /** Format: date-time */
+              createdAt: string;
+            } | null;
           };
         };
       };
@@ -1153,7 +3140,7 @@ export interface operations {
       };
     };
   };
-  OrdersController_history: {
+  MerchantController_getStore: {
     parameters: {
       query?: never;
       header?: never;
@@ -1166,148 +3153,11 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            active: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              listingId: string;
-              /** Format: uuid */
-              storeId: string;
-              quantity: number;
-              unitPrice: number;
-              totalAmount: number;
-              currency: string;
-              /** @enum {string} */
-              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-              pickupCode: string;
-              stripePaymentIntentId: string | null;
-              /** Format: date-time */
-              reservationExpiresAt: string | null;
-              /** Format: date-time */
-              createdAt: string;
-              /** Format: date-time */
-              collectedAt: string | null;
-              /** Format: date-time */
-              updatedAt: string;
-              listing: {
-                /** Format: uuid */
-                id: string;
-                title: string;
-                /** Format: uri */
-                imageUrl: string | null;
-                /** @enum {string} */
-                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-                /** Format: date-time */
-                pickupStart: string;
-                /** Format: date-time */
-                pickupEnd: string;
-              };
-              store: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                /** @enum {string} */
-                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-                address: string;
-                lat: number;
-                lng: number;
-                /** Format: uri */
-                logoUrl: string | null;
-                rating: number;
-                reviewCount: number;
-              };
-              review: {
-                /** Format: uuid */
-                id: string;
-                /** Format: uuid */
-                orderId: string;
-                /** Format: uuid */
-                customerId: string;
-                /** Format: uuid */
-                storeId: string;
-                rating: number;
-                comment: string | null;
-                /** Format: date-time */
-                createdAt: string;
-              } | null;
-            }[];
-            past: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              listingId: string;
-              /** Format: uuid */
-              storeId: string;
-              quantity: number;
-              unitPrice: number;
-              totalAmount: number;
-              currency: string;
-              /** @enum {string} */
-              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-              pickupCode: string;
-              stripePaymentIntentId: string | null;
-              /** Format: date-time */
-              reservationExpiresAt: string | null;
-              /** Format: date-time */
-              createdAt: string;
-              /** Format: date-time */
-              collectedAt: string | null;
-              /** Format: date-time */
-              updatedAt: string;
-              listing: {
-                /** Format: uuid */
-                id: string;
-                title: string;
-                /** Format: uri */
-                imageUrl: string | null;
-                /** @enum {string} */
-                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-                /** Format: date-time */
-                pickupStart: string;
-                /** Format: date-time */
-                pickupEnd: string;
-              };
-              store: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                /** @enum {string} */
-                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-                address: string;
-                lat: number;
-                lng: number;
-                /** Format: uri */
-                logoUrl: string | null;
-                rating: number;
-                reviewCount: number;
-              };
-              review: {
-                /** Format: uuid */
-                id: string;
-                /** Format: uuid */
-                orderId: string;
-                /** Format: uuid */
-                customerId: string;
-                /** Format: uuid */
-                storeId: string;
-                rating: number;
-                comment: string | null;
-                /** Format: date-time */
-                createdAt: string;
-              } | null;
-            }[];
-          };
-        };
+        content?: never;
       };
     };
   };
-  OrdersController_reserve: {
+  MerchantController_updateStore: {
     parameters: {
       query?: never;
       header?: never;
@@ -1316,7 +3166,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['CreateOrderDto'];
+        'application/json': components['schemas']['UpdateStoreDto'];
       };
     };
     responses: {
@@ -1324,85 +3174,15 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            listingId: string;
-            /** Format: uuid */
-            storeId: string;
-            quantity: number;
-            unitPrice: number;
-            totalAmount: number;
-            currency: string;
-            /** @enum {string} */
-            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-            pickupCode: string;
-            stripePaymentIntentId: string | null;
-            /** Format: date-time */
-            reservationExpiresAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            collectedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-            listing: {
-              /** Format: uuid */
-              id: string;
-              title: string;
-              /** Format: uri */
-              imageUrl: string | null;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              /** Format: date-time */
-              pickupStart: string;
-              /** Format: date-time */
-              pickupEnd: string;
-            };
-            store: {
-              /** Format: uuid */
-              id: string;
-              name: string;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              address: string;
-              lat: number;
-              lng: number;
-              /** Format: uri */
-              logoUrl: string | null;
-              rating: number;
-              reviewCount: number;
-            };
-            review: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              orderId: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              storeId: string;
-              rating: number;
-              comment: string | null;
-              /** Format: date-time */
-              createdAt: string;
-            } | null;
-          };
-        };
+        content?: never;
       };
     };
   };
-  OrdersController_pay: {
+  MerchantController_dashboard: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;
@@ -1411,85 +3191,15 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            listingId: string;
-            /** Format: uuid */
-            storeId: string;
-            quantity: number;
-            unitPrice: number;
-            totalAmount: number;
-            currency: string;
-            /** @enum {string} */
-            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-            pickupCode: string;
-            stripePaymentIntentId: string | null;
-            /** Format: date-time */
-            reservationExpiresAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            collectedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-            listing: {
-              /** Format: uuid */
-              id: string;
-              title: string;
-              /** Format: uri */
-              imageUrl: string | null;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              /** Format: date-time */
-              pickupStart: string;
-              /** Format: date-time */
-              pickupEnd: string;
-            };
-            store: {
-              /** Format: uuid */
-              id: string;
-              name: string;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              address: string;
-              lat: number;
-              lng: number;
-              /** Format: uri */
-              logoUrl: string | null;
-              rating: number;
-              reviewCount: number;
-            };
-            review: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              orderId: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              storeId: string;
-              rating: number;
-              comment: string | null;
-              /** Format: date-time */
-              createdAt: string;
-            } | null;
-          };
-        };
+        content?: never;
       };
     };
   };
-  OrdersController_cancel: {
+  MerchantController_analytics: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;
@@ -1498,85 +3208,15 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            listingId: string;
-            /** Format: uuid */
-            storeId: string;
-            quantity: number;
-            unitPrice: number;
-            totalAmount: number;
-            currency: string;
-            /** @enum {string} */
-            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-            pickupCode: string;
-            stripePaymentIntentId: string | null;
-            /** Format: date-time */
-            reservationExpiresAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            collectedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-            listing: {
-              /** Format: uuid */
-              id: string;
-              title: string;
-              /** Format: uri */
-              imageUrl: string | null;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              /** Format: date-time */
-              pickupStart: string;
-              /** Format: date-time */
-              pickupEnd: string;
-            };
-            store: {
-              /** Format: uuid */
-              id: string;
-              name: string;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              address: string;
-              lat: number;
-              lng: number;
-              /** Format: uri */
-              logoUrl: string | null;
-              rating: number;
-              reviewCount: number;
-            };
-            review: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              orderId: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              storeId: string;
-              rating: number;
-              comment: string | null;
-              /** Format: date-time */
-              createdAt: string;
-            } | null;
-          };
-        };
+        content?: never;
       };
     };
   };
-  OrdersController_getOne: {
+  MerchantController_listStaff: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;
@@ -1585,117 +3225,102 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            listingId: string;
-            /** Format: uuid */
-            storeId: string;
-            quantity: number;
-            unitPrice: number;
-            totalAmount: number;
-            currency: string;
-            /** @enum {string} */
-            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-            pickupCode: string;
-            stripePaymentIntentId: string | null;
-            /** Format: date-time */
-            reservationExpiresAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            collectedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-            listing: {
-              /** Format: uuid */
-              id: string;
-              title: string;
-              /** Format: uri */
-              imageUrl: string | null;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              /** Format: date-time */
-              pickupStart: string;
-              /** Format: date-time */
-              pickupEnd: string;
-            };
-            store: {
-              /** Format: uuid */
-              id: string;
-              name: string;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              address: string;
-              lat: number;
-              lng: number;
-              /** Format: uri */
-              logoUrl: string | null;
-              rating: number;
-              reviewCount: number;
-            };
-            review: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              orderId: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              storeId: string;
-              rating: number;
-              comment: string | null;
-              /** Format: date-time */
-              createdAt: string;
-            } | null;
-          };
-        };
+        content?: never;
       };
     };
   };
-  OrdersController_review: {
+  MerchantController_inviteStaff: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['CreateReviewDto'];
+        'application/json': components['schemas']['InviteStaffDto'];
       };
     };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  MerchantController_removeStaff: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NotificationsController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
     responses: {
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            orderId: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            storeId: string;
-            rating: number;
-            comment: string | null;
-            /** Format: date-time */
-            createdAt: string;
-          };
-        };
+        content?: never;
       };
     };
   };
-  MerchantOrdersController_storeOrders: {
+  NotificationsController_unreadCount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NotificationsController_markAllRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NotificationsController_markRead: {
     parameters: {
       query?: never;
       header?: never;
@@ -1710,280 +3335,53 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            today: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              listingId: string;
-              /** Format: uuid */
-              storeId: string;
-              quantity: number;
-              unitPrice: number;
-              totalAmount: number;
-              currency: string;
-              /** @enum {string} */
-              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-              pickupCode: string;
-              stripePaymentIntentId: string | null;
-              /** Format: date-time */
-              reservationExpiresAt: string | null;
-              /** Format: date-time */
-              createdAt: string;
-              /** Format: date-time */
-              collectedAt: string | null;
-              /** Format: date-time */
-              updatedAt: string;
-              listing: {
-                /** Format: uuid */
-                id: string;
-                title: string;
-                /** Format: uri */
-                imageUrl: string | null;
-                /** @enum {string} */
-                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-                /** Format: date-time */
-                pickupStart: string;
-                /** Format: date-time */
-                pickupEnd: string;
-              };
-              customer: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-              };
-            }[];
-            upcoming: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              listingId: string;
-              /** Format: uuid */
-              storeId: string;
-              quantity: number;
-              unitPrice: number;
-              totalAmount: number;
-              currency: string;
-              /** @enum {string} */
-              status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-              pickupCode: string;
-              stripePaymentIntentId: string | null;
-              /** Format: date-time */
-              reservationExpiresAt: string | null;
-              /** Format: date-time */
-              createdAt: string;
-              /** Format: date-time */
-              collectedAt: string | null;
-              /** Format: date-time */
-              updatedAt: string;
-              listing: {
-                /** Format: uuid */
-                id: string;
-                title: string;
-                /** Format: uri */
-                imageUrl: string | null;
-                /** @enum {string} */
-                category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-                /** Format: date-time */
-                pickupStart: string;
-                /** Format: date-time */
-                pickupEnd: string;
-              };
-              customer: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-              };
-            }[];
-          };
-        };
+        content?: never;
       };
     };
   };
-  MerchantOrdersController_collect: {
+  NotificationsController_registerDevice: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['CollectOrderDto'];
+        'application/json': components['schemas']['RegisterDeviceDto'];
       };
     };
     responses: {
-      200: {
+      204: {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            listingId: string;
-            /** Format: uuid */
-            storeId: string;
-            quantity: number;
-            unitPrice: number;
-            totalAmount: number;
-            currency: string;
-            /** @enum {string} */
-            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-            pickupCode: string;
-            stripePaymentIntentId: string | null;
-            /** Format: date-time */
-            reservationExpiresAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            collectedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-            listing: {
-              /** Format: uuid */
-              id: string;
-              title: string;
-              /** Format: uri */
-              imageUrl: string | null;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              /** Format: date-time */
-              pickupStart: string;
-              /** Format: date-time */
-              pickupEnd: string;
-            };
-            store: {
-              /** Format: uuid */
-              id: string;
-              name: string;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              address: string;
-              lat: number;
-              lng: number;
-              /** Format: uri */
-              logoUrl: string | null;
-              rating: number;
-              reviewCount: number;
-            };
-            review: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              orderId: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              storeId: string;
-              rating: number;
-              comment: string | null;
-              /** Format: date-time */
-              createdAt: string;
-            } | null;
-          };
-        };
+        content?: never;
       };
     };
   };
-  MerchantOrdersController_noShow: {
+  NotificationsController_unregisterDevice: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        id: string;
-      };
+      path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UnregisterDeviceDto'];
+      };
+    };
     responses: {
-      200: {
+      204: {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            customerId: string;
-            /** Format: uuid */
-            listingId: string;
-            /** Format: uuid */
-            storeId: string;
-            quantity: number;
-            unitPrice: number;
-            totalAmount: number;
-            currency: string;
-            /** @enum {string} */
-            status: 'RESERVED' | 'PAID' | 'COLLECTED' | 'CANCELLED' | 'REFUNDED' | 'NO_SHOW';
-            pickupCode: string;
-            stripePaymentIntentId: string | null;
-            /** Format: date-time */
-            reservationExpiresAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            collectedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-            listing: {
-              /** Format: uuid */
-              id: string;
-              title: string;
-              /** Format: uri */
-              imageUrl: string | null;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              /** Format: date-time */
-              pickupStart: string;
-              /** Format: date-time */
-              pickupEnd: string;
-            };
-            store: {
-              /** Format: uuid */
-              id: string;
-              name: string;
-              /** @enum {string} */
-              category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
-              address: string;
-              lat: number;
-              lng: number;
-              /** Format: uri */
-              logoUrl: string | null;
-              rating: number;
-              reviewCount: number;
-            };
-            review: {
-              /** Format: uuid */
-              id: string;
-              /** Format: uuid */
-              orderId: string;
-              /** Format: uuid */
-              customerId: string;
-              /** Format: uuid */
-              storeId: string;
-              rating: number;
-              comment: string | null;
-              /** Format: date-time */
-              createdAt: string;
-            } | null;
-          };
-        };
+        content?: never;
       };
     };
   };
-  PaymentsController_config: {
+  NotificationsController_getPreferences: {
     parameters: {
       query?: never;
       header?: never;
@@ -2000,69 +3398,18 @@ export interface operations {
       };
     };
   };
-  PaymentsController_onboarding: {
+  NotificationsController_updatePreferences: {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateNotificationPreferencesDto'];
       };
     };
-  };
-  PaymentsController_connectStatus: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PaymentsController_checkout: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PaymentsController_refund: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
     responses: {
       200: {
         headers: {

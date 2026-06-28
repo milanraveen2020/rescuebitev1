@@ -26,19 +26,23 @@ function fakePrisma() {
       findUnique: jest.fn(({ where }: { where: { id: string } }) =>
         Promise.resolve(refresh.get(where.id) ?? null),
       ),
-      update: jest.fn(({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
-        const row = { ...refresh.get(where.id), ...data } as Row;
-        refresh.set(where.id, row);
-        return Promise.resolve(row);
-      }),
-      updateMany: jest.fn(({ where, data }: { where: { id?: string }; data: Record<string, unknown> }) => {
-        for (const row of refresh.values()) {
-          if ((where.id === undefined || row.id === where.id) && row.revokedAt === null) {
-            Object.assign(row, data);
+      update: jest.fn(
+        ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
+          const row = { ...refresh.get(where.id), ...data } as Row;
+          refresh.set(where.id, row);
+          return Promise.resolve(row);
+        },
+      ),
+      updateMany: jest.fn(
+        ({ where, data }: { where: { id?: string }; data: Record<string, unknown> }) => {
+          for (const row of refresh.values()) {
+            if ((where.id === undefined || row.id === where.id) && row.revokedAt === null) {
+              Object.assign(row, data);
+            }
           }
-        }
-        return Promise.resolve({ count: 1 });
-      }),
+          return Promise.resolve({ count: 1 });
+        },
+      ),
     },
     verificationToken: {
       create: jest.fn(({ data }: { data: Record<string, unknown> }) => {
@@ -50,11 +54,13 @@ function fakePrisma() {
       findUnique: jest.fn(({ where }: { where: { id: string } }) =>
         Promise.resolve(verification.get(where.id) ?? null),
       ),
-      update: jest.fn(({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
-        const row = { ...verification.get(where.id), ...data } as Row;
-        verification.set(where.id, row);
-        return Promise.resolve(row);
-      }),
+      update: jest.fn(
+        ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
+          const row = { ...verification.get(where.id), ...data } as Row;
+          verification.set(where.id, row);
+          return Promise.resolve(row);
+        },
+      ),
     },
   };
 }
@@ -72,11 +78,7 @@ function makeService(jwt: Partial<JwtService> = {}) {
     ...jwt,
   } as unknown as JwtService;
   const config = { accessTokenTtl: '15m', refreshTokenTtlDays: 30 } as AppConfigService;
-  const service = new TokenService(
-    jwtService,
-    prisma as unknown as PrismaService,
-    config,
-  );
+  const service = new TokenService(jwtService, prisma as unknown as PrismaService, config);
   return { service, prisma, jwtService };
 }
 
@@ -105,7 +107,9 @@ describe('TokenService access tokens', () => {
     const { service } = makeService({
       verifyAsync: jest.fn().mockRejectedValue(new Error('bad signature')),
     });
-    await expect(service.verifyAccessToken('garbage')).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(service.verifyAccessToken('garbage')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
   });
 });
 
@@ -140,9 +144,9 @@ describe('TokenService verification tokens', () => {
     const { service } = makeService();
     const raw = await service.createVerificationToken('u1', TokenType.EMAIL_VERIFICATION, 60_000);
 
-    await expect(
-      service.consumeVerificationToken(raw, TokenType.EMAIL_VERIFICATION),
-    ).resolves.toBe('u1');
+    await expect(service.consumeVerificationToken(raw, TokenType.EMAIL_VERIFICATION)).resolves.toBe(
+      'u1',
+    );
     await expect(
       service.consumeVerificationToken(raw, TokenType.EMAIL_VERIFICATION),
     ).rejects.toBeInstanceOf(UnauthorizedException);

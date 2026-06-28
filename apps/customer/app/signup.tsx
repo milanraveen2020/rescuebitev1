@@ -38,17 +38,45 @@ export default function SignupScreen() {
 
   return (
     <Screen edges={['top', 'bottom']}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
+      >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Join RescueBite</Text>
           <Text style={styles.subtitle}>Save food, save money, every day.</Text>
 
           <FormError message={error} />
           <Input label="Name" value={name} onChangeText={setName} placeholder="Your name" />
-          <Input label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" placeholder="you@example.com" />
-          <Input label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password-new" placeholder="At least 8 characters" />
-          <Button label="Create account" onPress={() => void onSubmit()} loading={submitting} block />
-          <Button label="I already have an account" variant="ghost" onPress={() => router.replace('/login')} block />
+          <Input
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            placeholder="you@example.com"
+          />
+          <Input
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password-new"
+            placeholder="At least 8 characters"
+          />
+          <Button
+            label="Create account"
+            onPress={() => void onSubmit()}
+            loading={submitting}
+            block
+          />
+          <Button
+            label="I already have an account"
+            variant="ghost"
+            onPress={() => router.replace('/login')}
+            block
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

@@ -137,7 +137,16 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[2],
   },
   brand: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
-  toggle: { flexDirection: 'row', alignItems: 'center', gap: spacing[1], backgroundColor: colors.neutral[100], borderRadius: radii.pill, paddingHorizontal: spacing[3], height: 40, justifyContent: 'center' },
+  toggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
+    backgroundColor: colors.neutral[100],
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing[3],
+    height: 40,
+    justifyContent: 'center',
+  },
   toggleText: { fontSize: typography.fontSize.sm, fontWeight: '600', color: colors.neutral[700] },
   searchWrap: {
     flexDirection: 'row',

@@ -59,7 +59,11 @@ export default function FavoritesScreen() {
           contentContainerStyle={styles.content}
           ItemSeparatorComponent={() => <View style={{ height: spacing[4] }} />}
           refreshControl={
-            <RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.brand[600]} />
+            <RefreshControl
+              refreshing={feed.isRefetching}
+              onRefresh={() => void feed.refetch()}
+              tintColor={colors.brand[600]}
+            />
           }
           ListEmptyComponent={
             <EmptyState

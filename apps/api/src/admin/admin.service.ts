@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ListingStatus,
   OrderStatus,
@@ -37,6 +38,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { SettingsService } from '../common/settings/settings.service';
 import { toOffsetFindArgs, toOffsetPage, type OffsetPage } from '../common/pagination/pagination';
 import { PaymentsService } from '../payments/payments.service';
+import { StoreEvents, type StoreEventPayload } from '../events/order-events';
 import { AuditLogService } from './audit-log.service';
 
 const PAID_OR_COLLECTED: OrderStatus[] = [OrderStatus.PAID, OrderStatus.COLLECTED];
@@ -52,6 +54,7 @@ export class AdminService {
     private readonly settings: SettingsService,
     private readonly payments: PaymentsService,
     private readonly audit: AuditLogService,
+    private readonly events: EventEmitter2,
   ) {}
 
   // --- Overview ------------------------------------------------------------
@@ -223,7 +226,7 @@ export class AdminService {
   }
 
   async approveStore(adminId: string, id: string): Promise<AdminStore> {
-    await this.requireStore(id);
+    const store = await this.requireStore(id);
     await this.prisma.store.update({ where: { id }, data: { status: StoreStatus.APPROVED } });
     await this.audit.record({
       actorId: adminId,
@@ -231,11 +234,12 @@ export class AdminService {
       entity: 'Store',
       entityId: id,
     });
+    this.emitStore(StoreEvents.Approved, { storeId: id, ownerId: store.ownerId });
     return this.getStore(id);
   }
 
   async rejectStore(adminId: string, id: string, input: RejectStoreInput): Promise<AdminStore> {
-    await this.requireStore(id);
+    const store = await this.requireStore(id);
     await this.prisma.store.update({ where: { id }, data: { status: StoreStatus.REJECTED } });
     await this.audit.record({
       actorId: adminId,
@@ -244,10 +248,24 @@ export class AdminService {
       entityId: id,
       metadata: { reason: input.reason },
     });
+    this.emitStore(StoreEvents.Rejected, {
+      storeId: id,
+      ownerId: store.ownerId,
+      reason: input.reason,
+    });
     return this.getStore(id);
   }
 
+  private emitStore(event: string, payload: StoreEventPayload): void {
+    this.events.emit(event, payload);
+  }
+
   async bulkApproveStores(adminId: string, ids: string[]): Promise<BulkResult> {
+    // Capture which stores actually transition (were PENDING) so we notify exactly them.
+    const pending = await this.prisma.store.findMany({
+      where: { id: { in: ids }, status: StoreStatus.PENDING },
+      select: { id: true, ownerId: true },
+    });
     const result = await this.prisma.store.updateMany({
       where: { id: { in: ids }, status: StoreStatus.PENDING },
       data: { status: StoreStatus.APPROVED },
@@ -259,12 +277,19 @@ export class AdminService {
       entityId: ids.join(','),
       metadata: { ids, affected: result.count },
     });
+    for (const store of pending) {
+      this.emitStore(StoreEvents.Approved, { storeId: store.id, ownerId: store.ownerId });
+    }
     return { affected: result.count };
   }
 
-  private async requireStore(id: string): Promise<void> {
-    const exists = await this.prisma.store.findUnique({ where: { id }, select: { id: true } });
-    if (!exists) throw new NotFoundException('Store not found.');
+  private async requireStore(id: string): Promise<{ id: string; ownerId: string }> {
+    const store = await this.prisma.store.findUnique({
+      where: { id },
+      select: { id: true, ownerId: true },
+    });
+    if (!store) throw new NotFoundException('Store not found.');
+    return store;
   }
 
   // --- Listings ------------------------------------------------------------

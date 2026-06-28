@@ -1,5 +1,17 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { ListingStatus, Prisma, StoreStatus, type Listing as DbListing, type Store } from '@prisma/client';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  ListingStatus,
+  Prisma,
+  StoreStatus,
+  type Listing as DbListing,
+  type Store,
+} from '@prisma/client';
 import type {
   CreateListingInput,
   Listing,
@@ -11,12 +23,16 @@ import type {
   UpdateListingInput,
 } from '@rescuebite/types';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ListingEvents, type ListingEventPayload } from '../events/order-events';
 
 type ListingWithStore = DbListing & { store: Store };
 
 @Injectable()
 export class ListingsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventEmitter2,
+  ) {}
 
   // --- Merchant CRUD (scoped to the caller's own store) --------------------
 
@@ -41,6 +57,7 @@ export class ListingsService {
       },
       include: { store: true },
     });
+    if (listing.status === ListingStatus.ACTIVE) this.emitPublished(listing);
     return toListing(listing);
   }
 
@@ -82,7 +99,17 @@ export class ListingsService {
       },
       include: { store: true },
     });
+    // Emit only on the DRAFT/expired → ACTIVE transition, so re-saving an already
+    // live listing doesn't re-notify followers.
+    if (existing.status !== ListingStatus.ACTIVE && updated.status === ListingStatus.ACTIVE) {
+      this.emitPublished(updated);
+    }
     return toListing(updated);
+  }
+
+  private emitPublished(listing: ListingWithStore): void {
+    const payload: ListingEventPayload = { listingId: listing.id, storeId: listing.storeId };
+    this.events.emit(ListingEvents.Published, payload);
   }
 
   async remove(ownerId: string, listingId: string): Promise<void> {
@@ -198,7 +225,10 @@ export class ListingsService {
       data: { status: ListingStatus.SOLD_OUT },
     });
     const expired = await this.prisma.listing.updateMany({
-      where: { status: { in: [ListingStatus.ACTIVE, ListingStatus.SOLD_OUT] }, pickupEnd: { lt: now } },
+      where: {
+        status: { in: [ListingStatus.ACTIVE, ListingStatus.SOLD_OUT] },
+        pickupEnd: { lt: now },
+      },
       data: { status: ListingStatus.EXPIRED },
     });
     return { expired: expired.count, soldOut: soldOut.count };

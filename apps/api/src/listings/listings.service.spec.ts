@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ListingStatus, StoreStatus, type FoodCategory } from '@prisma/client';
 import type { NearbyQuery } from '@rescuebite/types';
 import { PrismaService } from '../common/prisma/prisma.service';
@@ -90,7 +91,7 @@ describe('ListingsService (integration)', () => {
   beforeAll(async () => {
     prisma = new PrismaService();
     await prisma.$connect();
-    service = new ListingsService(prisma);
+    service = new ListingsService(prisma, new EventEmitter2());
     await cleanup();
 
     await makeStore('near', 10, 10);

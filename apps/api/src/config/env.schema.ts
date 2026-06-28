@@ -8,9 +8,12 @@ import { z } from 'zod';
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
-  DATABASE_URL: z.string().url().refine((u) => u.startsWith('postgres'), {
-    message: 'DATABASE_URL must be a PostgreSQL connection string',
-  }),
+  DATABASE_URL: z
+    .string()
+    .url()
+    .refine((u) => u.startsWith('postgres'), {
+      message: 'DATABASE_URL must be a PostgreSQL connection string',
+    }),
   /** Comma-separated list of allowed CORS origins; parsed into a string array. */
   CORS_ORIGINS: z
     .string()
@@ -50,6 +53,14 @@ export const EnvSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   /** Platform commission in basis points (1000 = 10%). */
   PLATFORM_FEE_BPS: z.coerce.number().int().min(0).max(10000).default(1000),
+
+  // Email (Resend). When unset, emails are logged to the console instead of sent,
+  // so the flow is exercisable in local dev without an API key.
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).default('RescueBite <hello@rescuebite.com>'),
+
+  // Expo push. When unset, push notifications are logged instead of sent.
+  EXPO_ACCESS_TOKEN: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

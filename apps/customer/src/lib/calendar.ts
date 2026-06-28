@@ -18,9 +18,7 @@ export async function addPickupToCalendar(params: {
   const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
   const writable = calendars.find((c) => c.allowsModifications);
   const calendarId =
-    Platform.OS === 'ios'
-      ? (await Calendar.getDefaultCalendarAsync()).id
-      : writable?.id;
+    Platform.OS === 'ios' ? (await Calendar.getDefaultCalendarAsync()).id : writable?.id;
   if (!calendarId) return false;
 
   await Calendar.createEventAsync(calendarId, {

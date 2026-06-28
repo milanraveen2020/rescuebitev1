@@ -17,6 +17,27 @@ export const ReviewEvents = {
   Created: 'review.created',
 } as const;
 
+export const StoreEvents = {
+  Approved: 'store.approved',
+  Rejected: 'store.rejected',
+} as const;
+
+export const ListingEvents = {
+  /** A listing became visible to customers (created or updated into ACTIVE). */
+  Published: 'listing.published',
+} as const;
+
+export interface StoreEventPayload {
+  storeId: string;
+  ownerId: string;
+  reason?: string;
+}
+
+export interface ListingEventPayload {
+  listingId: string;
+  storeId: string;
+}
+
 export interface OrderEventPayload {
   orderId: string;
   customerId: string;

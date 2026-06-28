@@ -70,6 +70,18 @@ export class AppConfigService {
     return this.config.get('PLATFORM_FEE_BPS', { infer: true });
   }
 
+  get resendApiKey(): string | undefined {
+    return this.config.get('RESEND_API_KEY', { infer: true });
+  }
+
+  get emailFrom(): string {
+    return this.config.get('EMAIL_FROM', { infer: true });
+  }
+
+  get expoAccessToken(): string | undefined {
+    return this.config.get('EXPO_ACCESS_TOKEN', { infer: true });
+  }
+
   get s3(): {
     bucket?: string;
     region: string;

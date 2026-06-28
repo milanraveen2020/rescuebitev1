@@ -37,16 +37,39 @@ export default function LoginScreen() {
 
   return (
     <Screen edges={['top', 'bottom']}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
+      >
         <View style={styles.content}>
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Log in to reserve your surprise bags.</Text>
 
           <FormError message={error} />
-          <Input label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" placeholder="you@example.com" />
-          <Input label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" placeholder="Your password" />
+          <Input
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            placeholder="you@example.com"
+          />
+          <Input
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+            placeholder="Your password"
+          />
           <Button label="Log in" onPress={() => void onSubmit()} loading={submitting} block />
-          <Button label="Create an account instead" variant="ghost" onPress={() => router.replace('/signup')} block />
+          <Button
+            label="Create an account instead"
+            variant="ghost"
+            onPress={() => router.replace('/signup')}
+            block
+          />
         </View>
       </KeyboardAvoidingView>
     </Screen>

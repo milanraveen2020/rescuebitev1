@@ -62,14 +62,22 @@ enum OrderStatus {
 enum NotificationType {
   ORDER_RESERVED
   ORDER_PAID
+  ORDER_REFUNDED
   PICKUP_REMINDER
   ORDER_COLLECTED
   ORDER_CANCELLED
+  NEW_ORDER
   STORE_APPROVED
   STORE_REJECTED
   NEW_LISTING
   REVIEW_REQUEST
   SYSTEM
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
 }
 
 // ---------------------------------------------------------------------------
@@ -89,6 +97,8 @@ model User {
   // MERCHANT_STAFF members belong to one store (owners use ownedStores instead).
   staffStoreId    String?
   staffStore      Store?     @relation("StoreStaff", fields: [staffStoreId], references: [id], onDelete: SetNull)
+  // Per-channel/category notification opt-outs; null means platform defaults.
+  notificationPrefs Json?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
@@ -100,6 +110,7 @@ model User {
   auditLogs          AuditLog[]          @relation("AuditActor")
   refreshTokens      RefreshToken[]
   verificationTokens VerificationToken[]
+  deviceTokens       DeviceToken[]
 
   @@index([role])
   @@index([staffStoreId])
@@ -264,10 +275,26 @@ model Notification {
   title     String
   body      String
   data      Json?
+  // Deterministic per-event key so re-delivered events don't duplicate rows.
+  dedupeKey String?          @unique
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
   @@index([userId, readAt])
+}
+
+/// An Expo push token registered for a user's device. Tokens are unique; a token
+/// re-registering for a new user is reassigned (one device = one user).
+model DeviceToken {
+  id        String         @id @default(uuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String         @unique
+  platform  DevicePlatform
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
 }
 
 model Favorite {

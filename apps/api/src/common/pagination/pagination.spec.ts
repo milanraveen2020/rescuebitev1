@@ -1,9 +1,4 @@
-import {
-  toCursorFindArgs,
-  toCursorPage,
-  toOffsetFindArgs,
-  toOffsetPage,
-} from './pagination';
+import { toCursorFindArgs, toCursorPage, toOffsetFindArgs, toOffsetPage } from './pagination';
 
 describe('cursor pagination', () => {
   it('over-fetches by one and has no cursor on the first page', () => {

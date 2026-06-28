@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { AuthResponse, LoginInput, RegisterCustomerInput, User } from '@rescuebite/types';
 import { authApi } from '../api/endpoints';
 import { session } from '../api/session';
+import { registerForPush, unregisterPush } from '../lib/push';
 import { clearStoredRefreshToken, getStoredRefreshToken, setStoredRefreshToken } from './storage';
 
 type Status = 'loading' | 'authenticated' | 'guest';
@@ -21,6 +22,8 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Status>('loading');
   const [user, setUser] = useState<User | null>(null);
+  // The Expo push token registered for this session, so we can unregister on sign-out.
+  const pushTokenRef = useRef<string | null>(null);
 
   const applySession = useCallback(async (auth: AuthResponse) => {
     session.setAccessToken(auth.accessToken);
@@ -30,6 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUser(auth.user);
     setStatus('authenticated');
+    // Register for push in the background — never block sign-in on it.
+    void registerForPush().then((token) => {
+      pushTokenRef.current = token;
+    });
   }, []);
 
   const clear = useCallback(async () => {
@@ -80,6 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applySession],
   );
   const signOut = useCallback(async () => {
+    if (pushTokenRef.current) {
+      await unregisterPush(pushTokenRef.current);
+      pushTokenRef.current = null;
+    }
     const token = session.getRefreshToken();
     if (token) await authApi.logout(token).catch(() => undefined);
     await clear();

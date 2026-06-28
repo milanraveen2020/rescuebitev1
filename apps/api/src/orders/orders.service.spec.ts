@@ -54,11 +54,7 @@ describe('OrdersService (integration)', () => {
     prisma = new PrismaService();
     await prisma.$connect();
     events = new EventEmitter2();
-    service = new OrdersService(
-      prisma,
-      { reservationHoldMinutes: 15 } as AppConfigService,
-      events,
-    );
+    service = new OrdersService(prisma, { reservationHoldMinutes: 15 } as AppConfigService, events);
     await cleanup();
     const owner = await prisma.user.create({
       data: { email: OWNER_EMAIL, passwordHash: 'x', name: 'Owner', role: 'MERCHANT_OWNER' },
@@ -96,7 +92,9 @@ describe('OrdersService (integration)', () => {
       const listingId = await makeListing(STOCK);
 
       const results = await Promise.allSettled(
-        Array.from({ length: ATTEMPTS }, () => service.reserve(customerId, { listingId, quantity: 1 })),
+        Array.from({ length: ATTEMPTS }, () =>
+          service.reserve(customerId, { listingId, quantity: 1 }),
+        ),
       );
       const succeeded = results.filter((r) => r.status === 'fulfilled').length;
 
@@ -202,17 +200,17 @@ describe('OrdersService (integration)', () => {
       const review = await service.review(customerId, orderId, { rating: 5, comment: 'Great!' });
       expect(review.rating).toBe(5);
 
-      await expect(
-        service.review(customerId, orderId, { rating: 4 }),
-      ).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.review(customerId, orderId, { rating: 4 })).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
 
     it('rejects reviewing a non-collected order', async () => {
       const listingId = await makeListing(1);
       const reserved = await service.reserve(customerId, { listingId, quantity: 1 });
-      await expect(
-        service.review(customerId, reserved.id, { rating: 5 }),
-      ).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.review(customerId, reserved.id, { rating: 5 })).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
   });
 

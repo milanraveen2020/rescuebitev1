@@ -54,7 +54,8 @@ export class UploadService {
       new PutObjectCommand({ Bucket: s3.bucket, Key: key, ContentType: input.contentType }),
       { expiresIn: EXPIRES_IN },
     );
-    const base = s3.publicUrl ?? `${s3.endpoint ?? `https://${s3.bucket}.s3.${s3.region}.amazonaws.com`}`;
+    const base =
+      s3.publicUrl ?? `${s3.endpoint ?? `https://${s3.bucket}.s3.${s3.region}.amazonaws.com`}`;
     return {
       uploadUrl,
       fileUrl: `${base.replace(/\/$/, '')}/${key}`,

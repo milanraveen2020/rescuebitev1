@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
@@ -89,7 +80,10 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
-    const session = await this.auth.refresh(this.readRefreshToken(req, dto), req.headers['user-agent']);
+    const session = await this.auth.refresh(
+      this.readRefreshToken(req, dto),
+      req.headers['user-agent'],
+    );
     return this.respondWithSession(session, req, res);
   }
 
@@ -153,11 +147,7 @@ export class AuthController {
     return fromCookie ?? fromBody;
   }
 
-  private respondWithSession(
-    session: SessionResult,
-    req: Request,
-    res: Response,
-  ): AuthResponse {
+  private respondWithSession(session: SessionResult, req: Request, res: Response): AuthResponse {
     this.setRefreshCookie(res, session.refreshToken);
     // Mobile clients can't use httpOnly cookies, so hand them the token to store securely.
     if (req.headers[CLIENT_TYPE_HEADER] === 'mobile') {

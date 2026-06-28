@@ -91,11 +91,7 @@ export class TokenService {
   }
 
   /** Create a single-use verification/reset token; returns the raw `"<id>.<secret>"`. */
-  async createVerificationToken(
-    userId: string,
-    type: TokenType,
-    ttlMs: number,
-  ): Promise<string> {
+  async createVerificationToken(userId: string, type: TokenType, ttlMs: number): Promise<string> {
     const secret = randomBytes(32).toString('hex');
     const tokenHash = await argon2.hash(secret, { type: argon2.argon2id });
     const record = await this.prisma.verificationToken.create({

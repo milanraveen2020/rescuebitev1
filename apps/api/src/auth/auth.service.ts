@@ -13,7 +13,7 @@ import type {
   User as PublicUser,
 } from '@rescuebite/types';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { EmailService } from './email.service';
+import { EmailService } from '../common/email/email.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
 

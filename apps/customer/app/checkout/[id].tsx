@@ -22,7 +22,12 @@ export default function CheckoutScreen() {
   const [quantity, setQuantity] = useState(1);
   const [busy, setBusy] = useState(false);
 
-  if (isLoading) return <Screen><ListingsSkeleton count={1} /></Screen>;
+  if (isLoading)
+    return (
+      <Screen>
+        <ListingsSkeleton count={1} />
+      </Screen>
+    );
   if (isError || !listing) {
     return (
       <Screen>
@@ -88,14 +93,25 @@ export default function CheckoutScreen() {
           <View style={styles.qtyRow}>
             <Text style={styles.qtyLabel}>Quantity</Text>
             <View style={styles.stepper}>
-              <Stepper label="−" onPress={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1} />
+              <Stepper
+                label="−"
+                onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+              />
               <Text style={styles.qtyValue}>{quantity}</Text>
-              <Stepper label="+" onPress={() => setQuantity((q) => Math.min(maxQty, q + 1))} disabled={quantity >= maxQty} />
+              <Stepper
+                label="+"
+                onPress={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                disabled={quantity >= maxQty}
+              />
             </View>
           </View>
 
           <View style={styles.divider} />
-          <SummaryRow label={`${formatPrice(listing.price, listing.currency)} × ${quantity}`} value={formatPrice(total, listing.currency)} />
+          <SummaryRow
+            label={`${formatPrice(listing.price, listing.currency)} × ${quantity}`}
+            value={formatPrice(total, listing.currency)}
+          />
           <SummaryRow label="Total" value={formatPrice(total, listing.currency)} emphasis />
         </Card>
 
@@ -118,15 +134,37 @@ export default function CheckoutScreen() {
   );
 }
 
-function Stepper({ label, onPress, disabled }: { label: string; onPress: () => void; disabled: boolean }) {
+function Stepper({
+  label,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled: boolean;
+}) {
   return (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityLabel={label === '+' ? 'Increase quantity' : 'Decrease quantity'} style={[styles.stepBtn, disabled && styles.stepBtnDisabled]}>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label === '+' ? 'Increase quantity' : 'Decrease quantity'}
+      style={[styles.stepBtn, disabled && styles.stepBtnDisabled]}
+    >
       <Text style={styles.stepText}>{label}</Text>
     </Pressable>
   );
 }
 
-function SummaryRow({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
+function SummaryRow({
+  label,
+  value,
+  emphasis,
+}: {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+}) {
   return (
     <View style={styles.summaryRow}>
       <Text style={[styles.summaryLabel, emphasis && styles.summaryEmphasis]}>{label}</Text>
@@ -143,8 +181,20 @@ const styles = StyleSheet.create({
   qtyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   qtyLabel: { fontSize: typography.fontSize.base, color: colors.neutral[700] },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
-  qtyValue: { fontSize: typography.fontSize.lg, fontWeight: '700', minWidth: 24, textAlign: 'center' },
-  stepBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.brand[50], alignItems: 'center', justifyContent: 'center' },
+  qtyValue: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: '700',
+    minWidth: 24,
+    textAlign: 'center',
+  },
+  stepBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.brand[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   stepBtnDisabled: { opacity: 0.4 },
   stepText: { fontSize: 22, color: colors.brand[700], fontWeight: '700' },
   divider: { height: 1, backgroundColor: colors.neutral[200] },
@@ -153,5 +203,10 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: typography.fontSize.base, color: colors.neutral[800] },
   summaryEmphasis: { fontWeight: '700', color: colors.neutral[900] },
   note: { fontSize: typography.fontSize.sm, color: colors.neutral[500] },
-  footer: { padding: spacing[4], borderTopWidth: 1, borderTopColor: colors.neutral[200], backgroundColor: colors.neutral[0] },
+  footer: {
+    padding: spacing[4],
+    borderTopWidth: 1,
+    borderTopColor: colors.neutral[200],
+    backgroundColor: colors.neutral[0],
+  },
 });

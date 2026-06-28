@@ -48,19 +48,33 @@ export default function OrdersScreen() {
       ) : (
         <ScrollView
           contentContainerStyle={styles.content}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} tintColor={colors.brand[600]} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={() => void refetch()}
+              tintColor={colors.brand[600]}
+            />
+          }
         >
           {data.active.length > 0 ? (
             <Section title="Active">
               {data.active.map((order) => (
-                <OrderRow key={order.id} order={order} onPress={() => router.push(`/order/${order.id}`)} />
+                <OrderRow
+                  key={order.id}
+                  order={order}
+                  onPress={() => router.push(`/order/${order.id}`)}
+                />
               ))}
             </Section>
           ) : null}
           {data.past.length > 0 ? (
             <Section title="Past">
               {data.past.map((order) => (
-                <OrderRow key={order.id} order={order} onPress={() => router.push(`/order/${order.id}`)} />
+                <OrderRow
+                  key={order.id}
+                  order={order}
+                  onPress={() => router.push(`/order/${order.id}`)}
+                />
               ))}
             </Section>
           ) : null}
@@ -106,12 +120,18 @@ function OrderRow({ order, onPress }: { order: OrderDetail; onPress: () => void 
       <Image source={order.listing.imageUrl ?? undefined} style={styles.thumb} contentFit="cover" />
       <View style={styles.rowBody}>
         <View style={styles.rowTop}>
-          <Text style={styles.store} numberOfLines={1}>{order.store.name}</Text>
+          <Text style={styles.store} numberOfLines={1}>
+            {order.store.name}
+          </Text>
           <Badge label={order.status} tone={STATUS_TONE[order.status]} />
         </View>
-        <Text style={styles.title} numberOfLines={1}>{order.listing.title}</Text>
+        <Text style={styles.title} numberOfLines={1}>
+          {order.listing.title}
+        </Text>
         {active ? (
-          <Text style={styles.code}>Code {order.pickupCode} · pickup {countdown}</Text>
+          <Text style={styles.code}>
+            Code {order.pickupCode} · pickup {countdown}
+          </Text>
         ) : canReview ? (
           <Text style={styles.rateCta}>★ Rate your bag</Text>
         ) : null}
@@ -127,10 +147,22 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
   section: { gap: spacing[3] },
   sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: '600', color: colors.neutral[900] },
-  row: { flexDirection: 'row', backgroundColor: colors.neutral[0], borderRadius: radii.lg, borderWidth: 1, borderColor: colors.neutral[200], overflow: 'hidden' },
+  row: {
+    flexDirection: 'row',
+    backgroundColor: colors.neutral[0],
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    overflow: 'hidden',
+  },
   thumb: { width: 88, height: 88, backgroundColor: colors.neutral[100] },
   rowBody: { flex: 1, padding: spacing[3], gap: spacing[1], justifyContent: 'center' },
-  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing[2] },
+  rowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing[2],
+  },
   store: { fontSize: typography.fontSize.sm, color: colors.neutral[500], flex: 1 },
   title: { fontSize: typography.fontSize.base, fontWeight: '600', color: colors.neutral[900] },
   code: { fontSize: typography.fontSize.sm, color: colors.brand[700], fontWeight: '600' },

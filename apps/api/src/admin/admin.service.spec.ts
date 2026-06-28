@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ListingStatus, OrderStatus, StoreStatus, UserRole, UserStatus } from '@prisma/client';
 import type { AppConfigService } from '../config/app-config.service';
 import type { PaymentsService } from '../payments/payments.service';
@@ -44,7 +45,7 @@ describe('AdminService (integration)', () => {
     const config = { platformFeeBps: 1000 } as AppConfigService;
     const settings = new SettingsService(prisma, config);
     audit = new AuditLogService(prisma);
-    service = new AdminService(prisma, settings, {} as PaymentsService, audit);
+    service = new AdminService(prisma, settings, {} as PaymentsService, audit, new EventEmitter2());
     await cleanup();
 
     const admin = await prisma.user.create({

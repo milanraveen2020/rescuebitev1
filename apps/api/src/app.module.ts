@@ -6,6 +6,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { SettingsModule } from './common/settings/settings.module';
+import { EmailModule } from './common/email/email.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/logging/logging.interceptor';
 import { ZodValidationPipe } from './common/validation/zod-validation.pipe';
@@ -15,6 +16,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { AdminModule } from './admin/admin.module';
 import { ListingsModule } from './listings/listings.module';
 import { MerchantModule } from './merchant/merchant.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { HealthModule } from './health/health.module';
@@ -29,6 +31,7 @@ import { HealthModule } from './health/health.module';
     AppConfigModule,
     PrismaModule,
     SettingsModule,
+    EmailModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
@@ -36,6 +39,7 @@ import { HealthModule } from './health/health.module';
     AdminModule,
     ListingsModule,
     MerchantModule,
+    NotificationsModule,
     OrdersModule,
     PaymentsModule,
     HealthModule,

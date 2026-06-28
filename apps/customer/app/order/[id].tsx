@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Badge, Button, Card, PickupWindowChip, RatingStars, useToast } from '@rescuebite/ui/native';
+import {
+  Badge,
+  Button,
+  Card,
+  PickupWindowChip,
+  RatingStars,
+  useToast,
+} from '@rescuebite/ui/native';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { useCancelOrder, useOrder, useReviewOrder } from '../../src/api/queries';
 import { Screen } from '../../src/components/Screen';
@@ -30,9 +37,18 @@ export default function OrderScreen() {
 
   const countdown = useCountdown(order?.listing.pickupStart ?? new Date().toISOString());
 
-  if (isLoading) return <Screen><ListingsSkeleton count={1} /></Screen>;
+  if (isLoading)
+    return (
+      <Screen>
+        <ListingsSkeleton count={1} />
+      </Screen>
+    );
   if (isError || !order) {
-    return <Screen><ErrorView message="We couldn’t load this order." onRetry={() => void refetch()} /></Screen>;
+    return (
+      <Screen>
+        <ErrorView message="We couldn’t load this order." onRetry={() => void refetch()} />
+      </Screen>
+    );
   }
 
   const showCode = order.status === 'RESERVED' || order.status === 'PAID';
@@ -53,7 +69,10 @@ export default function OrderScreen() {
   }
 
   async function onCancel() {
-    await cancel.mutateAsync(id).then(() => toast('Reservation cancelled', 'neutral')).catch(() => toast('Could not cancel', 'error'));
+    await cancel
+      .mutateAsync(id)
+      .then(() => toast('Reservation cancelled', 'neutral'))
+      .catch(() => toast('Could not cancel', 'error'));
   }
 
   async function onSubmitReview() {
@@ -73,7 +92,11 @@ export default function OrderScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.statusRow}>
           <Badge label={order.status} tone={STATUS_TONE[order.status]} />
-          {showCode ? <Text style={styles.countdown}>Pickup {windowState === 'open' ? 'open now' : countdown}</Text> : null}
+          {showCode ? (
+            <Text style={styles.countdown}>
+              Pickup {windowState === 'open' ? 'open now' : countdown}
+            </Text>
+          ) : null}
         </View>
 
         {showCode ? (
@@ -81,14 +104,21 @@ export default function OrderScreen() {
             <Text style={styles.codeLabel}>Show this code at pickup</Text>
             <Text style={styles.code}>{order.pickupCode}</Text>
             <PickupWindowChip start={order.listing.pickupStart} end={order.listing.pickupEnd} />
-            <Button label="Add to calendar" variant="secondary" onPress={() => void onAddToCalendar()} block />
+            <Button
+              label="Add to calendar"
+              variant="secondary"
+              onPress={() => void onAddToCalendar()}
+              block
+            />
           </Card>
         ) : null}
 
         <Card style={styles.infoCard}>
           <Text style={styles.store}>{order.store.name}</Text>
           <Text style={styles.title}>{order.listing.title}</Text>
-          <Text style={styles.meta}>Quantity {order.quantity} · {order.store.address}</Text>
+          <Text style={styles.meta}>
+            Quantity {order.quantity} · {order.store.address}
+          </Text>
         </Card>
 
         {canReview ? (
@@ -103,7 +133,12 @@ export default function OrderScreen() {
               style={styles.commentInput}
               multiline
             />
-            <Button label="Submit review" onPress={() => void onSubmitReview()} loading={review.isPending} block />
+            <Button
+              label="Submit review"
+              onPress={() => void onSubmitReview()}
+              loading={review.isPending}
+              block
+            />
           </Card>
         ) : null}
 
@@ -116,9 +151,20 @@ export default function OrderScreen() {
         ) : null}
 
         {canCancel ? (
-          <Button label="Cancel reservation" variant="ghost" onPress={() => void onCancel()} loading={cancel.isPending} block />
+          <Button
+            label="Cancel reservation"
+            variant="ghost"
+            onPress={() => void onCancel()}
+            loading={cancel.isPending}
+            block
+          />
         ) : null}
-        <Button label="Back to discover" variant="ghost" onPress={() => router.replace('/')} block />
+        <Button
+          label="Back to discover"
+          variant="ghost"
+          onPress={() => router.replace('/')}
+          block
+        />
       </ScrollView>
     </Screen>
   );
@@ -136,7 +182,11 @@ const styles = StyleSheet.create({
   store: { fontSize: typography.fontSize.sm, color: colors.neutral[500] },
   title: { fontSize: typography.fontSize.lg, fontWeight: '700', color: colors.neutral[900] },
   meta: { fontSize: typography.fontSize.sm, color: colors.neutral[600] },
-  sectionTitle: { fontSize: typography.fontSize.base, fontWeight: '600', color: colors.neutral[900] },
+  sectionTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    color: colors.neutral[900],
+  },
   commentInput: {
     minHeight: 72,
     borderWidth: 1,

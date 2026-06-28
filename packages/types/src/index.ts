@@ -5,6 +5,7 @@ export * from './admin.js';
 export * from './auth.js';
 export * from './listings.js';
 export * from './merchant.js';
+export * from './notifications.js';
 export * from './orders.js';
 export * from './payments.js';
 export * from './pagination.js';

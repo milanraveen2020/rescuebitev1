@@ -41,9 +41,11 @@ export type OrderStatus = z.infer<typeof OrderStatusSchema>;
 export const NotificationTypeSchema = z.enum([
   'ORDER_RESERVED',
   'ORDER_PAID',
+  'ORDER_REFUNDED',
   'PICKUP_REMINDER',
   'ORDER_COLLECTED',
   'ORDER_CANCELLED',
+  'NEW_ORDER',
   'STORE_APPROVED',
   'STORE_REJECTED',
   'NEW_LISTING',
@@ -51,3 +53,6 @@ export const NotificationTypeSchema = z.enum([
   'SYSTEM',
 ]);
 export type NotificationType = z.infer<typeof NotificationTypeSchema>;
+
+export const DevicePlatformSchema = z.enum(['IOS', 'ANDROID', 'WEB']);
+export type DevicePlatform = z.infer<typeof DevicePlatformSchema>;

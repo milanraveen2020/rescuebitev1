@@ -32,19 +32,31 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Discover', tabBarIcon: ({ color, size }) => <Compass color={color} size={size} /> }}
+        options={{
+          title: 'Discover',
+          tabBarIcon: ({ color, size }) => <Compass color={color} size={size} />,
+        }}
       />
       <Tabs.Screen
         name="orders"
-        options={{ title: 'Orders', tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} /> }}
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} />,
+        }}
       />
       <Tabs.Screen
         name="favorites"
-        options={{ title: 'Favorites', tabBarIcon: ({ color, size }) => <Heart color={color} size={size} /> }}
+        options={{
+          title: 'Favorites',
+          tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
+        }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }}
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+        }}
       />
     </Tabs>
   );

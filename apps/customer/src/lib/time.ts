@@ -18,7 +18,10 @@ export function useCountdown(targetIso: string): string {
   return `in ${Math.floor(hours / 24)}d`;
 }
 
-export function pickupWindowState(startIso: string, endIso: string): 'upcoming' | 'open' | 'closed' {
+export function pickupWindowState(
+  startIso: string,
+  endIso: string,
+): 'upcoming' | 'open' | 'closed' {
   const now = Date.now();
   if (now < new Date(startIso).getTime()) return 'upcoming';
   if (now > new Date(endIso).getTime()) return 'closed';

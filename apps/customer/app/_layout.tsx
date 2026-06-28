@@ -40,6 +40,7 @@ export default function RootLayout() {
                   <Stack.Screen name="checkout/[id]" />
                   <Stack.Screen name="order/[id]" />
                   <Stack.Screen name="notifications" />
+                  <Stack.Screen name="notification-settings" />
                   <Stack.Screen name="login" options={{ presentation: 'modal' }} />
                   <Stack.Screen name="signup" options={{ presentation: 'modal' }} />
                 </Stack>

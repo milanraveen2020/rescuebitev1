@@ -26,7 +26,9 @@ export default function ListingDetailScreen() {
 
   return (
     <Screen edges={['bottom']}>
-      <Stack.Screen options={{ headerShown: true, title: '', headerTransparent: true, headerBackTitle: 'Back' }} />
+      <Stack.Screen
+        options={{ headerShown: true, title: '', headerTransparent: true, headerBackTitle: 'Back' }}
+      />
       {isLoading ? (
         <ListingsSkeleton count={1} />
       ) : isError || !listing ? (
@@ -34,16 +36,27 @@ export default function ListingDetailScreen() {
       ) : (
         <>
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-            <Image source={listing.imageUrl ?? undefined} style={styles.hero} contentFit="cover" transition={200} />
+            <Image
+              source={listing.imageUrl ?? undefined}
+              style={styles.hero}
+              contentFit="cover"
+              transition={200}
+            />
             <View style={styles.body}>
               <View style={styles.rowBetween}>
                 <Text style={styles.store} numberOfLines={1}>
                   {listing.store.name}
                 </Text>
-                <Text style={styles.rating}>★ {listing.store.rating.toFixed(1)} ({listing.store.reviewCount})</Text>
+                <Text style={styles.rating}>
+                  ★ {listing.store.rating.toFixed(1)} ({listing.store.reviewCount})
+                </Text>
               </View>
               <Text style={styles.title}>{listing.title}</Text>
-              <PriceTag originalMinor={listing.originalPrice} priceMinor={listing.price} currency={listing.currency} />
+              <PriceTag
+                originalMinor={listing.originalPrice}
+                priceMinor={listing.price}
+                currency={listing.currency}
+              />
 
               <View style={styles.chips}>
                 <PickupWindowChip start={listing.pickupStart} end={listing.pickupEnd} />
@@ -55,7 +68,8 @@ export default function ListingDetailScreen() {
 
               <Section title="What to expect">
                 <Text style={styles.paragraph}>
-                  {listing.description ?? 'A surprise selection of surplus food, rescued from waste.'}
+                  {listing.description ??
+                    'A surprise selection of surplus food, rescued from waste.'}
                 </Text>
               </Section>
 
@@ -73,10 +87,20 @@ export default function ListingDetailScreen() {
 
           <View style={styles.footer}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.footerHint}>{soldOut ? 'No bags left' : `${listing.quantityRemaining} available`}</Text>
-              <PriceTag originalMinor={listing.originalPrice} priceMinor={listing.price} currency={listing.currency} />
+              <Text style={styles.footerHint}>
+                {soldOut ? 'No bags left' : `${listing.quantityRemaining} available`}
+              </Text>
+              <PriceTag
+                originalMinor={listing.originalPrice}
+                priceMinor={listing.price}
+                currency={listing.currency}
+              />
             </View>
-            <Button label={soldOut ? 'Sold out' : 'Reserve'} onPress={onReserve} disabled={soldOut} />
+            <Button
+              label={soldOut ? 'Sold out' : 'Reserve'}
+              onPress={onReserve}
+              disabled={soldOut}
+            />
           </View>
         </>
       )}

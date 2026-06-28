@@ -3,8 +3,7 @@ import { createApiClient, type RescueBiteClient } from '@rescuebite/api-client';
 import { session } from './session';
 
 const extra = Constants.expoConfig?.extra as
-  | { apiBaseUrl?: string; stripePublishableKey?: string }
-  | undefined;
+  { apiBaseUrl?: string; stripePublishableKey?: string } | undefined;
 
 export const API_BASE_URL = extra?.apiBaseUrl ?? 'http://localhost:4000';
 export const STRIPE_PUBLISHABLE_KEY = extra?.stripePublishableKey ?? 'pk_test_unset';
