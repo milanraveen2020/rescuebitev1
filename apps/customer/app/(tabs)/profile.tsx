@@ -1,5 +1,13 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Heart,
+  Pencil,
+  type LucideIcon,
+} from 'lucide-react-native';
 import { Avatar, Badge, Button, Card, EmptyState, useToast } from '@rescuebite/ui/native';
 import { colors, spacing, typography } from '@rescuebite/ui/tokens';
 import { useAuth } from '../../src/auth/AuthContext';
@@ -44,10 +52,10 @@ export default function ProfileScreen() {
         </View>
 
         <Card style={styles.menu}>
-          <Row label="Notifications" icon="🔔" onPress={() => router.push('/notifications')} />
-          <Row label={`Favorites (${ids.length})`} icon="❤️" onPress={() => router.push('/favorites')} />
-          <Row label="Edit profile" icon="✏️" onPress={() => toast('Profile editing is coming soon', 'neutral')} />
-          <Row label="Payment methods" icon="💳" onPress={() => toast('Manage cards at checkout via Stripe', 'neutral')} last />
+          <Row label="Notifications" icon={Bell} onPress={() => router.push('/notifications')} />
+          <Row label={`Favorites (${ids.length})`} icon={Heart} onPress={() => router.push('/favorites')} />
+          <Row label="Edit profile" icon={Pencil} onPress={() => toast('Profile editing is coming soon', 'neutral')} />
+          <Row label="Payment methods" icon={CreditCard} onPress={() => toast('Manage cards at checkout via Stripe', 'neutral')} last />
         </Card>
 
         <Button label="Sign out" variant="ghost" onPress={() => void signOut()} block />
@@ -56,12 +64,22 @@ export default function ProfileScreen() {
   );
 }
 
-function Row({ label, icon, onPress, last }: { label: string; icon: string; onPress: () => void; last?: boolean }) {
+function Row({
+  label,
+  icon: Icon,
+  onPress,
+  last,
+}: {
+  label: string;
+  icon: LucideIcon;
+  onPress: () => void;
+  last?: boolean;
+}) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={[styles.row, !last && styles.rowBorder]}>
-      <Text style={styles.rowIcon}>{icon}</Text>
+      <Icon size={20} color={colors.neutral[600]} />
       <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.chevron}>›</Text>
+      <ChevronRight size={20} color={colors.neutral[400]} />
     </Pressable>
   );
 }
@@ -76,7 +94,5 @@ const styles = StyleSheet.create({
   menu: { padding: 0, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingHorizontal: spacing[4], minHeight: 52 },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.neutral[100] },
-  rowIcon: { fontSize: 18 },
   rowLabel: { flex: 1, fontSize: typography.fontSize.base, color: colors.neutral[800] },
-  chevron: { fontSize: 22, color: colors.neutral[400] },
 });

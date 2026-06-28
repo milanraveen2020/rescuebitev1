@@ -10,6 +10,7 @@ import { useListing, useReserve } from '../../src/api/queries';
 import { ApiError } from '../../src/api/request';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
+import { isExpoGo } from '../../src/lib/runtime';
 
 export default function CheckoutScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -38,6 +39,14 @@ export default function CheckoutScreen() {
     setBusy(true);
     try {
       const order = await reserve.mutateAsync({ listingId: listing.id, quantity });
+
+      // Expo Go can't run Stripe — reserve so the order + pickup code are visible.
+      if (isExpoGo) {
+        toast('Reserved! Payment needs a dev build.', 'success');
+        router.replace(`/order/${order.id}`);
+        return;
+      }
+
       const checkout = await paymentsApi.checkout(order.id);
 
       const init = await initPaymentSheet({
@@ -91,12 +100,19 @@ export default function CheckoutScreen() {
         </Card>
 
         <Text style={styles.note}>
-          You’ll pay securely with Stripe. Show your pickup code at the store during the pickup window.
+          {isExpoGo
+            ? 'Payments are disabled in Expo Go — reserving creates your order so you can see the pickup code. Use a dev build for real Stripe checkout.'
+            : 'You’ll pay securely with Stripe. Show your pickup code at the store during the pickup window.'}
         </Text>
       </View>
 
       <View style={styles.footer}>
-        <Button label={`Reserve & pay ${formatPrice(total, listing.currency)}`} onPress={() => void pay()} loading={busy} block />
+        <Button
+          label={isExpoGo ? 'Reserve' : `Reserve & pay ${formatPrice(total, listing.currency)}`}
+          onPress={() => void pay()}
+          loading={busy}
+          block
+        />
       </View>
     </Screen>
   );

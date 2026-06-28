@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { Redirect, Tabs } from 'expo-router';
+import { Compass, Heart, ReceiptText, User } from 'lucide-react-native';
 import { colors, spacing } from '@rescuebite/ui/tokens';
 import { hasCompletedOnboarding } from '../../src/lib/onboarding';
-
-function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
-  return <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>{icon}</Text>;
-}
 
 export default function TabsLayout() {
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
@@ -35,19 +32,19 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Discover', tabBarIcon: ({ focused }) => <TabIcon icon="🧭" focused={focused} /> }}
+        options={{ title: 'Discover', tabBarIcon: ({ color, size }) => <Compass color={color} size={size} /> }}
       />
       <Tabs.Screen
         name="orders"
-        options={{ title: 'Orders', tabBarIcon: ({ focused }) => <TabIcon icon="🧾" focused={focused} /> }}
+        options={{ title: 'Orders', tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} /> }}
       />
       <Tabs.Screen
         name="favorites"
-        options={{ title: 'Favorites', tabBarIcon: ({ focused }) => <TabIcon icon="❤️" focused={focused} /> }}
+        options={{ title: 'Favorites', tabBarIcon: ({ color, size }) => <Heart color={color} size={size} /> }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: 'Profile', tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} /> }}
+        options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }}
       />
     </Tabs>
   );

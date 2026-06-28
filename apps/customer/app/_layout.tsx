@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { Stack } from 'expo-router';
@@ -7,6 +8,17 @@ import { ToastProvider } from '@rescuebite/ui/native';
 import { STRIPE_PUBLISHABLE_KEY } from '../src/api/client';
 import { AuthProvider } from '../src/auth/AuthContext';
 import { FavoritesProvider } from '../src/favorites/FavoritesContext';
+import { isExpoGo } from '../src/lib/runtime';
+
+/** Stripe's native module isn't in Expo Go, so only mount its provider elsewhere. */
+function PaymentsProvider({ children }: { children: ReactElement }) {
+  if (isExpoGo) return children;
+  return (
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} urlScheme="rescuebite">
+      {children}
+    </StripeProvider>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false } },
@@ -16,7 +28,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} urlScheme="rescuebite">
+        <PaymentsProvider>
           <AuthProvider>
             <FavoritesProvider>
               <ToastProvider>
@@ -34,7 +46,7 @@ export default function RootLayout() {
               </ToastProvider>
             </FavoritesProvider>
           </AuthProvider>
-        </StripeProvider>
+        </PaymentsProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );

@@ -3,9 +3,10 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
 import type { NearbyListing } from '@rescuebite/types';
-import { PriceTag } from '@rescuebite/ui/native';
+import { EmptyState, PriceTag } from '@rescuebite/ui/native';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import type { Coords } from '../../lib/location';
+import { isExpoGo } from '../../lib/runtime';
 
 interface Cluster {
   key: string;
@@ -55,6 +56,18 @@ export function ListingsMap({
     () => clusterListings(listings, precisionFor(region.latitudeDelta)),
     [listings, region.latitudeDelta],
   );
+
+  // react-native-maps has no native module in Expo Go — show a fallback there.
+  if (isExpoGo) {
+    return (
+      <View style={[styles.fill, styles.center]}>
+        <EmptyState
+          title="Map needs a dev build"
+          description="Switch back to the list view to browse. The map runs in a development or production build."
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.fill}>
@@ -107,6 +120,7 @@ export function ListingsMap({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  center: { alignItems: 'center', justifyContent: 'center' },
   pin: {
     backgroundColor: colors.brand[600],
     borderRadius: radii.pill,

@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { Heart, Star } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NearbyListing } from '@rescuebite/types';
 import { Badge, PickupWindowChip, PriceTag } from '@rescuebite/ui/native';
@@ -35,7 +36,11 @@ export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPr
           accessibilityLabel={favorite ? 'Remove from favorites' : 'Add to favorites'}
           style={styles.heart}
         >
-          <Text style={{ fontSize: 18 }}>{favorite ? '❤️' : '🤍'}</Text>
+          <Heart
+            size={20}
+            color={favorite ? colors.semantic.error : colors.neutral[500]}
+            fill={favorite ? colors.semantic.error : 'transparent'}
+          />
         </Pressable>
         {listing.quantityRemaining <= 3 ? (
           <View style={styles.lowStock}>
@@ -61,7 +66,10 @@ export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPr
             priceMinor={listing.price}
             currency={listing.currency}
           />
-          <Text style={styles.rating}>★ {listing.store.rating.toFixed(1)}</Text>
+          <View style={styles.ratingRow}>
+            <Star size={13} color={colors.accent[500]} fill={colors.accent[500]} />
+            <Text style={styles.rating}>{listing.store.rating.toFixed(1)}</Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -95,5 +103,6 @@ const styles = StyleSheet.create({
   store: { fontSize: typography.fontSize.sm, color: colors.neutral[500], flex: 1 },
   distance: { fontSize: typography.fontSize.sm, color: colors.neutral[500] },
   title: { fontSize: typography.fontSize.lg, fontWeight: '600', color: colors.neutral[900] },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   rating: { fontSize: typography.fontSize.sm, color: colors.neutral[700], fontWeight: '500' },
 });

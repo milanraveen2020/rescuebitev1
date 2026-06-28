@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Leaf, MapPin, ShoppingBag, type LucideIcon } from 'lucide-react-native';
 import { Button } from '@rescuebite/ui/native';
 import { colors, spacing, typography } from '@rescuebite/ui/tokens';
 import { Screen } from '../src/components/Screen';
@@ -17,10 +18,10 @@ import { requestLocationPermission } from '../src/lib/location';
 
 const { width } = Dimensions.get('window');
 
-const SLIDES = [
-  { emoji: '🥡', title: 'Rescue great food', body: 'Grab surprise bags of surplus food from local shops at a big discount.' },
-  { emoji: '📍', title: 'Discover nearby', body: 'See what’s available around you, sorted by distance, price, or ending soon.' },
-  { emoji: '🌍', title: 'Fight food waste', body: 'Every bag you rescue helps your neighbourhood waste a little less.' },
+const SLIDES: { Icon: LucideIcon; title: string; body: string }[] = [
+  { Icon: ShoppingBag, title: 'Rescue great food', body: 'Grab surprise bags of surplus food from local shops at a big discount.' },
+  { Icon: MapPin, title: 'Discover nearby', body: 'See what’s available around you, sorted by distance, price, or ending soon.' },
+  { Icon: Leaf, title: 'Fight food waste', body: 'Every bag you rescue helps your neighbourhood waste a little less.' },
 ];
 
 export default function OnboardingScreen() {
@@ -58,7 +59,9 @@ export default function OnboardingScreen() {
       >
         {SLIDES.map((slide) => (
           <View key={slide.title} style={[styles.slide, { width }]}>
-            <Text style={styles.emoji}>{slide.emoji}</Text>
+            <View style={styles.iconCircle}>
+              <slide.Icon size={64} color={colors.brand[600]} strokeWidth={1.5} />
+            </View>
             <Text style={styles.title}>{slide.title}</Text>
             <Text style={styles.body}>{slide.body}</Text>
           </View>
@@ -84,7 +87,15 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   slide: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing[6], gap: spacing[3] },
-  emoji: { fontSize: 72 },
+  iconCircle: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: colors.brand[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing[2],
+  },
   title: { fontSize: typography.fontSize['3xl'], fontWeight: '700', color: colors.brand[700], textAlign: 'center' },
   body: { fontSize: typography.fontSize.lg, color: colors.neutral[600], textAlign: 'center' },
   footer: { padding: spacing[5], gap: spacing[3] },

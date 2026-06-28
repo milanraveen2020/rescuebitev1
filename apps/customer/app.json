@@ -41,6 +41,13 @@
         {
           "calendarPermission": "RescueBite adds your pickup window to your calendar."
         }
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.rescuebite.customer",
+          "enableGooglePay": false
+        }
       ]
     ],
     "experiments": {

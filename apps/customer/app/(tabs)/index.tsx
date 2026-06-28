@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { List, Map as MapIcon, Search } from 'lucide-react-native';
 import type { FoodCategory, ListingSort, NearbyListing } from '@rescuebite/types';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { EmptyState } from '@rescuebite/ui/native';
@@ -65,12 +66,17 @@ export default function HomeScreen() {
           accessibilityLabel={view === 'list' ? 'Show map' : 'Show list'}
           style={styles.toggle}
         >
-          <Text style={styles.toggleText}>{view === 'list' ? '🗺️ Map' : '📋 List'}</Text>
+          {view === 'list' ? (
+            <MapIcon size={16} color={colors.neutral[700]} />
+          ) : (
+            <List size={16} color={colors.neutral[700]} />
+          )}
+          <Text style={styles.toggleText}>{view === 'list' ? 'Map' : 'List'}</Text>
         </Pressable>
       </View>
 
       <View style={styles.searchWrap}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Search size={18} color={colors.neutral[400]} />
         <TextInput
           value={search}
           onChangeText={setSearch}
@@ -131,7 +137,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[2],
   },
   brand: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
-  toggle: { backgroundColor: colors.neutral[100], borderRadius: radii.pill, paddingHorizontal: spacing[3], paddingVertical: spacing[1], minHeight: 36, justifyContent: 'center' },
+  toggle: { flexDirection: 'row', alignItems: 'center', gap: spacing[1], backgroundColor: colors.neutral[100], borderRadius: radii.pill, paddingHorizontal: spacing[3], height: 40, justifyContent: 'center' },
   toggleText: { fontSize: typography.fontSize.sm, fontWeight: '600', color: colors.neutral[700] },
   searchWrap: {
     flexDirection: 'row',
@@ -144,7 +150,6 @@ const styles = StyleSheet.create({
     minHeight: 44,
     gap: spacing[2],
   },
-  searchIcon: { fontSize: 16 },
   searchInput: { flex: 1, fontSize: typography.fontSize.base, color: colors.neutral[900] },
   listContent: { padding: spacing[4] },
 });
