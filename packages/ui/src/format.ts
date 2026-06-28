@@ -3,7 +3,7 @@
  * minor units (cents) — never floats.
  */
 
-const SYMBOLS: Record<string, string> = { EUR: '€', USD: '$', GBP: '£' };
+const SYMBOLS: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', INR: '₹', LKR: 'Rs ' };
 
 /** Format minor units into a currency string, e.g. (499, 'EUR') → "€4.99". */
 export function formatPrice(amountMinor: number, currency = 'EUR'): string {

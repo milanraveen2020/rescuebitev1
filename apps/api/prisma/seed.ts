@@ -28,6 +28,24 @@ import * as argon2 from 'argon2';
 const prisma = new PrismaClient();
 
 const SEED_PASSWORD = 'Password123!';
+
+/**
+ * Appetizing, category-appropriate food photos for seeded listings. Uses
+ * LoremFlickr keyword search with a `lock` seed so each listing gets a stable
+ * (but varied) food image instead of a random placeholder.
+ */
+const CATEGORY_IMAGE_TAGS: Record<FoodCategory, string> = {
+  [FoodCategory.BAKERY]: 'bakery,bread,pastry',
+  [FoodCategory.GROCERY]: 'groceries,food',
+  [FoodCategory.RESTAURANT]: 'restaurant,food,meal',
+  [FoodCategory.CAFE]: 'coffee,cafe,pastry',
+  [FoodCategory.PRODUCE]: 'vegetables,fruit,produce',
+  [FoodCategory.OTHER]: 'food,meal,restaurant',
+};
+
+function foodImage(category: FoodCategory, seed: number): string {
+  return `https://loremflickr.com/600/400/${CATEGORY_IMAGE_TAGS[category]}?lock=${seed}`;
+}
 // Hash with argon2 to match the auth PasswordService (so seeded users can log in).
 let passwordHash = '';
 
@@ -129,7 +147,7 @@ async function main(): Promise<void> {
       data: {
         ownerId: owner.id,
         ...seed.store,
-        currency: 'EUR',
+        currency: 'LKR',
         stripeAccountId: `acct_seed_${owner.id.slice(0, 8)}`,
         payoutsEnabled: true,
         status: StoreStatus.APPROVED,
@@ -157,6 +175,7 @@ async function main(): Promise<void> {
       address: '2 Quay Road, Dublin',
       lat: 53.3478,
       lng: -6.2497,
+      currency: 'LKR',
       status: StoreStatus.PENDING,
     },
   });
@@ -232,7 +251,7 @@ async function main(): Promise<void> {
           quantityRemaining,
           pickupStart,
           pickupEnd,
-          imageUrl: `https://picsum.photos/seed/${store.id.slice(0, 6)}-${i}/600/400`,
+          imageUrl: foodImage(tpl.category, store.id.charCodeAt(0) + i),
           allergenInfo: allergenOptions[i % allergenOptions.length] ?? null,
           status,
         },
@@ -319,7 +338,7 @@ async function main(): Promise<void> {
         quantity,
         unitPrice,
         totalAmount: unitPrice * quantity,
-        currency: 'EUR',
+        currency: 'LKR',
         status,
         pickupCode: pickupCode(),
         stripePaymentIntentId: isPaidish ? `pi_seed_${i}_${Math.floor(Math.random() * 1e6)}` : null,

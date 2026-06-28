@@ -10,9 +10,13 @@ export const STRIPE_PUBLISHABLE_KEY = extra?.stripePublishableKey ?? 'pk_test_un
 
 // Tell the API this is a mobile client so it returns the refresh token in the body.
 const fetchWithClientType: typeof fetch = (input, init) => {
-  const headers = new Headers(init?.headers ?? {});
-  headers.set('x-client-type', 'mobile');
-  return fetch(input, { ...init, headers });
+  // openapi-fetch invokes a custom fetch with a fully-built `Request` (with body
+  // and Content-Type baked in) and no `init`. Rebuilding from `init` therefore
+  // dropped the body and Content-Type on POST/PATCH — so add the header to the
+  // Request itself, preserving body and headers.
+  const request = new Request(input, init);
+  request.headers.set('x-client-type', 'mobile');
+  return fetch(request);
 };
 
 /** The shared, typed API client (openapi-fetch) with auth + mobile headers. */

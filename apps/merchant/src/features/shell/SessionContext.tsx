@@ -44,8 +44,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         if (active) setState({ status: 'ready', user: session.user, store });
       } catch (e) {
         if (!active) return;
-        // An auth failure means the session is gone — bounce to login.
+        // An auth failure means the session is gone. Clear the (now-stale) refresh
+        // cookie first — otherwise the middleware keeps seeing it and bounces us
+        // back from /login to /, looping forever on "Loading your store…".
         if (e instanceof AuthError) {
+          setAccessToken(null);
+          await logout();
           router.replace('/login');
         } else {
           setState({
