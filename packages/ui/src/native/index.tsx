@@ -10,3 +10,4 @@ export { PriceTag, type PriceTagProps } from './PriceTag';
 export { PickupWindowChip, type PickupWindowChipProps } from './PickupWindowChip';
 export { Sheet, type SheetProps } from './Sheet';
 export { ToastProvider, useToast } from './Toast';
+export { useReducedMotion } from './useReducedMotion';

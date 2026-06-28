@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { colors, motion, radii, spacing, typography } from '../tokens';
+import { useReducedMotion } from './useReducedMotion';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -36,12 +37,20 @@ export function Button({
 }: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
   const isDisabled = disabled || loading;
+  const reduceMotion = useReducedMotion();
 
-  const spring = (to: number) =>
+  const spring = (to: number) => {
+    // Honor the OS "Reduce Motion" setting: snap instead of springing.
+    if (reduceMotion) {
+      scale.setValue(to);
+      return;
+    }
     Animated.spring(scale, { toValue: to, useNativeDriver: true, ...motion.spring }).start();
+  };
 
   const variantStyle = VARIANTS[variant];
-  const labelColor = variant === 'secondary' || variant === 'ghost' ? colors.brand[700] : colors.neutral[0];
+  const labelColor =
+    variant === 'secondary' || variant === 'ghost' ? colors.brand[700] : colors.neutral[0];
 
   return (
     <Animated.View style={[{ transform: [{ scale }] }, block ? styles.block : null]}>

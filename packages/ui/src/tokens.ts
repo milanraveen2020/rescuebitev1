@@ -42,6 +42,8 @@ export const colors = {
     success: '#039855',
     warning: '#dc6803',
     error: '#d92d20',
+    /** Soft red tint for error surfaces (banners, inline form errors). */
+    errorSurface: '#fef3f2',
     info: '#1570ef',
   },
 } as const;
@@ -112,9 +114,27 @@ export const shadows = {
 } as const;
 
 export const elevation = {
-  sm: { elevation: 1, shadowColor: '#101828', shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } },
-  md: { elevation: 3, shadowColor: '#101828', shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
-  lg: { elevation: 8, shadowColor: '#101828', shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } },
+  sm: {
+    elevation: 1,
+    shadowColor: '#101828',
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  md: {
+    elevation: 3,
+    shadowColor: '#101828',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  lg: {
+    elevation: 8,
+    shadowColor: '#101828',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
 } as const;
 
 /**
@@ -138,5 +158,14 @@ export const layout = {
   minTapTarget: 44,
 } as const;
 
-export const tokens = { colors, spacing, radii, typography, shadows, elevation, motion, layout } as const;
+export const tokens = {
+  colors,
+  spacing,
+  radii,
+  typography,
+  shadows,
+  elevation,
+  motion,
+  layout,
+} as const;
 export type Tokens = typeof tokens;

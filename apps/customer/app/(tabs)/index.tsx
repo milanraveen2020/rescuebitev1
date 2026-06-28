@@ -102,7 +102,8 @@ export default function HomeScreen() {
           data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ListingCard listing={item} onPress={() => open(item)} />}
-          contentContainerStyle={styles.listContent}
+          style={styles.fill}
+          contentContainerStyle={[styles.listContent, filtered.length === 0 && styles.listContentEmpty]}
           ItemSeparatorComponent={() => <View style={{ height: spacing[4] }} />}
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.5}
@@ -117,10 +118,12 @@ export default function HomeScreen() {
             />
           }
           ListEmptyComponent={
-            <EmptyState
-              title="No bags nearby right now"
-              description="Try a different category, or check back closer to the evening."
-            />
+            <View style={styles.empty}>
+              <EmptyState
+                title="No bags nearby right now"
+                description="Try a different category, or check back closer to the evening."
+              />
+            </View>
           }
         />
       )}
@@ -160,5 +163,10 @@ const styles = StyleSheet.create({
     gap: spacing[2],
   },
   searchInput: { flex: 1, fontSize: typography.fontSize.base, color: colors.neutral[900] },
+  fill: { flex: 1 },
   listContent: { padding: spacing[4] },
+  // When empty, grow the content box to the full height so the empty state can
+  // center vertically instead of leaving an uneven gap under the sort bar.
+  listContentEmpty: { flexGrow: 1, padding: 0 },
+  empty: { flex: 1, justifyContent: 'center' },
 });

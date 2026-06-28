@@ -130,5 +130,5 @@ const styles = StyleSheet.create({
   dotSpacer: { width: 8 },
   title: { fontSize: typography.fontSize.base, fontWeight: '600', color: colors.neutral[900] },
   body: { fontSize: typography.fontSize.sm, color: colors.neutral[600], marginTop: 2 },
-  time: { fontSize: typography.fontSize.xs, color: colors.neutral[400], marginTop: spacing[1] },
+  time: { fontSize: typography.fontSize.xs, color: colors.neutral[500], marginTop: spacing[1] },
 });

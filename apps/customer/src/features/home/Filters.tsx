@@ -37,8 +37,21 @@ export function CategoryChips({
   onSelect: (category: FoodCategory | null) => void;
 }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catRow}>
-      <CategoryChip active={selected === null} onPress={() => onSelect(null)} text="All" Icon={LayoutGrid} />
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      // flexGrow:0 keeps this horizontal row at its content height. Without it the
+      // ScrollView stretches to fill spare vertical space (e.g. when the list is
+      // empty) and the centered chips drift downward.
+      style={styles.catScroll}
+      contentContainerStyle={styles.catRow}
+    >
+      <CategoryChip
+        active={selected === null}
+        onPress={() => onSelect(null)}
+        text="All"
+        Icon={LayoutGrid}
+      />
       {CATEGORIES.map((category) => (
         <CategoryChip
           key={category}
@@ -71,7 +84,9 @@ function CategoryChip({
       style={[styles.catChip, active ? styles.catChipActive : styles.catChipIdle]}
     >
       <Icon size={16} color={active ? colors.neutral[0] : colors.neutral[500]} />
-      <Text style={[styles.catText, active ? styles.catTextActive : styles.catTextIdle]}>{text}</Text>
+      <Text style={[styles.catText, active ? styles.catTextActive : styles.catTextIdle]}>
+        {text}
+      </Text>
     </Pressable>
   );
 }
@@ -94,7 +109,12 @@ export function SortChips({
   return (
     <View style={styles.sortBar}>
       <Text style={styles.sortLabel}>Sort</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.sortScroll}
+        contentContainerStyle={styles.sortRow}
+      >
         {SORTS.map((sort) => {
           const active = selected === sort.value;
           return (
@@ -117,8 +137,14 @@ export function SortChips({
 }
 
 const styles = StyleSheet.create({
-  // Category row
-  catRow: { gap: spacing[2], paddingHorizontal: spacing[4], paddingVertical: spacing[2], alignItems: 'center' },
+  // Category row — flexGrow:0 so the horizontal scroller hugs its content height.
+  catScroll: { flexGrow: 0 },
+  catRow: {
+    gap: spacing[2],
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2],
+    alignItems: 'center',
+  },
   catChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -147,9 +173,10 @@ const styles = StyleSheet.create({
   sortLabel: {
     fontSize: typography.fontSize.xs,
     fontWeight: '700',
-    color: colors.neutral[400],
+    color: colors.neutral[500],
     letterSpacing: 0.5,
   },
+  sortScroll: { flexGrow: 0 },
   sortRow: { gap: spacing[2], alignItems: 'center' },
   sortChip: {
     height: 32,
@@ -161,7 +188,7 @@ const styles = StyleSheet.create({
   },
   sortChipActive: { backgroundColor: colors.neutral[900], borderColor: colors.neutral[900] },
   sortChipIdle: { backgroundColor: 'transparent', borderColor: colors.neutral[300] },
-  sortText: { fontSize: 13, fontWeight: '600' },
+  sortText: { fontSize: typography.fontSize.sm, fontWeight: '600' },
   sortTextActive: { color: colors.neutral[0] },
   sortTextIdle: { color: colors.neutral[600] },
 });
