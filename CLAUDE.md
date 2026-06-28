@@ -77,6 +77,16 @@ rescuebite/
 - **No empty catches.** `no-empty` (with `allowEmptyCatch: false`) is enforced. Either handle the error, convert it to a typed result, or rethrow — never swallow it.
 - **Promises are handled.** `no-floating-promises` / `no-misused-promises` are on; `await` or explicitly `void` every promise.
 
+## Git & commit authorship
+
+These are **privacy requirements** and apply to **every** commit — human or AI-generated, no exceptions. A commit that breaks any of them is a defect: amend it before pushing.
+
+- **Author is `ParaBoyLord`.** Never commit under a real name. Repo config sets `user.name=ParaBoyLord`.
+- **No email.** The commit identity is `ParaBoyLord <>` (empty email). `user.email` is intentionally empty — never introduce a personal email into git config, commit metadata, or anywhere in the repo.
+- **No credentials, ever.** No tokens, passwords, or keys in commits, history, or config. Auth for `git push` is supplied interactively by the maintainer and never stored.
+- **No attribution trailers.** Never append `Co-Authored-By:` (Claude/Anthropic or any other) or "Generated with …" lines to commit messages. The message ends with its own content — nothing else.
+- **Default branch is `Para`.** Commit and push to `Para` unless explicitly told to target `main`.
+
 ## Definition of done
 
 A change is done only when **all** of these hold:
@@ -87,4 +97,5 @@ A change is done only when **all** of these hold:
 4. **All states handled** — every async UI surface handles **loading, empty, and error** states (not just the happy path).
 5. **Formatted** — `pnpm format` has been run.
 6. **Conventions honored** — types live in `packages/types`, network calls go through `packages/api-client`, styling uses `packages/ui` tokens, and accessibility (labels, contrast, touch targets) is verified.
+7. **Commit hygiene** — authored as `ParaBoyLord <>` with **no email, no credentials, and no `Co-Authored-By`/attribution trailer** (see *Git & commit authorship*).
 ```
