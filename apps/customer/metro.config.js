@@ -14,6 +14,10 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
-config.resolver.disableHierarchicalLookup = true;
+// pnpm stores transitive deps under nested node_modules, so Metro must keep
+// hierarchical lookup enabled (do NOT disable it as in hoisted yarn/npm setups).
+config.resolver.unstable_enableSymlinks = true;
+// Honor the "exports" maps in our workspace packages (e.g. @rescuebite/ui/native).
+config.resolver.unstable_enablePackageExports = true;
 
 module.exports = config;

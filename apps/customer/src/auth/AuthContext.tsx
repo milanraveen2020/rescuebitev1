@@ -1,12 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { AuthResponse, LoginInput, RegisterCustomerInput, User } from '@rescuebite/types';
-import { ApiError, authApi } from '../api/client';
-import {
-  clearStoredRefreshToken,
-  getStoredRefreshToken,
-  setStoredRefreshToken,
-} from './storage';
+import { authApi } from '../api/endpoints';
+import { session } from '../api/session';
+import { clearStoredRefreshToken, getStoredRefreshToken, setStoredRefreshToken } from './storage';
 
 type Status = 'loading' | 'authenticated' | 'guest';
 
@@ -17,11 +14,6 @@ interface AuthContextValue {
   signIn: (input: LoginInput) => Promise<void>;
   signUp: (input: RegisterCustomerInput) => Promise<void>;
   signOut: () => Promise<void>;
-  /**
-   * Run an authenticated API call with the current access token. If it returns
-   * an `unauthenticated` error, transparently refresh once and retry.
-   */
-  withAuth: <T>(fn: (accessToken: string) => Promise<T>) => Promise<T>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -29,26 +21,32 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Status>('loading');
   const [user, setUser] = useState<User | null>(null);
-  // Access token is held in memory only; the refresh token lives in secure store.
-  const accessToken = useRef<string | null>(null);
-  const refreshToken = useRef<string | null>(null);
 
-  const applySession = useCallback(async (session: AuthResponse) => {
-    accessToken.current = session.accessToken;
-    if (session.refreshToken) {
-      refreshToken.current = session.refreshToken;
-      await setStoredRefreshToken(session.refreshToken);
+  const applySession = useCallback(async (auth: AuthResponse) => {
+    session.setAccessToken(auth.accessToken);
+    if (auth.refreshToken) {
+      session.setRefreshToken(auth.refreshToken);
+      await setStoredRefreshToken(auth.refreshToken);
     }
-    setUser(session.user);
+    setUser(auth.user);
     setStatus('authenticated');
   }, []);
 
-  const clearSession = useCallback(async () => {
-    accessToken.current = null;
-    refreshToken.current = null;
+  const clear = useCallback(async () => {
+    session.setAccessToken(null);
+    session.setRefreshToken(null);
     await clearStoredRefreshToken();
     setUser(null);
     setStatus('guest');
+  }, []);
+
+  // Let the request layer drop us to guest if a refresh ultimately fails.
+  useEffect(() => {
+    session.setOnExpire(() => {
+      setUser(null);
+      setStatus('guest');
+    });
+    return () => session.setOnExpire(null);
   }, []);
 
   // Restore a session on launch from the stored refresh token.
@@ -60,75 +58,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (active) setStatus('guest');
         return;
       }
+      session.setRefreshToken(stored);
       try {
-        const session = await authApi.refresh(stored);
-        if (active) await applySession(session);
+        const auth = await authApi.refresh(stored);
+        if (active) await applySession(auth);
       } catch {
-        if (active) await clearSession();
+        if (active) await clear();
       }
     })();
     return () => {
       active = false;
     };
-  }, [applySession, clearSession]);
+  }, [applySession, clear]);
 
   const signIn = useCallback(
-    async (input: LoginInput) => {
-      await applySession(await authApi.login(input));
-    },
+    async (input: LoginInput) => applySession(await authApi.login(input)),
     [applySession],
   );
-
   const signUp = useCallback(
-    async (input: RegisterCustomerInput) => {
-      await applySession(await authApi.registerCustomer(input));
-    },
+    async (input: RegisterCustomerInput) => applySession(await authApi.registerCustomer(input)),
     [applySession],
   );
-
   const signOut = useCallback(async () => {
-    const stored = refreshToken.current;
-    if (stored) {
-      // Best-effort revoke; clear local state regardless of the result.
-      await authApi.logout(stored).catch(() => undefined);
-    }
-    await clearSession();
-  }, [clearSession]);
-
-  const withAuth = useCallback(
-    async <T,>(fn: (accessToken: string) => Promise<T>): Promise<T> => {
-      if (!accessToken.current) throw new ApiError('unauthenticated', 'Please sign in.');
-      try {
-        return await fn(accessToken.current);
-      } catch (error) {
-        if (!(error instanceof ApiError) || error.code !== 'unauthenticated') throw error;
-        const stored = refreshToken.current;
-        if (!stored) {
-          await clearSession();
-          throw error;
-        }
-        const session = await authApi.refresh(stored).catch(async (refreshError) => {
-          await clearSession();
-          throw refreshError;
-        });
-        await applySession(session);
-        return fn(session.accessToken);
-      }
-    },
-    [applySession, clearSession],
-  );
+    const token = session.getRefreshToken();
+    if (token) await authApi.logout(token).catch(() => undefined);
+    await clear();
+  }, [clear]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      status,
-      user,
-      isAuthenticated: status === 'authenticated',
-      signIn,
-      signUp,
-      signOut,
-      withAuth,
-    }),
-    [status, user, signIn, signUp, signOut, withAuth],
+    () => ({ status, user, isAuthenticated: status === 'authenticated', signIn, signUp, signOut }),
+    [status, user, signIn, signUp, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

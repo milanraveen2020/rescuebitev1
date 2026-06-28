@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { RegisterCustomerSchema } from '@rescuebite/types';
+import { Button, Input } from '@rescuebite/ui/native';
 import { colors, spacing, typography } from '@rescuebite/ui/tokens';
-import { ApiError } from '../src/api/client';
+import { ApiError } from '../src/api/request';
 import { useAuth } from '../src/auth/AuthContext';
-import { Button, Field, FormError } from '../src/components/ui';
+import { Screen } from '../src/components/Screen';
+import { FormError } from '../src/components/States';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -36,44 +37,25 @@ export default function SignupScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-      >
+    <Screen edges={['top', 'bottom']}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Join RescueBite</Text>
           <Text style={styles.subtitle}>Save food, save money, every day.</Text>
 
           <FormError message={error} />
-          <Field label="Name" value={name} onChangeText={setName} placeholder="Your name" />
-          <Field
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            placeholder="you@example.com"
-          />
-          <Field
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password-new"
-            placeholder="At least 8 characters"
-          />
-          <Button label="Create account" onPress={() => void onSubmit()} loading={submitting} />
-          <Button label="I already have an account" variant="ghost" onPress={() => router.replace('/login')} />
+          <Input label="Name" value={name} onChangeText={setName} placeholder="Your name" />
+          <Input label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" placeholder="you@example.com" />
+          <Input label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password-new" placeholder="At least 8 characters" />
+          <Button label="Create account" onPress={() => void onSubmit()} loading={submitting} block />
+          <Button label="I already have an account" variant="ghost" onPress={() => router.replace('/login')} block />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.neutral[0] },
   flex: { flex: 1 },
   content: { padding: spacing[5], gap: spacing[4], flexGrow: 1, justifyContent: 'center' },
   title: { fontSize: typography.fontSize['3xl'], fontWeight: '700', color: colors.neutral[900] },

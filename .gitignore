@@ -43,3 +43,6 @@ coverage/
 # Misc
 *.pem
 .cache/
+
+# Next.js generated
+next-env.d.ts

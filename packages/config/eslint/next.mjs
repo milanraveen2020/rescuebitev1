@@ -6,6 +6,8 @@ import base from "./base.mjs";
 
 /** ESLint flat config for the Next.js (App Router) apps: merchant + admin. */
 export default [
+  // Next-generated files (triple-slash refs, build output) aren't linted.
+  { ignores: ["next-env.d.ts", ".next/**"] },
   ...base,
   {
     files: ["**/*.{ts,tsx}"],
