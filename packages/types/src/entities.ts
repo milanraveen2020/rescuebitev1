@@ -93,6 +93,7 @@ export const ReviewSchema = z.object({
   storeId: IdSchema,
   rating: RatingSchema,
   comment: z.string().max(1000).nullable(),
+  hiddenAt: IsoDateTimeSchema.nullable(),
   createdAt: IsoDateTimeSchema,
 });
 export type Review = z.infer<typeof ReviewSchema>;

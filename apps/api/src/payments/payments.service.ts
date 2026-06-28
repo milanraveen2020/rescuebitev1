@@ -17,6 +17,7 @@ import type {
 } from '@rescuebite/types';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SettingsService } from '../common/settings/settings.service';
 import { OrdersService } from '../orders/orders.service';
 import { computePlatformFee } from './fees';
 import { STRIPE_CLIENT, type StripeClient } from './stripe.provider';
@@ -30,6 +31,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly orders: OrdersService,
+    private readonly settings: SettingsService,
   ) {}
 
   // --- Stripe Connect (merchant) ------------------------------------------
@@ -126,7 +128,7 @@ export class PaymentsService {
 
     // Never trust client amounts — recompute from the price locked at reservation.
     const amount = order.unitPrice * order.quantity;
-    const fee = computePlatformFee(amount, this.config.platformFeeBps);
+    const fee = computePlatformFee(amount, await this.settings.getCommissionBps());
     const currency = order.currency.toLowerCase();
 
     // Reuse an existing intent if one is still payable.
@@ -152,7 +154,6 @@ export class PaymentsService {
   // --- Refund (merchant) ---------------------------------------------------
 
   async refund(merchantUserId: string, orderId: string): Promise<OrderDetail> {
-    const stripe = this.requireStripe();
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { store: true },
@@ -160,16 +161,31 @@ export class PaymentsService {
     if (!order || order.store.ownerId !== merchantUserId) {
       throw new NotFoundException('Order not found.');
     }
-    if (!order.stripePaymentIntentId) {
+    return this.performRefund(order.id, order.stripePaymentIntentId, order.status);
+  }
+
+  /** Refund issued by a platform admin — no ownership check. */
+  async refundAsAdmin(orderId: string): Promise<OrderDetail> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('Order not found.');
+    return this.performRefund(order.id, order.stripePaymentIntentId, order.status);
+  }
+
+  private async performRefund(
+    orderId: string,
+    paymentIntentId: string | null,
+    status: OrderStatus,
+  ): Promise<OrderDetail> {
+    const stripe = this.requireStripe();
+    if (!paymentIntentId) {
       throw new ConflictException('This order has no payment to refund.');
     }
-    if (order.status !== OrderStatus.PAID && order.status !== OrderStatus.COLLECTED) {
+    if (status !== OrderStatus.PAID && status !== OrderStatus.COLLECTED) {
       throw new ConflictException('This order cannot be refunded.');
     }
-
-    await stripe.refunds.create({ payment_intent: order.stripePaymentIntentId });
+    await stripe.refunds.create({ payment_intent: paymentIntentId });
     // Reflect immediately; the charge.refunded webhook is idempotent.
-    return this.orders.markRefunded(order.id);
+    return this.orders.markRefunded(orderId);
   }
 
   getPublishableKey(): string {

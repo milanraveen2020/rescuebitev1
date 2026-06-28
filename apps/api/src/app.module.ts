@@ -5,12 +5,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { SettingsModule } from './common/settings/settings.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/logging/logging.interceptor';
 import { ZodValidationPipe } from './common/validation/zod-validation.pipe';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { AdminModule } from './admin/admin.module';
 import { ListingsModule } from './listings/listings.module';
 import { MerchantModule } from './merchant/merchant.module';
 import { OrdersModule } from './orders/orders.module';
@@ -26,10 +28,12 @@ import { HealthModule } from './health/health.module';
   imports: [
     AppConfigModule,
     PrismaModule,
+    SettingsModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     AuthModule,
+    AdminModule,
     ListingsModule,
     MerchantModule,
     OrdersModule,

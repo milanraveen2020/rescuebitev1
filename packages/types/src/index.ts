@@ -1,6 +1,7 @@
 export * from './primitives.js';
 export * from './enums.js';
 export * from './entities.js';
+export * from './admin.js';
 export * from './auth.js';
 export * from './listings.js';
 export * from './merchant.js';

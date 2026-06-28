@@ -507,6 +507,7 @@ function toReview(review: Review): ReviewDto {
     storeId: review.storeId,
     rating: review.rating,
     comment: review.comment,
+    hiddenAt: review.hiddenAt ? review.hiddenAt.toISOString() : null,
     createdAt: review.createdAt.toISOString(),
   };
 }

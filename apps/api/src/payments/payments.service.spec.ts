@@ -3,6 +3,7 @@ import type Stripe from 'stripe';
 import type { AppConfigService } from '../config/app-config.service';
 import type { PrismaService } from '../common/prisma/prisma.service';
 import type { OrdersService } from '../orders/orders.service';
+import type { SettingsService } from '../common/settings/settings.service';
 import { PaymentsService } from './payments.service';
 import type { StripeClient } from './stripe.provider';
 
@@ -23,11 +24,13 @@ function setup(overrides: { stripe?: StripeClient; webhookSecret?: string } = {}
     platformFeeBps: 1000,
     stripePublishableKey: 'pk_test_x',
   } as AppConfigService;
+  const settings = { getCommissionBps: jest.fn().mockResolvedValue(1000) };
   const service = new PaymentsService(
     overrides.stripe ?? null,
     prisma as unknown as PrismaService,
     config,
     orders as unknown as OrdersService,
+    settings as unknown as SettingsService,
   );
   return { service, orders, prisma };
 }

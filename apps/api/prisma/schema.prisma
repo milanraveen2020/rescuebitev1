@@ -229,19 +229,31 @@ model Order {
 }
 
 model Review {
-  id         String   @id @default(uuid())
-  orderId    String   @unique // one review per order
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  orderId    String    @unique // one review per order
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   customerId String
-  customer   User     @relation(fields: [customerId], references: [id])
+  customer   User      @relation(fields: [customerId], references: [id])
   storeId    String
-  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store      Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   rating     Int // 1..5
   comment    String?
-  createdAt  DateTime @default(now())
+  // Set by an admin when moderating abusive content; hidden reviews are excluded
+  // from public listings and from the store's denormalized rating.
+  hiddenAt   DateTime?
+  createdAt  DateTime  @default(now())
 
   @@index([storeId])
   @@index([customerId])
+}
+
+/// Single-row table of operator-tunable platform settings (id is always "singleton").
+model PlatformSettings {
+  id                String         @id @default("singleton")
+  commissionBps     Int            @default(1000) // platform fee in basis points
+  enabledCategories FoodCategory[]
+  featureFlags      Json           @default("{}")
+  updatedAt         DateTime       @updatedAt
 }
 
 model Notification {

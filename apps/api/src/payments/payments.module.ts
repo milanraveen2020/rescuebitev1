@@ -9,5 +9,6 @@ import { stripeProvider } from './stripe.provider';
   imports: [OrdersModule],
   controllers: [PaymentsController, WebhookController],
   providers: [PaymentsService, stripeProvider],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}
