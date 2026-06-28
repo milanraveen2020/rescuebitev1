@@ -162,7 +162,7 @@ model Store {
   logoUrl         String?
   coverUrl        String?
   openingHours    String?      // free-text opening hours, e.g. "Mon–Fri 9–18"
-  currency        String       @default("EUR")
+  currency        String       @default("LKR")
   stripeAccountId String?
   payoutsEnabled  Boolean      @default(false)
   rating          Float        @default(0) // denormalized average of approved reviews
@@ -220,7 +220,7 @@ model Order {
   quantity              Int
   unitPrice             Int // minor units (cents) at time of order
   totalAmount           Int // minor units (cents)
-  currency              String      @default("EUR")
+  currency              String      @default("LKR")
   status                OrderStatus @default(RESERVED)
   pickupCode            String      @unique // short human-friendly collection code
   stripePaymentIntentId String?

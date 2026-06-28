@@ -167,7 +167,7 @@ function receiptTable(data: OrderEmailData): string {
 
 function formatMoney(amountMinor: number, currency: string): string {
   try {
-    return new Intl.NumberFormat('en-IE', { style: 'currency', currency }).format(
+    return new Intl.NumberFormat('en-LK', { style: 'currency', currency }).format(
       amountMinor / 100,
     );
   } catch {
