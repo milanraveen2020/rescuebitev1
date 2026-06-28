@@ -8,7 +8,13 @@ import {
 } from '@nestjs/common';
 import type Stripe from 'stripe';
 import { OrderStatus } from '@prisma/client';
-import type { CheckoutSession, ConnectStatus, OnboardingLink, OrderDetail } from '@rescuebite/types';
+import type {
+  CheckoutSession,
+  ConnectStatus,
+  OnboardingLink,
+  OrderDetail,
+  Transfer,
+} from '@rescuebite/types';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { OrdersService } from '../orders/orders.service';
@@ -57,7 +63,12 @@ export class PaymentsService {
   async getConnectStatus(merchantUserId: string): Promise<ConnectStatus> {
     const store = await this.requireOwnedStore(merchantUserId);
     if (!store.stripeAccountId) {
-      return { stripeAccountId: null, connected: false, payoutsEnabled: false, detailsSubmitted: false };
+      return {
+        stripeAccountId: null,
+        connected: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+      };
     }
     // Reconcile against Stripe when available so the dashboard is accurate.
     if (this.stripe) {
@@ -79,6 +90,22 @@ export class PaymentsService {
       payoutsEnabled: store.payoutsEnabled,
       detailsSubmitted: store.payoutsEnabled,
     };
+  }
+
+  /** Recent Stripe transfers (payouts to the connected account). */
+  async listTransfers(merchantUserId: string): Promise<Transfer[]> {
+    const store = await this.requireOwnedStore(merchantUserId);
+    if (!store.stripeAccountId || !this.stripe) return [];
+    const transfers = await this.stripe.transfers.list({
+      destination: store.stripeAccountId,
+      limit: 10,
+    });
+    return transfers.data.map((t) => ({
+      id: t.id,
+      amountMinor: t.amount,
+      currency: t.currency.toUpperCase(),
+      createdAt: new Date(t.created * 1000).toISOString(),
+    }));
   }
 
   // --- Customer checkout ---------------------------------------------------

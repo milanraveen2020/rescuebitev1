@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { OrderDetail, StoreOrders } from '@rescuebite/types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -10,7 +19,7 @@ import { OrdersService } from './orders.service';
 /** Merchant-facing order endpoints (store-scoped). */
 @ApiTags('merchant-orders')
 @ApiBearerAuth()
-@Roles('MERCHANT_OWNER')
+@Roles('MERCHANT_OWNER', 'MERCHANT_STAFF')
 @Controller()
 export class MerchantOrdersController {
   constructor(private readonly orders: OrdersService) {}

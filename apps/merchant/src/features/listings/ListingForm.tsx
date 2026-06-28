@@ -264,7 +264,11 @@ export function ListingForm({ mode, initial }: Props) {
         {uploading ? <p className="text-sm text-muted-foreground">Uploading…</p> : null}
         {form.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={form.imageUrl} alt="Listing preview" className="mt-2 h-24 rounded-md object-cover" />
+          <img
+            src={form.imageUrl}
+            alt="Listing preview"
+            className="mt-2 h-24 rounded-md object-cover"
+          />
         ) : null}
       </Field>
 

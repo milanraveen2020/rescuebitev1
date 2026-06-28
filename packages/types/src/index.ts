@@ -3,6 +3,7 @@ export * from './enums.js';
 export * from './entities.js';
 export * from './auth.js';
 export * from './listings.js';
+export * from './merchant.js';
 export * from './orders.js';
 export * from './payments.js';
 export * from './pagination.js';

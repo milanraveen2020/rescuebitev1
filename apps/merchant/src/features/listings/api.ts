@@ -10,6 +10,31 @@ import {
 } from '@rescuebite/types';
 import { authedFetch } from '@/lib/session';
 
+/** Copy a listing's content into a fresh create payload (status decided by caller). */
+function copyFrom(listing: Listing): Omit<CreateListingInput, 'status'> {
+  return {
+    title: listing.title,
+    description: listing.description ?? undefined,
+    category: listing.category,
+    originalPrice: listing.originalPrice,
+    price: listing.price,
+    quantityTotal: listing.quantityTotal,
+    pickupStart: listing.pickupStart,
+    pickupEnd: listing.pickupEnd,
+    imageUrl: listing.imageUrl ?? undefined,
+  };
+}
+
+/** A sensible default evening pickup window for today, never in the past. */
+function defaultTodayWindow(): { pickupStart: string; pickupEnd: string } {
+  const start = new Date();
+  start.setHours(17, 0, 0, 0);
+  const earliest = new Date(Date.now() + 30 * 60 * 1000);
+  if (start < earliest) start.setTime(earliest.getTime());
+  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
+  return { pickupStart: start.toISOString(), pickupEnd: end.toISOString() };
+}
+
 export class ListingApiError extends Error {
   constructor(
     readonly code: ApiErrorCode,
@@ -27,9 +52,12 @@ async function parseJson(response: Response): Promise<unknown> {
     const parsed = ApiErrorResponseSchema.safeParse(json);
     if (parsed.success) {
       const details = parsed.data.error.details as
-        | { fieldErrors?: Record<string, string[]> }
-        | undefined;
-      throw new ListingApiError(parsed.data.error.code, parsed.data.error.message, details?.fieldErrors);
+        { fieldErrors?: Record<string, string[]> } | undefined;
+      throw new ListingApiError(
+        parsed.data.error.code,
+        parsed.data.error.message,
+        details?.fieldErrors,
+      );
     }
     throw new ListingApiError('internal_error', 'Something went wrong. Please try again.');
   }
@@ -66,6 +94,16 @@ export async function updateListing(id: string, input: UpdateListingInput): Prom
     }),
   );
   return ListingSchema.parse(json);
+}
+
+/** Duplicate a listing as a new DRAFT (same content, ready to tweak). */
+export async function duplicateListing(listing: Listing): Promise<Listing> {
+  return createListing({ ...copyFrom(listing), title: `${listing.title} (copy)`, status: 'DRAFT' });
+}
+
+/** Publish a listing's content live for today with a default pickup window. */
+export async function publishForToday(listing: Listing): Promise<Listing> {
+  return createListing({ ...copyFrom(listing), ...defaultTodayWindow(), status: 'ACTIVE' });
 }
 
 /**

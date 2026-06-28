@@ -1,6 +1,12 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { CheckoutSession, ConnectStatus, OnboardingLink, OrderDetail } from '@rescuebite/types';
+import type {
+  CheckoutSession,
+  ConnectStatus,
+  OnboardingLink,
+  OrderDetail,
+  Transfer,
+} from '@rescuebite/types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -32,6 +38,13 @@ export class PaymentsController {
   @Get('connect/status')
   connectStatus(@CurrentUser() user: AuthenticatedUser): Promise<ConnectStatus> {
     return this.payments.getConnectStatus(user.id);
+  }
+
+  @ApiBearerAuth()
+  @Roles('MERCHANT_OWNER')
+  @Get('transfers')
+  transfers(@CurrentUser() user: AuthenticatedUser): Promise<Transfer[]> {
+    return this.payments.listTransfers(user.id);
   }
 
   @ApiBearerAuth()

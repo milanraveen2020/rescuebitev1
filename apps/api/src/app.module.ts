@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { ListingsModule } from './listings/listings.module';
+import { MerchantModule } from './merchant/merchant.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { HealthModule } from './health/health.module';
@@ -30,6 +31,7 @@ import { HealthModule } from './health/health.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     AuthModule,
     ListingsModule,
+    MerchantModule,
     OrdersModule,
     PaymentsModule,
     HealthModule,

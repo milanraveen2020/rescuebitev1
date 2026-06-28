@@ -267,7 +267,7 @@ export class OrdersService {
   /** Merchant view of a store's orders, split into today's and upcoming pickups. */
   async storeOrders(merchantUserId: string, storeId: string): Promise<StoreOrders> {
     const store = await this.prisma.store.findUnique({ where: { id: storeId } });
-    if (!store || store.ownerId !== merchantUserId) {
+    if (!store || !(await this.canManageStore(merchantUserId, store))) {
       throw new NotFoundException('Store not found.');
     }
 
@@ -369,7 +369,10 @@ export class OrdersService {
     });
     // Re-open a sold-out listing if its window is still open.
     if (listing.status === ListingStatus.SOLD_OUT && listing.pickupEnd.getTime() > Date.now()) {
-      await tx.listing.update({ where: { id: listing.id }, data: { status: ListingStatus.ACTIVE } });
+      await tx.listing.update({
+        where: { id: listing.id },
+        data: { status: ListingStatus.ACTIVE },
+      });
     }
   }
 
@@ -404,10 +407,23 @@ export class OrdersService {
       where: { id: orderId },
       include: { listing: true, store: true, review: true },
     });
-    if (!order || order.store.ownerId !== merchantUserId) {
+    if (!order || !(await this.canManageStore(merchantUserId, order.store))) {
       throw new NotFoundException('Order not found.');
     }
     return order;
+  }
+
+  /** A user can manage a store if they own it or are linked staff. */
+  private async canManageStore(
+    userId: string,
+    store: { id: string; ownerId: string },
+  ): Promise<boolean> {
+    if (store.ownerId === userId) return true;
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { staffStoreId: true },
+    });
+    return user?.staffStoreId === store.id;
   }
 
   private emitOrder(event: string, order: Order, reason?: string): void {

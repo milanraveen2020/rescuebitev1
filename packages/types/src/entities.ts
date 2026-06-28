@@ -52,6 +52,7 @@ export const StoreSchema = z.object({
   lng: z.number().min(-180).max(180),
   logoUrl: z.string().url().nullable(),
   coverUrl: z.string().url().nullable(),
+  openingHours: z.string().nullable(),
   currency: CurrencySchema,
   stripeAccountId: z.string().nullable(),
   payoutsEnabled: z.boolean(),
