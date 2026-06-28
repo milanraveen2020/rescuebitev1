@@ -4,12 +4,16 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/app-config.service';
+import { initMonitoring } from './common/monitoring/monitoring';
 
 async function bootstrap(): Promise<void> {
   // rawBody keeps the unparsed request body available for Stripe webhook
   // signature verification, while JSON parsing still works for other routes.
   const app = await NestFactory.create(AppModule, { rawBody: true });
   const config = app.get(AppConfigService);
+
+  // Error monitoring — inert unless SENTRY_DSN is configured.
+  initMonitoring(config.sentryDsn, config.nodeEnv);
 
   app.use(cookieParser());
 

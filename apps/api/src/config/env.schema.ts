@@ -61,6 +61,9 @@ export const EnvSchema = z.object({
 
   // Expo push. When unset, push notifications are logged instead of sent.
   EXPO_ACCESS_TOKEN: z.string().min(1).optional(),
+
+  // Error monitoring (Sentry). When unset, monitoring is disabled entirely.
+  SENTRY_DSN: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

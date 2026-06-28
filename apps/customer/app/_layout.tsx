@@ -8,7 +8,11 @@ import { ToastProvider } from '@rescuebite/ui/native';
 import { STRIPE_PUBLISHABLE_KEY } from '../src/api/client';
 import { AuthProvider } from '../src/auth/AuthContext';
 import { FavoritesProvider } from '../src/favorites/FavoritesContext';
+import { initMonitoring } from '../src/lib/monitoring';
 import { isExpoGo } from '../src/lib/runtime';
+
+// Initialize error monitoring once at startup (no-op unless a DSN is configured).
+initMonitoring();
 
 /** Stripe's native module isn't in Expo Go, so only mount its provider elsewhere. */
 function PaymentsProvider({ children }: { children: ReactElement }) {

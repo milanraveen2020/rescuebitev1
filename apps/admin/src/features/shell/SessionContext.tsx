@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import type { User } from '@rescuebite/types';
 import { logout, refreshSession } from '@/lib/auth';
 import { setAccessToken } from '@/lib/session';
+import { initMonitoring } from '@/lib/monitoring';
+
+// Initialize error monitoring once on the client (no-op unless a DSN is set).
+initMonitoring();
 
 interface SessionValue {
   user: User;

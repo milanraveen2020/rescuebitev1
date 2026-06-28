@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import type { Request, Response } from 'express';
 import { ZodError, type ZodIssue } from 'zod';
 import type { ApiError, ApiErrorCode, ApiErrorResponse } from '@rescuebite/types';
+import { captureException } from '../monitoring/monitoring';
 
 /**
  * Detect a ZodError structurally as well as by instanceof. Schemas from
@@ -68,6 +69,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
         `${request.method} ${request.url} -> ${status} ${error.code}`,
         exception instanceof Error ? exception.stack : String(exception),
       );
+      // Forward unexpected server errors to monitoring (no-op unless configured).
+      captureException(exception);
     }
 
     const body: ApiErrorResponse = { error };

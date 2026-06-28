@@ -6,6 +6,10 @@ import type { Store, User } from '@rescuebite/types';
 import { AuthError, logout, refreshSession } from '@/lib/auth';
 import { setAccessToken } from '@/lib/session';
 import { getStore } from '@/features/store/api';
+import { initMonitoring } from '@/lib/monitoring';
+
+// Initialize error monitoring once on the client (no-op unless a DSN is set).
+initMonitoring();
 
 interface SessionValue {
   user: User;

@@ -82,6 +82,10 @@ export class AppConfigService {
     return this.config.get('EXPO_ACCESS_TOKEN', { infer: true });
   }
 
+  get sentryDsn(): string | undefined {
+    return this.config.get('SENTRY_DSN', { infer: true });
+  }
+
   get s3(): {
     bucket?: string;
     region: string;

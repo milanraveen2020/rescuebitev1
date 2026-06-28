@@ -110,3 +110,58 @@ describe('PaymentsService.constructEvent', () => {
     );
   });
 });
+
+describe('PaymentsService checkout (mocked Stripe)', () => {
+  function checkoutSetup() {
+    const order = {
+      id: 'order_1',
+      customerId: 'cust_1',
+      quantity: 2,
+      unitPrice: 500,
+      currency: 'EUR',
+      status: 'RESERVED',
+      stripePaymentIntentId: null,
+      store: { stripeAccountId: 'acct_123', payoutsEnabled: true },
+    };
+    const paymentIntents = {
+      create: jest
+        .fn()
+        .mockResolvedValue({
+          id: 'pi_new',
+          client_secret: 'secret_123',
+          status: 'requires_payment_method',
+        }),
+      retrieve: jest.fn(),
+    };
+    const stripe = { paymentIntents } as unknown as StripeClient;
+    const prisma = { order: { findUnique: jest.fn().mockResolvedValue(order) } };
+    const config = { platformFeeBps: 1000, stripePublishableKey: 'pk_test_x' } as AppConfigService;
+    const orders = { attachPaymentIntent: jest.fn().mockResolvedValue(undefined) };
+    const settings = { getCommissionBps: jest.fn().mockResolvedValue(1000) };
+    const service = new PaymentsService(
+      stripe,
+      prisma as unknown as PrismaService,
+      config,
+      orders as unknown as OrdersService,
+      settings as unknown as SettingsService,
+    );
+    return { service, paymentIntents, orders };
+  }
+
+  it('creates a PaymentIntent with the recomputed amount and platform fee', async () => {
+    const { service, paymentIntents, orders } = checkoutSetup();
+    const session = await service.createCheckout('cust_1', 'order_1');
+
+    // amount = unitPrice(500) * qty(2) = 1000; fee = 10% = 100; never trust the client.
+    expect(paymentIntents.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: 1000,
+        currency: 'eur',
+        application_fee_amount: 100,
+        transfer_data: { destination: 'acct_123' },
+      }),
+    );
+    expect(orders.attachPaymentIntent).toHaveBeenCalledWith('order_1', 'pi_new');
+    expect(session.clientSecret).toBe('secret_123');
+  });
+});
