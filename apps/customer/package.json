@@ -11,7 +11,8 @@
     "build": "expo export",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .expo dist .turbo *.tsbuildinfo"
+    "clean": "rm -rf .expo dist .turbo *.tsbuildinfo",
+    "eas-build-post-install": "pnpm --filter @rescuebite/types build && pnpm --filter @rescuebite/api-client build && pnpm --filter @rescuebite/ui build"
   },
   "dependencies": {
     "@babel/runtime": "^7.25.0",
@@ -25,6 +26,7 @@
     "expo": "~52.0.0",
     "expo-calendar": "~14.0.6",
     "expo-constants": "~17.0.0",
+    "expo-dev-client": "~5.0.0",
     "expo-image": "~2.0.0",
     "expo-linking": "~7.0.0",
     "expo-location": "~18.0.4",

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "RescueBite",
-    "slug": "rescuebite-customer",
+    "slug": "rescuebite",
     "scheme": "rescuebite",
     "version": "0.0.0",
     "orientation": "portrait",
@@ -19,26 +19,43 @@
       "package": "com.rescuebite.customer",
       "adaptiveIcon": {
         "backgroundColor": "#12b76a"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
+      ]
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       [
         "expo-location",
-        { "locationWhenInUsePermission": "RescueBite uses your location to find surprise bags nearby." }
+        {
+          "locationWhenInUsePermission": "RescueBite uses your location to find surprise bags nearby."
+        }
       ],
       [
         "expo-calendar",
-        { "calendarPermission": "RescueBite adds your pickup window to your calendar." }
+        {
+          "calendarPermission": "RescueBite adds your pickup window to your calendar."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": false
     },
     "extra": {
-      "apiBaseUrl": "http://localhost:4000",
-      "stripePublishableKey": "pk_test_unset"
-    }
+      "apiBaseUrl": "http://192.168.1.121:4000",
+      "stripePublishableKey": "pk_test_unset",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "af23bdfb-2dd5-4950-b811-f771a1f6683b"
+      }
+    },
+    "owner": "milanraveens-organization"
   }
 }
