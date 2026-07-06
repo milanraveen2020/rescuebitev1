@@ -77,6 +77,16 @@ rescuebite/
 - **No empty catches.** `no-empty` (with `allowEmptyCatch: false`) is enforced. Either handle the error, convert it to a typed result, or rethrow — never swallow it.
 - **Promises are handled.** `no-floating-promises` / `no-misused-promises` are on; `await` or explicitly `void` every promise.
 
+## Local development & testing
+
+Code is written on a headless Linux box, but **features are tested on an Android emulator (AVD) on the developer's host PC** — that is the canonical test loop. "Works" means *works on the host AVD*, not merely a green typecheck/lint/test.
+
+- **Run order (all on the host):** (1) PostgreSQL 16 with role/password/db all `rescuebite` on `:5432` (matches the default `DATABASE_URL`); (2) API — `pnpm --filter @rescuebite/api dev` → `http://localhost:4000` (health at `/health`); (3) customer app — `cd apps/customer && npx expo run:android`.
+- **Emulator API URL.** The customer app reads its API base URL from `apps/customer/app.json` → `expo.extra.apiBaseUrl` (the `EXPO_PUBLIC_API_BASE_URL` in `.env` is currently **unused**). For the Android emulator this must be **`http://10.0.2.2:4000`** — `10.0.2.2` is the host's loopback as seen from the AVD; `localhost` points at the emulator itself. A physical device uses the host's LAN IP.
+- **No Expo Go — dev build only.** The app bundles native modules (`@stripe/stripe-react-native`, `expo-dev-client`, `react-native-maps`), so it runs only as a **dev build** via `expo run:android` (the first run does an implicit `expo prebuild`; `android/` is not committed). Adding a native module forces a rebuild — call it out in the PR.
+- **Env files are gitignored** (only `*.env.example` is tracked). After cloning, create `apps/api/.env` from `apps/api/.env.example`; build the shared packages (`types`, `api-client`, `ui`) before running the app so it resolves their `dist/`.
+- **Known gaps when testing:** payments don't complete (Stripe keys are placeholders; PayHere is unbuilt), and seed data is around Dublin (`53.3478, -6.2497`).
+
 ## Git & commit authorship
 
 These are **privacy requirements** and apply to **every** commit — human or AI-generated, no exceptions. A commit that breaks any of them is a defect: amend it before pushing.
@@ -94,7 +104,7 @@ A change is done only when **all** of these hold:
 1. **Typechecks** — `pnpm typecheck` passes with no errors and no new `any`.
 2. **Lints** — `pnpm lint` passes (including the no-`any`, named-export, and no-silent-catch rules).
 3. **Tested** — business logic has unit tests; boundary validation and error mapping are covered.
-4. **All states handled** — every async UI surface handles **loading, empty, and error** states (not just the happy path).
+4. **All states handled** — every async UI surface handles **loading, empty, and error** states (not just the happy path). Customer-app changes are exercised on the **host Android emulator** (dev build), not just unit-tested (see *Local development & testing*).
 5. **Formatted** — `pnpm format` has been run.
 6. **Conventions honored** — types live in `packages/types`, network calls go through `packages/api-client`, styling uses `packages/ui` tokens, and accessibility (labels, contrast, touch targets) is verified.
 7. **Commit hygiene** — authored as `ParaBoyLord <>` with **no email, no credentials, and no `Co-Authored-By`/attribution trailer** (see *Git & commit authorship*).

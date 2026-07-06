@@ -55,7 +55,7 @@
       "typedRoutes": false
     },
     "extra": {
-      "apiBaseUrl": "http://192.168.1.121:4000",
+      "apiBaseUrl": "http://10.0.2.2:4000",
       "stripePublishableKey": "pk_test_unset",
       "router": {
         "origin": false
