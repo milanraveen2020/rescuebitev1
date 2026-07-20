@@ -83,9 +83,50 @@ Code is written on a headless Linux box, but **features are tested on an Android
 
 - **Run order (all on the host):** (1) PostgreSQL 16 with role/password/db all `rescuebite` on `:5432` (matches the default `DATABASE_URL`); (2) API — `pnpm --filter @rescuebite/api dev` → `http://localhost:4000` (health at `/health`); (3) customer app — `cd apps/customer && npx expo run:android`.
 - **Emulator API URL.** The customer app reads its API base URL from `apps/customer/app.json` → `expo.extra.apiBaseUrl` (the `EXPO_PUBLIC_API_BASE_URL` in `.env` is currently **unused**). For the Android emulator this must be **`http://10.0.2.2:4000`** — `10.0.2.2` is the host's loopback as seen from the AVD; `localhost` points at the emulator itself. A physical device uses the host's LAN IP.
-- **No Expo Go — dev build only.** The app bundles native modules (`@stripe/stripe-react-native`, `expo-dev-client`, `react-native-maps`), so it runs only as a **dev build** via `expo run:android` (the first run does an implicit `expo prebuild`; `android/` is not committed). Adding a native module forces a rebuild — call it out in the PR.
+- **No Expo Go — dev build only.** The app bundles native modules (`@stripe/stripe-react-native`, `expo-dev-client`, `react-native-maps`), so it runs only as a **dev build** via `expo run:android` (the first run does an implicit `expo prebuild`; `android/` is not committed). Adding a native module forces a rebuild — call it out in the PR. **On Windows, `expo run:android` does NOT work as-is — follow the *Windows host build* recipe below instead.**
 - **Env files are gitignored** (only `*.env.example` is tracked). After cloning, create `apps/api/.env` from `apps/api/.env.example`; build the shared packages (`types`, `api-client`, `ui`) before running the app so it resolves their `dist/`.
 - **Known gaps when testing:** payments don't complete (Stripe keys are placeholders; PayHere is unbuilt), and seed data is around Dublin (`53.3478, -6.2497`).
+
+### Windows host build (customer app) — known-good recipe
+
+Building the customer dev client on **Windows** hits several native-toolchain traps that don't occur on macOS/Linux. The steps below are the verified working recipe (Windows 11, Android Studio + NDK 27, RN 0.81, pnpm 9). Do them in order; **do not use `expo run:android`** — it forces an `arm64-v8a` build that fails on Windows.
+
+**One-time host setup:**
+
+1. **Short project path.** Clone to a short root like `D:\myst` — *not* a deep path like `C:\Users\<you>\Work\...`. pnpm's virtual-store folder names are very long; combined with a deep path they blow past Windows' 260-char and CMake's 250-char object-path limits, and native builds fail with "cannot find file" / "manifest 'build.ninja' still dirty".
+2. **`.npmrc` ships `virtual-store-dir-max-length=40`** (already committed) — shortens `node_modules/.pnpm/*` names, the single biggest cause of the path-length failures. If it's ever missing, add it, delete `node_modules`, and re-run `pnpm install`.
+3. **Enable Windows long paths once** (admin PowerShell), then reboot:
+   ```powershell
+   New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
+   ```
+4. **Environment variables** (User vars; reopen the terminal after setting):
+   - `ANDROID_HOME` → SDK path (e.g. `D:\AndroidSDK`); add `%ANDROID_HOME%\platform-tools` and `%ANDROID_HOME%\emulator` to `PATH`.
+   - `JAVA_HOME` → Android Studio's bundled JDK, `<AndroidStudioInstall>\jbr`; add `%JAVA_HOME%\bin` to `PATH`.
+   - Remove any stale Oracle Java from the **System** `PATH` — a broken `C:\ProgramData\Oracle\Java\javapath` shadows the JDK and makes `java` fail (`could not find java.dll`). Verify with `where java` (the `jbr` one must be first) and `java -version`.
+5. **pnpm via Corepack** (admin terminal for the first two): `corepack enable`, `corepack prepare pnpm@9.12.0 --activate`. If PowerShell blocks `pnpm.ps1`, run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+6. **CMake 3.31.6** — install via Android Studio → SDK Manager → SDK Tools → (tick *Show Package Details*) → CMake. Emulator: a lightweight AVD (e.g. Pixel 6a, **Google APIs** image — not Play Store, non-"16 KB Page Size"), Graphics = Hardware, and on Optimus laptops point `emulator.exe` at the discrete GPU in the NVIDIA Control Panel.
+
+**Build + run (the important part):**
+
+```powershell
+# DB + API first (see Run order above): docker start rescuebite-db; pnpm dev:api
+cd apps\customer
+npx expo prebuild --platform android          # regenerates android/ (not committed)
+cd android
+.\gradlew.bat app:assembleDebug -x lint -x test -PreactNativeArchitectures=x86_64
+#   ^ x86_64 ONLY — skips the arm64 build that fails on Windows (NDK 27 lld rejects
+#     -z / --no-rosegment / --no-undefined-version). The emulator is x86_64, so arm64
+#     is not needed. First build ~30 min; the emulator need NOT be running to compile.
+adb install -r app\build\outputs\apk\debug\app-debug.apk   # emulator must be booted here
+cd ..
+npx expo start                                 # then press "a" to open on the emulator
+```
+
+**Gotchas / recovery:**
+
+- **Gradle fails reading `metadata.bin` or a transform** → the `%USERPROFILE%\.gradle\caches` is corrupted (usually an interrupted delete). Fix: `.\gradlew.bat --stop`, then delete `%USERPROFILE%\.gradle\caches`, then rebuild (re-downloads Gradle bits). If files are locked, `taskkill /F /IM java.exe` first (close Android Studio too).
+- **Getting new builds later:** only re-run the *Build + run* block when **native** code changes — a new native module, an `app.json` plugin/config change, or after `expo prebuild`. Everyday JS/TS/UI edits hot-reload through `npx expo start` on the already-installed APK; **no rebuild needed**. After pulling a PR that adds a native dependency, do a fresh `expo prebuild` + `gradlew assembleDebug` (delete `apps/customer/android` first if it's stale).
+- **Disk hygiene:** Gradle caches (`%USERPROFILE%\.gradle`) and AVD data (`%USERPROFILE%\.android\avd`) default to C:. Keep the Gradle cache (it speeds up rebuilds); reclaim emulator space via Device Manager → Wipe Data. To stop them growing C: at all, set `GRADLE_USER_HOME` and `ANDROID_AVD_HOME` to D: paths.
 
 ## Git & commit authorship
 
