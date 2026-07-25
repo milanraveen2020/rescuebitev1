@@ -1,5 +1,5 @@
 /**
- * RescueBite seed.
+ * Mystery Box seed.
  *
  * Creates a realistic-but-small dataset so every screen across the customer,
  * merchant, and admin apps has something to render:

@@ -53,7 +53,7 @@ function LoginForm() {
       <Card className="w-full max-w-sm shadow-xl">
         <form onSubmit={(e) => void onSubmit(e)} className="space-y-5" noValidate>
           <div className="space-y-1">
-            <h1 className="font-display text-2xl font-bold text-neutral-900">RescueBite Admin</h1>
+            <h1 className="font-display text-2xl font-bold text-neutral-900">Mystery Box Admin</h1>
             <p className="text-sm text-neutral-500">Administrator access only.</p>
           </div>
 

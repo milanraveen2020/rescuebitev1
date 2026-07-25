@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "RescueBite React Native (Expo)",
+  "display": "Mystery Box React Native (Expo)",
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],

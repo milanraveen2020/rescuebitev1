@@ -4,7 +4,7 @@ import prettier from "eslint-config-prettier";
 import globals from "globals";
 
 /**
- * Shared base ESLint flat config for all RescueBite TypeScript code.
+ * Shared base ESLint flat config for all Mystery Box TypeScript code.
  * Enforces the project's "no any, no silent catches" standards.
  */
 export default tseslint.config(

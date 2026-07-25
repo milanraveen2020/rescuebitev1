@@ -10,7 +10,8 @@ import {
   useToast,
 } from '@rescuebite/ui/native';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
-import { useCancelOrder, useOrder, useReviewOrder } from '../../src/api/queries';
+import { useOrder, useReviewOrder } from '../../src/api/queries';
+import { BackButton } from '../../src/components/BackButton';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
 import { addPickupToCalendar } from '../../src/lib/calendar';
@@ -30,7 +31,6 @@ export default function OrderScreen() {
   const router = useRouter();
   const { toast } = useToast();
   const { data: order, isLoading, isError, refetch } = useOrder(id);
-  const cancel = useCancelOrder();
   const review = useReviewOrder();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -53,7 +53,6 @@ export default function OrderScreen() {
 
   const showCode = order.status === 'RESERVED' || order.status === 'PAID';
   const windowState = pickupWindowState(order.listing.pickupStart, order.listing.pickupEnd);
-  const canCancel = order.status === 'RESERVED' || order.status === 'PAID';
   const canReview = order.status === 'COLLECTED' && order.review === null;
 
   async function onAddToCalendar() {
@@ -66,13 +65,6 @@ export default function OrderScreen() {
       notes: `Pickup code: ${order.pickupCode}`,
     });
     toast(ok ? 'Added to your calendar' : 'Calendar permission denied', ok ? 'success' : 'error');
-  }
-
-  async function onCancel() {
-    await cancel
-      .mutateAsync(id)
-      .then(() => toast('Reservation cancelled', 'neutral'))
-      .catch(() => toast('Could not cancel', 'error'));
   }
 
   async function onSubmitReview() {
@@ -88,8 +80,16 @@ export default function OrderScreen() {
 
   return (
     <Screen edges={['bottom']}>
-      <Stack.Screen options={{ headerShown: true, title: 'Your order' }} />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: '',
+          headerStyle: { backgroundColor: colors.surface.page },
+          headerLeft: () => <BackButton variant="floating" />,
+        }}
+      />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.heading}>Your order</Text>
         <View style={styles.statusRow}>
           <Badge label={order.status} tone={STATUS_TONE[order.status]} />
           {showCode ? (
@@ -103,7 +103,11 @@ export default function OrderScreen() {
           <Card style={styles.codeCard}>
             <Text style={styles.codeLabel}>Show this code at pickup</Text>
             <Text style={styles.code}>{order.pickupCode}</Text>
-            <PickupWindowChip start={order.listing.pickupStart} end={order.listing.pickupEnd} />
+            <PickupWindowChip
+              start={order.listing.pickupStart}
+              end={order.listing.pickupEnd}
+              style={styles.pickupChip}
+            />
             <Button
               label="Add to calendar"
               variant="secondary"
@@ -150,15 +154,6 @@ export default function OrderScreen() {
           </Card>
         ) : null}
 
-        {canCancel ? (
-          <Button
-            label="Cancel reservation"
-            variant="ghost"
-            onPress={() => void onCancel()}
-            loading={cancel.isPending}
-            block
-          />
-        ) : null}
         <Button
           label="Back to discover"
           variant="ghost"
@@ -172,11 +167,13 @@ export default function OrderScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: spacing[4], gap: spacing[3] },
+  heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
   statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   countdown: { fontSize: typography.fontSize.sm, color: colors.neutral[600], fontWeight: '500' },
   codeCard: { alignItems: 'center', gap: spacing[3], backgroundColor: colors.brand[50] },
   codeLabel: { fontSize: typography.fontSize.sm, color: colors.brand[800] },
   code: { fontSize: 44, fontWeight: '800', letterSpacing: 6, color: colors.brand[800] },
+  pickupChip: { alignSelf: 'center' },
   infoCard: { gap: spacing[1] },
   reviewCard: { gap: spacing[3] },
   store: { fontSize: typography.fontSize.sm, color: colors.neutral[500] },
@@ -190,8 +187,9 @@ const styles = StyleSheet.create({
   commentInput: {
     minHeight: 72,
     borderWidth: 1,
-    borderColor: colors.neutral[300],
-    borderRadius: radii.md,
+    borderColor: 'transparent',
+    backgroundColor: colors.surface.raised,
+    borderRadius: radii.lg,
     padding: spacing[3],
     fontSize: typography.fontSize.base,
     color: colors.neutral[900],

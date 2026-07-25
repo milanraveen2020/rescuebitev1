@@ -61,7 +61,7 @@ export async function unwrap<T>(run: () => Promise<FetchResult<T>>): Promise<T> 
   try {
     result = await run();
   } catch {
-    throw new ApiError('internal_error', 'Could not reach RescueBite. Check your connection.');
+    throw new ApiError('internal_error', 'Could not reach Mystery Box. Check your connection.');
   }
 
   if (result.response.status === 401 && (await tryRefresh())) {

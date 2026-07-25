@@ -1,5 +1,5 @@
 /**
- * Shared Tailwind preset for RescueBite web apps (merchant, admin).
+ * Shared Tailwind preset for Mystery Box web apps (merchant, admin).
  * Mirrors the design tokens in `src/tokens.ts`. Loaded by Tailwind's config
  * at build time, so it stays plain ESM with no build step / workspace dist dependency.
  */

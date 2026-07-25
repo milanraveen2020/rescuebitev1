@@ -43,7 +43,7 @@ export default function SignupScreen() {
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Join RescueBite</Text>
+          <Text style={styles.title}>Join Mystery Box</Text>
           <Text style={styles.subtitle}>Save food, save money, every day.</Text>
 
           <FormError message={error} />

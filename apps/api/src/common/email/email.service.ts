@@ -34,7 +34,7 @@ export class EmailService {
     const link = `${this.config.appWebUrl}/reset-password?token=${encodeURIComponent(token)}`;
     await this.send({
       to: email,
-      subject: 'Reset your RescueBite password',
+      subject: 'Reset your Mystery Box password',
       html: layout(
         'Reset your password',
         `<p>We received a request to reset your password. This link expires shortly.</p>
@@ -48,10 +48,10 @@ export class EmailService {
     const link = `${this.config.appWebUrl}/verify-email?token=${encodeURIComponent(token)}`;
     await this.send({
       to: email,
-      subject: 'Verify your RescueBite email',
+      subject: 'Verify your Mystery Box email',
       html: layout(
         'Confirm your email',
-        `<p>Welcome to RescueBite! Confirm your email to get started rescuing surplus food.</p>
+        `<p>Welcome to Mystery Box! Confirm your email to get started rescuing surplus food.</p>
          ${button('Verify email', link)}`,
       ),
     });
@@ -60,7 +60,7 @@ export class EmailService {
   async sendOrderConfirmation(data: OrderEmailData): Promise<void> {
     await this.send({
       to: data.email,
-      subject: `Your RescueBite order is confirmed — code ${data.pickupCode}`,
+      subject: `Your Mystery Box order is confirmed — code ${data.pickupCode}`,
       html: layout(
         'Order confirmed 🎉',
         `<p>Hi ${escape(data.name)}, your surprise bag is reserved. Show this code at pickup:</p>
@@ -76,7 +76,7 @@ export class EmailService {
   async sendRefundNotice(data: OrderEmailData): Promise<void> {
     await this.send({
       to: data.email,
-      subject: 'Your RescueBite order was refunded',
+      subject: 'Your Mystery Box order was refunded',
       html: layout(
         'Refund issued',
         `<p>Hi ${escape(data.name)}, we've refunded your order for <strong>${escape(data.listingTitle)}</strong> at ${escape(data.storeName)}.</p>
@@ -94,14 +94,14 @@ export class EmailService {
     reason?: string;
   }): Promise<void> {
     const body = args.approved
-      ? `<p>Great news, ${escape(args.name)} — <strong>${escape(args.storeName)}</strong> has been approved on RescueBite. You can now publish surprise bags and start rescuing food.</p>
+      ? `<p>Great news, ${escape(args.name)} — <strong>${escape(args.storeName)}</strong> has been approved on Mystery Box. You can now publish surprise bags and start rescuing food.</p>
          ${button('Open your dashboard', this.config.appWebUrl)}`
       : `<p>Hi ${escape(args.name)}, after review we're unable to approve <strong>${escape(args.storeName)}</strong> at this time.</p>
          ${args.reason ? `<p style="background:#fef2f2;border-radius:8px;padding:12px;color:#991b1b">${escape(args.reason)}</p>` : ''}
          <p>You can update your store details and reapply.</p>`;
     await this.send({
       to: args.email,
-      subject: args.approved ? 'Your RescueBite store is approved' : 'About your RescueBite store',
+      subject: args.approved ? 'Your Mystery Box store is approved' : 'About your Mystery Box store',
       html: layout(args.approved ? 'You’re approved! 🎉' : 'Store application update', body),
     });
   }
@@ -138,7 +138,7 @@ function layout(heading: string, inner: string): string {
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f8faf9;padding:32px">
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb">
       <div style="background:#15803d;padding:20px 28px">
-        <span style="color:#fff;font-size:20px;font-weight:700">RescueBite</span>
+        <span style="color:#fff;font-size:20px;font-weight:700">Mystery Box</span>
       </div>
       <div style="padding:28px">
         <h1 style="margin:0 0 16px;font-size:22px;color:#111827">${heading}</h1>

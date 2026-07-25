@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
     borderRadius: radii.pill,
-    paddingHorizontal: spacing[2],
-    paddingVertical: 2,
+    paddingHorizontal: spacing[3],
+    paddingVertical: 4,
   },
-  text: { fontSize: typography.fontSize.xs, fontWeight: '500' },
+  text: { fontSize: typography.fontSize.xs, fontWeight: '600' },
 });

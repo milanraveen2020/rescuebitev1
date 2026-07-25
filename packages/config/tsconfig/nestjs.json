@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "RescueBite NestJS",
+  "display": "Mystery Box NestJS",
   "extends": "./base.json",
   "compilerOptions": {
     "module": "CommonJS",

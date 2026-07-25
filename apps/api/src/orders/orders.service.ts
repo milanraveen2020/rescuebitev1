@@ -236,6 +236,21 @@ export class OrdersService {
     if (order) await this.markRefunded(order.id);
   }
 
+  /**
+   * Mark an order PAID without a Stripe PaymentIntent — used only when Stripe
+   * isn't configured (local dev with a placeholder key). Idempotent.
+   */
+  async markPaidDirectly(orderId: string): Promise<void> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.status !== OrderStatus.RESERVED) return;
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.PAID, reservationExpiresAt: null },
+      include: { listing: true, store: true, review: true },
+    });
+    this.emitOrder(OrderEvents.Paid, updated);
+  }
+
   /** Persist the PaymentIntent id created for an order during checkout. */
   async attachPaymentIntent(orderId: string, paymentIntentId: string): Promise<void> {
     await this.prisma.order.update({

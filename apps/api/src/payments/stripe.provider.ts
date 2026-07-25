@@ -7,11 +7,14 @@ export const STRIPE_CLIENT = Symbol('STRIPE_CLIENT');
 
 export type StripeClient = Stripe | null;
 
+/** The .env.example placeholder — never a real Stripe key. */
+const PLACEHOLDER_SECRET_KEY = 'sk_test_xxx';
+
 export const stripeProvider: Provider = {
   provide: STRIPE_CLIENT,
   inject: [AppConfigService],
   useFactory: (config: AppConfigService): StripeClient => {
     const key = config.stripeSecretKey;
-    return key ? new Stripe(key) : null;
+    return key && key !== PLACEHOLDER_SECRET_KEY ? new Stripe(key) : null;
   },
 };

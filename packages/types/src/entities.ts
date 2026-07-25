@@ -16,7 +16,7 @@ import {
 } from './primitives.js';
 
 /**
- * Core domain entities for RescueBite, expressed as Zod schemas so the same
+ * Core domain entities for Mystery Box, expressed as Zod schemas so the same
  * definition validates the API boundary and drives static types across every app.
  * These mirror the Prisma models in apps/api and are the single source of truth —
  * do not redeclare or hand-write these shapes anywhere else. Dates are serialized

@@ -114,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 function Brand() {
   return (
     <div className="flex items-center gap-2">
-      <span className="font-display text-lg font-bold text-white">RescueBite</span>
+      <span className="font-display text-lg font-bold text-white">Mystery Box</span>
       <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
         Admin
       </span>

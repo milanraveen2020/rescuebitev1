@@ -1,19 +1,24 @@
+import { useState } from 'react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Clock, History, type LucideIcon } from 'lucide-react-native';
 import type { OrderDetail } from '@rescuebite/types';
 import { Badge, Button, EmptyState } from '@rescuebite/ui/native';
-import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
+import { colors, elevation, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { useOrders } from '../../src/api/queries';
 import { useAuth } from '../../src/auth/AuthContext';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
 import { useCountdown } from '../../src/lib/time';
 
+type Tab = 'active' | 'past';
+
 export default function OrdersScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { data, isLoading, isError, refetch, isRefetching } = useOrders();
+  const [tab, setTab] = useState<Tab>('active');
 
   if (!isAuthenticated) {
     return (
@@ -29,6 +34,8 @@ export default function OrdersScreen() {
       </Screen>
     );
   }
+
+  const orders = data ? (tab === 'active' ? data.active : data.past) : [];
 
   return (
     <Screen>
@@ -46,39 +53,47 @@ export default function OrdersScreen() {
           />
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={styles.content}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={() => void refetch()}
-              tintColor={colors.brand[600]}
-            />
-          }
-        >
-          {data.active.length > 0 ? (
-            <Section title="Active">
-              {data.active.map((order) => (
-                <OrderRow
-                  key={order.id}
-                  order={order}
-                  onPress={() => router.push(`/order/${order.id}`)}
+        <>
+          <TabBar
+            active={tab}
+            onChange={setTab}
+            activeCount={data.active.length}
+            pastCount={data.past.length}
+          />
+          <ScrollView
+            contentContainerStyle={styles.content}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={() => void refetch()}
+                tintColor={colors.brand[600]}
+              />
+            }
+          >
+            {orders.length === 0 ? (
+              <View style={styles.tabEmpty}>
+                <EmptyState
+                  title={tab === 'active' ? 'No active orders' : 'No past orders'}
+                  description={
+                    tab === 'active'
+                      ? 'Reserve a surprise bag and it’ll show up here.'
+                      : 'Completed and cancelled orders will show up here.'
+                  }
                 />
-              ))}
-            </Section>
-          ) : null}
-          {data.past.length > 0 ? (
-            <Section title="Past">
-              {data.past.map((order) => (
-                <OrderRow
-                  key={order.id}
-                  order={order}
-                  onPress={() => router.push(`/order/${order.id}`)}
-                />
-              ))}
-            </Section>
-          ) : null}
-        </ScrollView>
+              </View>
+            ) : (
+              <View style={{ gap: spacing[3] }}>
+                {orders.map((order) => (
+                  <OrderRow
+                    key={order.id}
+                    order={order}
+                    onPress={() => router.push(`/order/${order.id}`)}
+                  />
+                ))}
+              </View>
+            )}
+          </ScrollView>
+        </>
       )}
     </Screen>
   );
@@ -92,12 +107,62 @@ function Header() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function TabBar({
+  active,
+  onChange,
+  activeCount,
+  pastCount,
+}: {
+  active: Tab;
+  onChange: (tab: Tab) => void;
+  activeCount: number;
+  pastCount: number;
+}) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={{ gap: spacing[3] }}>{children}</View>
+    <View style={styles.tabBar}>
+      <TabButton
+        label="Active"
+        count={activeCount}
+        icon={Clock}
+        selected={active === 'active'}
+        onPress={() => onChange('active')}
+      />
+      <TabButton
+        label="Past"
+        count={pastCount}
+        icon={History}
+        selected={active === 'past'}
+        onPress={() => onChange('past')}
+      />
     </View>
+  );
+}
+
+function TabButton({
+  label,
+  count,
+  icon: Icon,
+  selected,
+  onPress,
+}: {
+  label: string;
+  count: number;
+  icon: LucideIcon;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      style={[styles.tabBtn, selected ? styles.tabBtnActive : styles.tabBtnIdle]}
+    >
+      <Icon size={16} color={selected ? colors.neutral[0] : colors.neutral[500]} />
+      <Text style={[styles.tabText, selected ? styles.tabTextActive : styles.tabTextIdle]}>
+        {label} ({count})
+      </Text>
+    </Pressable>
   );
 }
 
@@ -141,21 +206,39 @@ function OrderRow({ order, onPress }: { order: OrderDetail; onPress: () => void 
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: spacing[4], paddingVertical: spacing[2] },
+  header: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[3] },
   heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
-  content: { padding: spacing[4], gap: spacing[5] },
+  content: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[6], gap: spacing[5] },
   center: { flex: 1, justifyContent: 'center' },
-  section: { gap: spacing[3] },
-  sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: '600', color: colors.neutral[900] },
+  tabEmpty: { paddingTop: spacing[8] },
+  tabBar: {
+    flexDirection: 'row',
+    gap: spacing[2],
+    paddingHorizontal: spacing[4],
+    paddingBottom: spacing[3],
+  },
+  tabBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 40,
+    borderRadius: radii.pill,
+  },
+  tabBtnActive: { backgroundColor: colors.brand[700] },
+  tabBtnIdle: { backgroundColor: colors.surface.card },
+  tabText: { fontSize: typography.fontSize.sm, fontWeight: '600' },
+  tabTextActive: { color: colors.neutral[0] },
+  tabTextIdle: { color: colors.neutral[700] },
   row: {
     flexDirection: 'row',
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.surface.card,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
     overflow: 'hidden',
+    ...elevation.sm,
   },
-  thumb: { width: 88, height: 88, backgroundColor: colors.neutral[100] },
+  thumb: { width: 88, height: 88, backgroundColor: colors.surface.sunken },
   rowBody: { flex: 1, padding: spacing[3], gap: spacing[1], justifyContent: 'center' },
   rowTop: {
     flexDirection: 'row',

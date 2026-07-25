@@ -2,7 +2,7 @@ import createOpenApiClient, { type Client, type Middleware } from 'openapi-fetch
 import type { paths } from './generated/openapi.js';
 
 /**
- * The RescueBite API client. Frontends import `createApiClient` and call typed
+ * The Mystery Box API client. Frontends import `createApiClient` and call typed
  * methods (`api.GET('/health')`, etc.) — never raw `fetch`. Paths, params,
  * request bodies, and responses are all typed from the generated OpenAPI schema,
  * so a breaking API change surfaces as a type error at build time.

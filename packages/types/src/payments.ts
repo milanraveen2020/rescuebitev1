@@ -15,6 +15,8 @@ export const CheckoutSessionSchema = z.object({
   applicationFee: MinorUnitsSchema,
   currency: CurrencySchema,
   publishableKey: z.string(),
+  /** True when Stripe isn't configured and the order was paid directly (dev-only). */
+  mock: z.boolean().optional(),
 });
 export type CheckoutSession = z.infer<typeof CheckoutSessionSchema>;
 

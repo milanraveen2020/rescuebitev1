@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "RescueBite Library (shared package)",
+  "display": "Mystery Box Library (shared package)",
   "extends": "./base.json",
   "compilerOptions": {
     "lib": ["ES2022"],

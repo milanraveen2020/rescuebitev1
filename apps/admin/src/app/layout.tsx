@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'RescueBite Admin',
-  description: 'Operate the RescueBite marketplace: merchants, listings, and orders.',
+  title: 'Mystery Box Admin',
+  description: 'Operate the Mystery Box marketplace: merchants, listings, and orders.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

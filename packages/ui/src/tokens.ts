@@ -1,22 +1,24 @@
 /**
- * RescueBite design tokens — the single source of truth for color, spacing,
+ * Mystery Box design tokens — the single source of truth for color, spacing,
  * radii, and typography across web (Tailwind) and React Native. Warm, sustainable,
  * a little playful. All spacing follows an 8pt grid; color pairs meet WCAG AA.
  */
 
 export const colors = {
-  // Brand: a warm, appetizing "rescue" green paired with a friendly amber.
+  // Brand: a soft, natural sage green — calm and appetizing against warm cream.
+  // 500 is the pastel "tint" used for chips/fills; 700 is the deep shade used
+  // for filled buttons with white text (meets WCAG AA contrast).
   brand: {
-    50: '#ecfdf3',
-    100: '#d1fadf',
-    200: '#a6f4c5',
-    300: '#6ce9a6',
-    400: '#32d583',
-    500: '#12b76a', // primary
-    600: '#039855',
-    700: '#027a48',
-    800: '#05603a',
-    900: '#054f31',
+    50: '#f1f7f4',
+    100: '#e6f0ea',
+    200: '#d0e5da',
+    300: '#b3d4c3',
+    400: '#97c2ab',
+    500: '#7fb39a', // primary (pastel sage)
+    600: '#5e9580',
+    700: '#436b59', // deep — white text on this meets AA
+    800: '#34564a',
+    900: '#284237',
   },
   accent: {
     50: '#fffaeb',
@@ -24,6 +26,14 @@ export const colors = {
     300: '#fec84b',
     500: '#f79009', // playful amber for highlights / "surprise"
     700: '#b54708',
+  },
+  // Warm, paper-like surfaces. The app sits on a cream `page`; content rises on
+  // `card`; inputs and quiet wells use `raised`/`sunken`.
+  surface: {
+    page: '#ece6dc', // warm cream app background
+    card: '#fffdf9', // warm white cards
+    raised: '#f5f0e7', // inputs, secondary tiles
+    sunken: '#e3dccf', // quiet wells (add tile, track backgrounds)
   },
   neutral: {
     0: '#ffffff',
@@ -69,6 +79,8 @@ export const radii = {
   md: 10,
   lg: 16,
   xl: 24,
+  '2xl': 28,
+  '3xl': 36,
   pill: 999,
 } as const;
 

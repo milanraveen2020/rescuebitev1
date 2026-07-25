@@ -1,26 +1,25 @@
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { StripeProvider } from '@stripe/stripe-react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@rescuebite/ui/native';
+import { colors } from '@rescuebite/ui/tokens';
 import { STRIPE_PUBLISHABLE_KEY } from '../src/api/client';
 import { AuthProvider } from '../src/auth/AuthContext';
+import { BackButton } from '../src/components/BackButton';
+import { SplashScreen } from '../src/components/SplashScreen';
 import { FavoritesProvider } from '../src/favorites/FavoritesContext';
 import { initMonitoring } from '../src/lib/monitoring';
-import { isExpoGo } from '../src/lib/runtime';
+import { StripeProviderSafe } from '../src/lib/stripe';
 
 // Initialize error monitoring once at startup (no-op unless a DSN is configured).
 initMonitoring();
 
 /** Stripe's native module isn't in Expo Go, so only mount its provider elsewhere. */
 function PaymentsProvider({ children }: { children: ReactElement }) {
-  if (isExpoGo) return children;
   return (
-    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} urlScheme="rescuebite">
-      {children}
-    </StripeProvider>
+    <StripeProviderSafe publishableKey={STRIPE_PUBLISHABLE_KEY}>{children}</StripeProviderSafe>
   );
 }
 
@@ -29,6 +28,8 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
@@ -37,7 +38,20 @@ export default function RootLayout() {
             <FavoritesProvider>
               <ToastProvider>
                 <StatusBar style="dark" />
-                <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+                {showSplash ? (
+                  <SplashScreen onFinish={() => setShowSplash(false)} />
+                ) : null}
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    animation: 'slide_from_right',
+                    headerTintColor: colors.brand[700],
+                    headerShadowVisible: false,
+                    headerStyle: { backgroundColor: colors.surface.card },
+                    headerTitleStyle: { color: colors.neutral[900], fontWeight: '700' },
+                    headerLeft: () => <BackButton />,
+                  }}
+                >
                   <Stack.Screen name="(tabs)" />
                   <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
                   <Stack.Screen name="listing/[id]" options={{ animation: 'slide_from_bottom' }} />
@@ -45,8 +59,24 @@ export default function RootLayout() {
                   <Stack.Screen name="order/[id]" />
                   <Stack.Screen name="notifications" />
                   <Stack.Screen name="notification-settings" />
-                  <Stack.Screen name="login" options={{ presentation: 'modal' }} />
-                  <Stack.Screen name="signup" options={{ presentation: 'modal' }} />
+                  <Stack.Screen
+                    name="login"
+                    options={{
+                      presentation: 'formSheet',
+                      sheetAllowedDetents: [0.68],
+                      sheetGrabberVisible: false,
+                      contentStyle: { backgroundColor: colors.surface.page },
+                    }}
+                  />
+                  <Stack.Screen
+                    name="signup"
+                    options={{
+                      presentation: 'formSheet',
+                      sheetAllowedDetents: [0.7],
+                      sheetGrabberVisible: false,
+                      contentStyle: { backgroundColor: colors.surface.page },
+                    }}
+                  />
                 </Stack>
               </ToastProvider>
             </FavoritesProvider>

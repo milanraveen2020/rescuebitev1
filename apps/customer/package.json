@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "expo start",
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "build": "expo export",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
