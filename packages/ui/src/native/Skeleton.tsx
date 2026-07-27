@@ -25,7 +25,7 @@ export function Skeleton({ width = '100%', height = 16, radius = 8 }: SkeletonPr
 
   return (
     <Animated.View
-      style={{ width, height, borderRadius: radius, backgroundColor: colors.neutral[200], opacity }}
+      style={{ width, height, borderRadius: radius, backgroundColor: colors.surface.sunken, opacity }}
     />
   );
 }

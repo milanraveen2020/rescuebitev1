@@ -6,11 +6,12 @@ import {
   ChevronRight,
   CreditCard,
   Heart,
+  LogOut,
   Pencil,
   type LucideIcon,
 } from 'lucide-react-native';
 import { Avatar, Badge, Button, Card, EmptyState, useToast } from '@rescuebite/ui/native';
-import { colors, spacing, typography } from '@rescuebite/ui/tokens';
+import { colors, elevation, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { useUnreadCount } from '../../src/api/queries';
 import { useAuth } from '../../src/auth/AuthContext';
 import { useFavorites } from '../../src/favorites/FavoritesContext';
@@ -28,7 +29,7 @@ export default function ProfileScreen() {
       <Screen>
         <View style={styles.center}>
           <EmptyState
-            title="Welcome to RescueBite"
+            title="Welcome to Mystery Box"
             description="Sign in to reserve bags, track orders, and save favorites."
             action={
               <View style={styles.authButtons}>
@@ -48,7 +49,7 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.headerCard}>
           <Avatar name={user.name} uri={user.avatarUrl} size={64} />
           <View style={{ flex: 1 }}>
@@ -91,9 +92,17 @@ export default function ProfileScreen() {
             last
           />
         </Card>
-
-        <Button label="Sign out" variant="ghost" onPress={() => void signOut()} block />
       </ScrollView>
+
+      <View style={styles.footer}>
+        <Button
+          label="Sign out"
+          icon={LogOut}
+          variant="secondary"
+          onPress={() => void signOut()}
+          block
+        />
+      </View>
     </Screen>
   );
 }
@@ -130,10 +139,20 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing[4], gap: spacing[4] },
+  scroll: { flex: 1 },
+  content: { padding: spacing[4], paddingBottom: spacing[6], gap: spacing[4] },
   center: { flex: 1, justifyContent: 'center' },
+  footer: { padding: spacing[4], paddingTop: 0 },
   authButtons: { gap: spacing[2], alignSelf: 'stretch', paddingHorizontal: spacing[4] },
-  headerCard: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
+  headerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+    backgroundColor: colors.surface.card,
+    borderRadius: radii.lg,
+    padding: spacing[4],
+    ...elevation.sm,
+  },
   name: { fontSize: typography.fontSize.xl, fontWeight: '700', color: colors.neutral[900] },
   email: { fontSize: typography.fontSize.sm, color: colors.neutral[500] },
   menu: { padding: 0, overflow: 'hidden' },
@@ -144,14 +163,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     minHeight: 52,
   },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.neutral[100] },
+  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.surface.raised },
   rowLabel: { flex: 1, fontSize: typography.fontSize.base, color: colors.neutral[800] },
   badge: {
     minWidth: 22,
     height: 22,
     borderRadius: 11,
     paddingHorizontal: 6,
-    backgroundColor: colors.brand[600],
+    backgroundColor: colors.brand[700],
     alignItems: 'center',
     justifyContent: 'center',
   },

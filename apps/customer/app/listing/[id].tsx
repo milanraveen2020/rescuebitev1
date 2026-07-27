@@ -1,16 +1,20 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MapPin, Package, Sparkles, Wheat, type LucideIcon } from 'lucide-react-native';
 import { Badge, Button, PickupWindowChip, PriceTag } from '@rescuebite/ui/native';
 import { colors, spacing, typography } from '@rescuebite/ui/tokens';
 import { useListing } from '../../src/api/queries';
 import { useAuth } from '../../src/auth/AuthContext';
+import { BackButton } from '../../src/components/BackButton';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
   const { data: listing, isLoading, isError, refetch } = useListing(id);
 
@@ -25,9 +29,16 @@ export default function ListingDetailScreen() {
   }
 
   return (
-    <Screen edges={['bottom']}>
+    <Screen edges={[]}>
       <Stack.Screen
-        options={{ headerShown: true, title: '', headerTransparent: true, headerBackTitle: 'Back' }}
+        options={{
+          headerShown: true,
+          title: '',
+          headerTransparent: true,
+          headerStyle: { backgroundColor: 'transparent' },
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton variant="floating" />,
+        }}
       />
       {isLoading ? (
         <ListingsSkeleton count={1} />
@@ -51,7 +62,10 @@ export default function ListingDetailScreen() {
                   ★ {listing.store.rating.toFixed(1)} ({listing.store.reviewCount})
                 </Text>
               </View>
-              <Text style={styles.title}>{listing.title}</Text>
+              <View style={styles.titleRow}>
+                <Package size={22} color={colors.brand[600]} />
+                <Text style={styles.title}>{listing.title}</Text>
+              </View>
               <PriceTag
                 originalMinor={listing.originalPrice}
                 priceMinor={listing.price}
@@ -66,7 +80,7 @@ export default function ListingDetailScreen() {
                 />
               </View>
 
-              <Section title="What to expect">
+              <Section title="What to expect" icon={Sparkles}>
                 <Text style={styles.paragraph}>
                   {listing.description ??
                     'A surprise selection of surplus food, rescued from waste.'}
@@ -74,18 +88,18 @@ export default function ListingDetailScreen() {
               </Section>
 
               {listing.allergenInfo ? (
-                <Section title="Allergens">
+                <Section title="Allergens" icon={Wheat}>
                   <Text style={styles.paragraph}>{listing.allergenInfo}</Text>
                 </Section>
               ) : null}
 
-              <Section title="Pickup location">
+              <Section title="Pickup location" icon={MapPin}>
                 <Text style={styles.paragraph}>{listing.store.address}</Text>
               </Section>
             </View>
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: insets.bottom + spacing[4] }]}>
             <View style={{ flex: 1 }}>
               <Text style={styles.footerHint}>
                 {soldOut ? 'No bags left' : `${listing.quantityRemaining} available`}
@@ -108,25 +122,43 @@ export default function ListingDetailScreen() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+}) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionTitleRow}>
+        <Icon size={18} color={colors.brand[600]} />
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
       {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: 120 },
-  hero: { width: '100%', height: 280, backgroundColor: colors.neutral[100] },
+  content: { paddingBottom: 160 },
+  hero: { width: '100%', height: 280, backgroundColor: colors.surface.sunken },
   body: { padding: spacing[4], gap: spacing[3] },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   store: { fontSize: typography.fontSize.base, color: colors.neutral[600], flex: 1 },
   rating: { fontSize: typography.fontSize.sm, color: colors.neutral[700], fontWeight: '500' },
-  title: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.neutral[900] },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
+  title: {
+    flex: 1,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '700',
+    color: colors.neutral[900],
+  },
   chips: { flexDirection: 'row', gap: spacing[2], alignItems: 'center', flexWrap: 'wrap' },
   section: { gap: spacing[1], marginTop: spacing[2] },
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: '600', color: colors.neutral[900] },
   paragraph: { fontSize: typography.fontSize.base, color: colors.neutral[600], lineHeight: 22 },
   footer: {
@@ -138,9 +170,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing[3],
     padding: spacing[4],
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.surface.card,
     borderTopWidth: 1,
-    borderTopColor: colors.neutral[200],
+    borderTopColor: colors.surface.raised,
   },
   footerHint: { fontSize: typography.fontSize.xs, color: colors.neutral[500] },
 });

@@ -1,17 +1,24 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LoginSchema } from '@rescuebite/types';
 import { Button, Input } from '@rescuebite/ui/native';
-import { colors, spacing, typography } from '@rescuebite/ui/tokens';
+import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { ApiError } from '../src/api/request';
 import { useAuth } from '../src/auth/AuthContext';
-import { Screen } from '../src/components/Screen';
 import { FormError } from '../src/components/States';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
+  const { bottom } = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +43,20 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen edges={['top', 'bottom']}>
+    <View style={styles.root}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
-        <View style={styles.content}>
+        {/* Drag handle */}
+        <View style={styles.handleWrap}>
+          <View style={styles.handle} />
+        </View>
+
+        {/* Spacer pushes form to the bottom */}
+        <View style={styles.flex} />
+
+        <View style={[styles.content, { paddingBottom: Math.max(bottom, spacing[6]) }]}>
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Log in to reserve your surprise bags.</Text>
 
@@ -72,13 +87,21 @@ export default function LoginScreen() {
           />
         </View>
       </KeyboardAvoidingView>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.surface.page },
   flex: { flex: 1 },
-  content: { flex: 1, padding: spacing[5], gap: spacing[4], justifyContent: 'center' },
+  handleWrap: { alignItems: 'center', paddingTop: spacing[5], paddingBottom: spacing[3] },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: radii.pill,
+    backgroundColor: colors.neutral[300],
+  },
+  content: { paddingHorizontal: spacing[5], gap: spacing[4] },
   title: { fontSize: typography.fontSize['3xl'], fontWeight: '700', color: colors.neutral[900] },
   subtitle: { fontSize: typography.fontSize.base, color: colors.neutral[600] },
 });

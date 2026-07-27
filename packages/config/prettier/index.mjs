@@ -1,5 +1,5 @@
 /**
- * Shared Prettier config for all RescueBite packages and apps.
+ * Shared Prettier config for all Mystery Box packages and apps.
  * @type {import("prettier").Config}
  */
 export default {

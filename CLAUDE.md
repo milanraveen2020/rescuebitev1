@@ -1,4 +1,4 @@
-# RescueBite — Engineering Conventions
+# Mystery Box — Engineering Conventions
 
 > This file is the contract for all work in this repo. Every prompt, PR, and generated file must obey it.
 > When something here conflicts with a habit or a framework default, **this file wins**. If a convention
@@ -6,7 +6,7 @@
 
 ## Brand
 
-- **Name:** RescueBite
+- **Name:** Mystery Box
 - **Mission:** Rescue surplus food — let merchants sell discounted "surprise bags" of surplus food that customers reserve, pay for, and pick up within a time window.
 - **Tone:** Warm, sustainable, a little playful. We're fighting food waste and it should feel good. Friendly, never preachy; clever, never cute-to-the-point-of-confusing.
 

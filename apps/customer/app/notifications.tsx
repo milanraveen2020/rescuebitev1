@@ -9,6 +9,7 @@ import {
   useNotifications,
 } from '../src/api/queries';
 import { useAuth } from '../src/auth/AuthContext';
+import { BackButton } from '../src/components/BackButton';
 import { Screen } from '../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../src/components/States';
 
@@ -36,15 +37,20 @@ export default function NotificationsScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: 'Notifications',
-          headerRight: () =>
-            hasUnread ? (
-              <Pressable onPress={() => markAll.mutate()} hitSlop={8}>
-                <Text style={styles.markAll}>Mark all read</Text>
-              </Pressable>
-            ) : null,
+          title: '',
+          headerStyle: { backgroundColor: colors.surface.page },
+          headerLeft: () => <BackButton variant="floating" />,
         }}
       />
+
+      <View style={styles.header}>
+        <Text style={styles.heading}>Notifications</Text>
+        {hasUnread ? (
+          <Pressable onPress={() => markAll.mutate()} hitSlop={8}>
+            <Text style={styles.markAll}>Mark all read</Text>
+          </Pressable>
+        ) : null}
+      </View>
 
       {!isAuthenticated ? (
         <View style={styles.center}>
@@ -114,19 +120,26 @@ function relativeTime(iso: string): string {
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[4],
+    paddingTop: spacing[2],
+    paddingBottom: spacing[3],
+  },
+  heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
   list: { padding: spacing[4], gap: spacing[2] },
   markAll: { color: colors.brand[700], fontSize: typography.fontSize.sm, fontWeight: '600' },
   item: {
     flexDirection: 'row',
     gap: spacing[3],
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.surface.card,
     borderRadius: radii.lg,
     padding: spacing[4],
-    borderWidth: 1,
-    borderColor: colors.neutral[100],
   },
-  itemUnread: { backgroundColor: colors.brand[50], borderColor: colors.brand[100] },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand[600], marginTop: 6 },
+  itemUnread: { backgroundColor: colors.brand[100] },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.brand[700], marginTop: 6 },
   dotSpacer: { width: 8 },
   title: { fontSize: typography.fontSize.base, fontWeight: '600', color: colors.neutral[900] },
   body: { fontSize: typography.fontSize.sm, color: colors.neutral[600], marginTop: 2 },

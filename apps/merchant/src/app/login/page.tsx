@@ -47,7 +47,7 @@ function LoginForm() {
       <Card className="w-full max-w-sm shadow-md">
         <form onSubmit={(e) => void onSubmit(e)} className="space-y-5" noValidate>
           <div className="space-y-1">
-            <h1 className="font-display text-2xl font-bold text-brand-700">RescueBite Merchants</h1>
+            <h1 className="font-display text-2xl font-bold text-brand-700">Mystery Box Merchants</h1>
             <p className="text-sm text-neutral-500">Sign in to manage your store.</p>
           </div>
 

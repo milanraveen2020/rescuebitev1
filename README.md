@@ -1,6 +1,6 @@
-# RescueBite 🥡
+# Mystery Box 🥡
 
-Rescue surplus food. RescueBite is a Too Good To Go–style marketplace where merchants sell discounted
+Rescue surplus food. Mystery Box is a Too Good To Go–style marketplace where merchants sell discounted
 "surprise bags" of surplus food, and customers reserve, pay, and pick them up within a time window.
 
 This is a Turborepo monorepo managed with pnpm.
@@ -125,7 +125,7 @@ The Prisma schema lives at `apps/api/prisma/schema.prisma` and mirrors the Zod d
 
 ## Payments (Stripe Connect, test mode)
 
-RescueBite runs as a **marketplace**: customers pay, the platform takes a commission
+Mystery Box runs as a **marketplace**: customers pay, the platform takes a commission
 (`PLATFORM_FEE_BPS`, default 10%), and the remainder is transferred to the merchant's connected
 Stripe **Express** account. Amounts are always recomputed server-side from the order — never
 trusted from the client.

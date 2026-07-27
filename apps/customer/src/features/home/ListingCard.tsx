@@ -3,7 +3,7 @@ import { Heart, Star } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NearbyListing } from '@rescuebite/types';
 import { Badge, PickupWindowChip, PriceTag } from '@rescuebite/ui/native';
-import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
+import { colors, elevation, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { useFavorites } from '../../favorites/FavoritesContext';
 
 function formatDistance(km: number): string {
@@ -12,7 +12,7 @@ function formatDistance(km: number): string {
 
 export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPress: () => void }) {
   const { isFavorite, toggle } = useFavorites();
-  const favorite = isFavorite(listing.store.id);
+  const favorite = isFavorite(listing.id);
 
   return (
     <Pressable
@@ -30,10 +30,13 @@ export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPr
           placeholder={{ blurhash: 'L6Pj0^jE.AyE_3t7t7R**0o#DgR4' }}
         />
         <Pressable
-          onPress={() => toggle(listing.store.id)}
+          onPress={() => toggle(listing.id)}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel={favorite ? 'Remove from favorites' : 'Add to favorites'}
+          accessibilityState={{ selected: favorite }}
+          accessibilityLabel={
+            favorite ? `Remove ${listing.title} from favorites` : `Save ${listing.title} to favorites`
+          }
           style={styles.heart}
         >
           <Heart
@@ -78,14 +81,13 @@ export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPr
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.surface.card,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
     overflow: 'hidden',
+    ...elevation.sm,
   },
   pressed: { opacity: 0.95 },
-  image: { width: '100%', height: 160, backgroundColor: colors.neutral[100] },
+  image: { width: '100%', height: 132, backgroundColor: colors.surface.sunken },
   heart: {
     position: 'absolute',
     top: spacing[2],

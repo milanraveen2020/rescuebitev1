@@ -137,8 +137,11 @@ export function SortChips({
 }
 
 const styles = StyleSheet.create({
-  // Category row — flexGrow:0 so the horizontal scroller hugs its content height.
-  catScroll: { flexGrow: 0 },
+  // Category row — flexGrow:0 so the horizontal scroller doesn't stretch into
+  // spare vertical space; flexShrink:0 + an explicit height (40 chip + 8+8
+  // padding) so the ScrollView can't be squeezed to 0 height when a sibling
+  // overflows the column (which hid the row during the loading state).
+  catScroll: { flexGrow: 0, flexShrink: 0, height: 56 },
   catRow: {
     gap: spacing[2],
     paddingHorizontal: spacing[4],
@@ -153,8 +156,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     paddingHorizontal: spacing[4],
   },
-  catChipActive: { backgroundColor: colors.brand[600] },
-  catChipIdle: { backgroundColor: colors.neutral[100] },
+  catChipActive: { backgroundColor: colors.brand[700] },
+  catChipIdle: { backgroundColor: colors.surface.card },
   catText: { fontSize: typography.fontSize.sm, fontWeight: '600' },
   catTextActive: { color: colors.neutral[0] },
   catTextIdle: { color: colors.neutral[700] },
@@ -166,9 +169,7 @@ const styles = StyleSheet.create({
     gap: spacing[2],
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[2],
-    borderTopWidth: 1,
-    borderTopColor: colors.neutral[100],
-    backgroundColor: colors.neutral[0],
+    backgroundColor: 'transparent',
   },
   sortLabel: {
     fontSize: typography.fontSize.xs,

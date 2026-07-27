@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import type { NotificationPreferences } from '@rescuebite/types';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../src/api/queries';
+import { BackButton } from '../src/components/BackButton';
 import { Screen } from '../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../src/components/States';
 
@@ -45,7 +46,15 @@ export default function NotificationSettingsScreen() {
 
   return (
     <Screen edges={['bottom']}>
-      <Stack.Screen options={{ headerShown: true, title: 'Notification settings' }} />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: '',
+          headerStyle: { backgroundColor: colors.surface.page },
+          headerLeft: () => <BackButton variant="floating" />,
+        }}
+      />
+      <Text style={styles.heading}>Notification settings</Text>
       {isLoading ? (
         <ListingsSkeleton count={2} />
       ) : isError || !data ? (
@@ -99,6 +108,14 @@ function Section({
 }
 
 const styles = StyleSheet.create({
+  heading: {
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '700',
+    color: colors.brand[700],
+    paddingHorizontal: spacing[4],
+    paddingTop: spacing[2],
+    paddingBottom: spacing[1],
+  },
   content: { padding: spacing[4], gap: spacing[5] },
   section: { gap: spacing[2] },
   sectionTitle: {
@@ -109,10 +126,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   card: {
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.surface.card,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[100],
     overflow: 'hidden',
   },
   row: {
@@ -122,7 +137,7 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     minHeight: 64,
   },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.neutral[100] },
+  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.surface.raised },
   label: { fontSize: typography.fontSize.base, fontWeight: '500', color: colors.neutral[900] },
   description: { fontSize: typography.fontSize.sm, color: colors.neutral[500], marginTop: 2 },
 });

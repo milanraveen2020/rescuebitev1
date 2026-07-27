@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
 
   // OpenAPI docs at /docs, raw spec at /docs-json (consumed by the api-client generator).
   const openApiConfig = new DocumentBuilder()
-    .setTitle('RescueBite API')
+    .setTitle('Mystery Box API')
     .setDescription('Rescue surplus food — marketplace API.')
     .setVersion('0.0.0')
     .addBearerAuth()
@@ -39,7 +39,7 @@ async function bootstrap(): Promise<void> {
   });
 
   await app.listen(config.port);
-  new Logger('Bootstrap').log(`RescueBite API listening on http://localhost:${config.port}`);
+  new Logger('Bootstrap').log(`Mystery Box API listening on http://localhost:${config.port}`);
   new Logger('Bootstrap').log(`API docs at http://localhost:${config.port}/docs`);
 }
 

@@ -1,4 +1,4 @@
-# RescueBite Style Guide
+# Mystery Box Style Guide
 
 The design system lives in `@rescuebite/ui`. It exports framework-agnostic **tokens**, **web
 primitives** (`@rescuebite/ui/web`, for the Next.js merchant/admin apps), and **native primitives**

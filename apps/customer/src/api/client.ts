@@ -5,7 +5,14 @@ import { session } from './session';
 const extra = Constants.expoConfig?.extra as
   { apiBaseUrl?: string; stripePublishableKey?: string } | undefined;
 
-export const API_BASE_URL = extra?.apiBaseUrl ?? 'http://localhost:4000';
+// In dev mode, derive the API host from Metro's own connection address (the
+// same LAN IP the device used to load the JS bundle) rather than trusting a
+// baked-in config value — this works whether we're on the simulator, a dev
+// client, or a physical phone in Expo Go, all of which see a different host.
+const devHost = Constants.expoConfig?.hostUri?.split(':')[0];
+export const API_BASE_URL = __DEV__
+  ? `http://${devHost ?? 'localhost'}:4000`
+  : (extra?.apiBaseUrl ?? 'http://localhost:4000');
 export const STRIPE_PUBLISHABLE_KEY = extra?.stripePublishableKey ?? 'pk_test_unset';
 
 // Tell the API this is a mobile client so it returns the refresh token in the body.

@@ -5,9 +5,11 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  View,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import { colors, motion, radii, spacing, typography } from '../tokens';
 import { useReducedMotion } from './useReducedMotion';
 
@@ -22,6 +24,7 @@ export interface ButtonProps {
   loading?: boolean;
   disabled?: boolean;
   block?: boolean;
+  icon?: LucideIcon;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -33,6 +36,7 @@ export function Button({
   loading,
   disabled,
   block,
+  icon: Icon,
   style,
 }: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -66,7 +70,10 @@ export function Button({
         {loading ? (
           <ActivityIndicator color={labelColor} />
         ) : (
-          <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
+          <View style={styles.content}>
+            {Icon ? <Icon size={18} color={labelColor} /> : null}
+            <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
+          </View>
         )}
       </Pressable>
     </Animated.View>
@@ -74,8 +81,8 @@ export function Button({
 }
 
 const VARIANTS: Record<Variant, ViewStyle> = {
-  primary: { backgroundColor: colors.brand[600] },
-  secondary: { backgroundColor: colors.brand[50] },
+  primary: { backgroundColor: colors.brand[700] },
+  secondary: { backgroundColor: colors.brand[100] },
   ghost: { backgroundColor: 'transparent' },
   danger: { backgroundColor: colors.semantic.error },
 };
@@ -87,8 +94,9 @@ const SIZES: Record<Size, ViewStyle> = {
 };
 
 const styles = StyleSheet.create({
-  base: { borderRadius: radii.md, alignItems: 'center', justifyContent: 'center' },
+  base: { borderRadius: radii.pill, alignItems: 'center', justifyContent: 'center' },
   block: { alignSelf: 'stretch' },
   disabled: { opacity: 0.6 },
+  content: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   label: { fontSize: typography.fontSize.base, fontWeight: '600' },
 });

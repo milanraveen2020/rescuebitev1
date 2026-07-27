@@ -48,7 +48,7 @@ export default function PayoutsPage() {
       <header>
         <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Payouts</h1>
         <p className="text-sm text-muted-foreground">
-          Connect Stripe to accept payments and receive payouts. RescueBite takes a small platform
+          Connect Stripe to accept payments and receive payouts. Mystery Box takes a small platform
           commission on each sale.
         </p>
       </header>

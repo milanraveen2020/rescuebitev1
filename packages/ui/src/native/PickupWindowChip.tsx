@@ -1,9 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, radii, spacing, typography } from '../tokens';
 
 export interface PickupWindowChipProps {
   start: string;
   end: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 function fmtTime(d: Date): string {
@@ -19,11 +20,11 @@ function dayLabel(date: Date): string {
   return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
 }
 
-export function PickupWindowChip({ start, end }: PickupWindowChipProps) {
+export function PickupWindowChip({ start, end, style }: PickupWindowChipProps) {
   const startDate = new Date(start);
   const endDate = new Date(end);
   return (
-    <View style={styles.chip}>
+    <View style={[styles.chip, style]}>
       <Text style={styles.text}>
         {dayLabel(startDate)} · {fmtTime(startDate)}–{fmtTime(endDate)}
       </Text>

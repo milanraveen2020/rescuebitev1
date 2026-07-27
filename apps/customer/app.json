@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "RescueBite",
+    "name": "Mystery Box",
     "slug": "rescuebite",
     "scheme": "rescuebite",
     "version": "0.0.0",
@@ -34,13 +34,13 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "RescueBite uses your location to find surprise bags nearby."
+          "locationWhenInUsePermission": "Mystery Box uses your location to find surprise bags nearby."
         }
       ],
       [
         "expo-calendar",
         {
-          "calendarPermission": "RescueBite adds your pickup window to your calendar."
+          "calendarPermission": "Mystery Box adds your pickup window to your calendar."
         }
       ],
       [

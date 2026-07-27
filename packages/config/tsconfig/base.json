@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "RescueBite Base",
+  "display": "Mystery Box Base",
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],

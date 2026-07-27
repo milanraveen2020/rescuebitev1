@@ -8,10 +8,8 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.surface.card,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
     padding: spacing[5],
     ...elevation.sm,
   },

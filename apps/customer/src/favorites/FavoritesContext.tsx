@@ -3,15 +3,16 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react';
 
 /**
- * Favorites are stored locally (optimistic by nature) and persisted with
- * AsyncStorage. When a `/favorites` API lands, this can sync to the server.
+ * Favorites are per-listing, stored locally (optimistic by nature) and
+ * persisted with AsyncStorage. When a `/favorites` API lands, this can sync to
+ * the server.
  */
-const STORAGE_KEY = 'rb_favorite_stores';
+const STORAGE_KEY = 'rb_favorite_listings';
 
 interface FavoritesContextValue {
   ready: boolean;
-  isFavorite: (storeId: string) => boolean;
-  toggle: (storeId: string) => void;
+  isFavorite: (listingId: string) => boolean;
+  toggle: (listingId: string) => void;
   ids: string[];
 }
 
@@ -40,11 +41,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const toggle = useCallback((storeId: string) => {
+  const toggle = useCallback((listingId: string) => {
     setIds((prev) => {
-      const next = prev.includes(storeId)
-        ? prev.filter((id) => id !== storeId)
-        : [...prev, storeId];
+      const next = prev.includes(listingId)
+        ? prev.filter((id) => id !== listingId)
+        : [...prev, listingId];
       void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });

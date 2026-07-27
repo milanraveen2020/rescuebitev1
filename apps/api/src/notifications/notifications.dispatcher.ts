@@ -156,7 +156,7 @@ export class NotificationsDispatcher {
       type: approved ? 'STORE_APPROVED' : 'STORE_REJECTED',
       title: approved ? 'Your store is approved 🎉' : 'Store application update',
       body: approved
-        ? `${store.name} is live on RescueBite.`
+        ? `${store.name} is live on Mystery Box.`
         : `${store.name} wasn't approved.${payload.reason ? ` ${payload.reason}` : ''}`,
       data: { storeId: store.id },
       dedupeKey: `store:${store.id}:${approved ? 'APPROVED' : 'REJECTED'}`,

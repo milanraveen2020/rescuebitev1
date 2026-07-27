@@ -20,6 +20,6 @@ export function Screen({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
+  safe: { flex: 1, backgroundColor: colors.surface.page },
   body: { flex: 1 },
 });

@@ -1,22 +1,25 @@
 import { useState } from 'react';
-import { useStripe } from '@stripe/stripe-react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, useToast } from '@rescuebite/ui/native';
 import { formatPrice } from '@rescuebite/ui';
 import { colors, spacing, typography } from '@rescuebite/ui/tokens';
 import { paymentsApi } from '../../src/api/endpoints';
 import { useListing, useReserve } from '../../src/api/queries';
 import { ApiError } from '../../src/api/request';
+import { BackButton } from '../../src/components/BackButton';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
 import { isExpoGo } from '../../src/lib/runtime';
+import { useStripeSafe } from '../../src/lib/stripe';
 
 export default function CheckoutScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { toast } = useToast();
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { initPaymentSheet, presentPaymentSheet } = useStripeSafe();
   const { data: listing, isLoading, isError, refetch } = useListing(id);
   const reserve = useReserve();
   const [quantity, setQuantity] = useState(1);
@@ -54,6 +57,13 @@ export default function CheckoutScreen() {
 
       const checkout = await paymentsApi.checkout(order.id);
 
+      // Local dev without a Stripe key — the API already settled the order.
+      if (checkout.mock) {
+        toast('Reserved! Stripe isn’t configured, so payment was skipped.', 'success');
+        router.replace(`/order/${order.id}`);
+        return;
+      }
+
       const init = await initPaymentSheet({
         merchantDisplayName: listing.store.name,
         paymentIntentClientSecret: checkout.clientSecret,
@@ -83,9 +93,17 @@ export default function CheckoutScreen() {
   }
 
   return (
-    <Screen edges={['bottom']}>
-      <Stack.Screen options={{ headerShown: true, title: 'Checkout' }} />
+    <Screen edges={[]}>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: '',
+          headerStyle: { backgroundColor: colors.surface.page },
+          headerLeft: () => <BackButton variant="floating" />,
+        }}
+      />
       <View style={styles.content}>
+        <Text style={styles.heading}>Checkout</Text>
         <Card style={styles.card}>
           <Text style={styles.store}>{listing.store.name}</Text>
           <Text style={styles.title}>{listing.title}</Text>
@@ -122,7 +140,7 @@ export default function CheckoutScreen() {
         </Text>
       </View>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing[4] }]}>
         <Button
           label={isExpoGo ? 'Reserve' : `Reserve & pay ${formatPrice(total, listing.currency)}`}
           onPress={() => void pay()}
@@ -175,6 +193,7 @@ function SummaryRow({
 
 const styles = StyleSheet.create({
   content: { flex: 1, padding: spacing[4], gap: spacing[3] },
+  heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
   card: { gap: spacing[3] },
   store: { fontSize: typography.fontSize.sm, color: colors.neutral[500] },
   title: { fontSize: typography.fontSize.xl, fontWeight: '700', color: colors.neutral[900] },
@@ -197,7 +216,7 @@ const styles = StyleSheet.create({
   },
   stepBtnDisabled: { opacity: 0.4 },
   stepText: { fontSize: 22, color: colors.brand[700], fontWeight: '700' },
-  divider: { height: 1, backgroundColor: colors.neutral[200] },
+  divider: { height: 1, backgroundColor: colors.surface.raised },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between' },
   summaryLabel: { fontSize: typography.fontSize.base, color: colors.neutral[600] },
   summaryValue: { fontSize: typography.fontSize.base, color: colors.neutral[800] },
@@ -206,7 +225,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing[4],
     borderTopWidth: 1,
-    borderTopColor: colors.neutral[200],
-    backgroundColor: colors.neutral[0],
+    borderTopColor: colors.surface.raised,
+    backgroundColor: colors.surface.card,
   },
 });

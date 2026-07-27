@@ -114,7 +114,7 @@ function Brand({ store }: { store: string }) {
   return (
     <div className="flex flex-col">
       <span className="font-display text-lg font-bold leading-tight text-brand-700">
-        RescueBite
+        Mystery Box
       </span>
       <span className="truncate text-xs text-neutral-500">{store}</span>
     </div>

@@ -113,7 +113,6 @@ export class PaymentsService {
   // --- Customer checkout ---------------------------------------------------
 
   async createCheckout(customerId: string, orderId: string): Promise<CheckoutSession> {
-    const stripe = this.requireStripe();
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { store: true },
@@ -122,13 +121,30 @@ export class PaymentsService {
     if (order.status !== OrderStatus.RESERVED) {
       throw new ConflictException('This order is not awaiting payment.');
     }
-    if (!order.store.stripeAccountId || !order.store.payoutsEnabled) {
-      throw new ConflictException('This store cannot accept payments yet.');
-    }
 
     // Never trust client amounts — recompute from the price locked at reservation.
     const amount = order.unitPrice * order.quantity;
     const fee = computePlatformFee(amount, await this.settings.getCommissionBps());
+
+    // Local dev without a real Stripe key: settle the order directly instead
+    // of calling out to Stripe, so the app is testable end to end.
+    if (!this.stripe) {
+      await this.orders.markPaidDirectly(order.id);
+      return {
+        paymentIntentId: `mock_${order.id}`,
+        clientSecret: `mock_${order.id}_secret`,
+        amount,
+        applicationFee: fee,
+        currency: order.currency,
+        publishableKey: this.config.stripePublishableKey,
+        mock: true,
+      };
+    }
+
+    const stripe = this.requireStripe();
+    if (!order.store.stripeAccountId || !order.store.payoutsEnabled) {
+      throw new ConflictException('This store cannot accept payments yet.');
+    }
     const currency = order.currency.toLowerCase();
 
     // Reuse an existing intent if one is still payable.

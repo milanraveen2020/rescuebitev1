@@ -57,7 +57,7 @@ export const EnvSchema = z.object({
   // Email (Resend). When unset, emails are logged to the console instead of sent,
   // so the flow is exercisable in local dev without an API key.
   RESEND_API_KEY: z.string().min(1).optional(),
-  EMAIL_FROM: z.string().min(1).default('RescueBite <hello@rescuebite.com>'),
+  EMAIL_FROM: z.string().min(1).default('Mystery Box <hello@rescuebite.com>'),
 
   // Expo push. When unset, push notifications are logged instead of sent.
   EXPO_ACCESS_TOKEN: z.string().min(1).optional(),

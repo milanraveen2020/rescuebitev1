@@ -14,8 +14,8 @@ export default function TabsLayout() {
 
   if (onboarded === null) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: colors.neutral[50] }}>
-        <ActivityIndicator color={colors.brand[600]} />
+      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: colors.surface.page }}>
+        <ActivityIndicator color={colors.brand[700]} />
       </View>
     );
   }
@@ -26,8 +26,14 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand[700],
-        tabBarInactiveTintColor: colors.neutral[500],
-        tabBarStyle: { paddingTop: spacing[1], height: 56 + spacing[3] },
+        tabBarInactiveTintColor: colors.neutral[400],
+        tabBarStyle: {
+          backgroundColor: colors.surface.card,
+          borderTopColor: colors.surface.raised,
+          paddingTop: spacing[1],
+          height: 56 + spacing[3],
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
     >
       <Tabs.Screen
@@ -58,6 +64,8 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
         }}
       />
+      {/* Map stays reachable (Discover header button) but isn't a tab. */}
+      <Tabs.Screen name="map" options={{ href: null }} />
     </Tabs>
   );
 }

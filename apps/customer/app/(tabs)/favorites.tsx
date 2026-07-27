@@ -25,7 +25,7 @@ export default function FavoritesScreen() {
   );
 
   const items = useMemo(
-    () => (feed.data?.pages.flatMap((p) => p.items) ?? []).filter((l) => ids.includes(l.store.id)),
+    () => (feed.data?.pages.flatMap((p) => p.items) ?? []).filter((l) => ids.includes(l.id)),
     [feed.data, ids],
   );
 
@@ -41,7 +41,7 @@ export default function FavoritesScreen() {
         <View style={styles.center}>
           <EmptyState
             title="No favorites yet"
-            description="Tap the heart on a store to save it here."
+            description="Tap the heart on a bag to save it here."
             action={<Button label="Discover bags" onPress={() => router.replace('/')} />}
           />
         </View>
@@ -78,8 +78,8 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: spacing[4], paddingVertical: spacing[2] },
+  header: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[3] },
   heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
-  content: { padding: spacing[4] },
+  content: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[6] },
   center: { flex: 1, justifyContent: 'center' },
 });

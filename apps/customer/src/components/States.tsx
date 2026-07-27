@@ -41,7 +41,9 @@ export function FormError({ message }: { message: string | null }) {
 }
 
 const styles = StyleSheet.create({
-  list: { gap: spacing[4], padding: spacing[4] },
+  // flex:1 so the loading placeholder fills the same space the listings FlatList
+  // does, instead of growing to its natural height and overflowing the column.
+  list: { flex: 1, gap: spacing[4], padding: spacing[4] },
   skelCard: { gap: spacing[2] },
   center: { flex: 1, justifyContent: 'center' },
   formError: {
