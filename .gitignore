@@ -14,6 +14,8 @@ out/
 .expo/
 .expo-shared/
 web-build/
+apps/customer/android/
+apps/customer/ios/
 
 # Prisma
 apps/api/prisma/*.db
