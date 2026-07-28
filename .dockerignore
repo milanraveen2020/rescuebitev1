@@ -1,0 +1,17 @@
+# Keeps the Docker build context small and avoids leaking local secrets/state
+# into the image. The API Dockerfile COPYs only the specific paths it needs, so
+# this mainly protects the *upload context* Docker sends to the daemon.
+node_modules
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/build
+**/.expo
+**/ios
+**/android
+.git
+.env
+.env.*
+!.env.example
+**/*.tsbuildinfo
