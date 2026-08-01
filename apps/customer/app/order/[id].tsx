@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Badge,
   Button,
@@ -9,12 +10,13 @@ import {
   RatingStars,
   useToast,
 } from '@rescuebite/ui/native';
+import { formatPrice } from '@rescuebite/ui';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
-import { useOrder, useReviewOrder } from '../../src/api/queries';
+import { useCancelOrder, useOrder, useReviewOrder } from '../../src/api/queries';
 import { BackButton } from '../../src/components/BackButton';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
-import { addPickupToCalendar } from '../../src/lib/calendar';
+import { addPickupToCalendar, type AddToCalendarResult } from '../../src/lib/calendar';
 import { pickupWindowState, useCountdown } from '../../src/lib/time';
 
 const STATUS_TONE = {
@@ -29,9 +31,11 @@ const STATUS_TONE = {
 export default function OrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { toast } = useToast();
   const { data: order, isLoading, isError, refetch } = useOrder(id);
   const review = useReviewOrder();
+  const cancelOrder = useCancelOrder();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
 
@@ -52,19 +56,40 @@ export default function OrderScreen() {
   }
 
   const showCode = order.status === 'RESERVED' || order.status === 'PAID';
+  const canCancel = showCode;
   const windowState = pickupWindowState(order.listing.pickupStart, order.listing.pickupEnd);
   const canReview = order.status === 'COLLECTED' && order.review === null;
 
+  function onCancelOrder() {
+    Alert.alert('Cancel this reservation?', 'Your pickup code will no longer be valid.', [
+      { text: 'Keep it', style: 'cancel' },
+      {
+        text: 'Cancel reservation',
+        style: 'destructive',
+        onPress: () =>
+          void cancelOrder
+            .mutateAsync(id)
+            .then(() => toast('Reservation cancelled', 'success'))
+            .catch(() => toast('Could not cancel this order', 'error')),
+      },
+    ]);
+  }
+
   async function onAddToCalendar() {
     if (!order) return;
-    const ok = await addPickupToCalendar({
+    const result = await addPickupToCalendar({
       title: `Pick up: ${order.listing.title}`,
       start: order.listing.pickupStart,
       end: order.listing.pickupEnd,
       location: order.store.address,
       notes: `Pickup code: ${order.pickupCode}`,
     });
-    toast(ok ? 'Added to your calendar' : 'Calendar permission denied', ok ? 'success' : 'error');
+    const messages: Record<AddToCalendarResult, string> = {
+      added: 'Added to your calendar',
+      'permission-denied': 'Calendar permission denied',
+      'no-calendar': 'No calendar app is set up on this device',
+    };
+    toast(messages[result], result === 'added' ? 'success' : 'error');
   }
 
   async function onSubmitReview() {
@@ -80,15 +105,14 @@ export default function OrderScreen() {
 
   return (
     <Screen edges={['bottom']}>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: '',
-          headerStyle: { backgroundColor: colors.surface.page },
-          headerLeft: () => <BackButton variant="floating" />,
-        }}
-      />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={[styles.floatingBack, { top: insets.top + spacing[3] }]}>
+        <BackButton variant="floating" />
+      </View>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing[9] }]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.heading}>Your order</Text>
         <View style={styles.statusRow}>
           <Badge label={order.status} tone={STATUS_TONE[order.status]} />
@@ -123,7 +147,18 @@ export default function OrderScreen() {
           <Text style={styles.meta}>
             Quantity {order.quantity} · {order.store.address}
           </Text>
+          <Text style={styles.meta}>Total {formatPrice(order.totalAmount, order.currency)}</Text>
         </Card>
+
+        {canCancel ? (
+          <Button
+            label="Cancel reservation"
+            variant="ghost"
+            onPress={onCancelOrder}
+            loading={cancelOrder.isPending}
+            block
+          />
+        ) : null}
 
         {canReview ? (
           <Card style={styles.reviewCard}>
@@ -166,6 +201,7 @@ export default function OrderScreen() {
 }
 
 const styles = StyleSheet.create({
+  floatingBack: { position: 'absolute', left: spacing[4], zIndex: 10 },
   content: { padding: spacing[4], gap: spacing[3] },
   heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
   statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

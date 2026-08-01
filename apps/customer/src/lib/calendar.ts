@@ -1,25 +1,24 @@
 import * as Calendar from 'expo-calendar';
 import { Platform } from 'react-native';
 
-/**
- * Add a pickup window to the device calendar. Returns true on success. Falls back
- * gracefully (returns false) if permission is denied or no calendar is available.
- */
+export type AddToCalendarResult = 'added' | 'permission-denied' | 'no-calendar';
+
+/** Add a pickup window to the device calendar, reporting which outcome occurred. */
 export async function addPickupToCalendar(params: {
   title: string;
   start: string;
   end: string;
   location?: string;
   notes?: string;
-}): Promise<boolean> {
+}): Promise<AddToCalendarResult> {
   const { granted } = await Calendar.requestCalendarPermissionsAsync();
-  if (!granted) return false;
+  if (!granted) return 'permission-denied';
 
   const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
   const writable = calendars.find((c) => c.allowsModifications);
   const calendarId =
     Platform.OS === 'ios' ? (await Calendar.getDefaultCalendarAsync()).id : writable?.id;
-  if (!calendarId) return false;
+  if (!calendarId) return 'no-calendar';
 
   await Calendar.createEventAsync(calendarId, {
     title: params.title,
@@ -29,5 +28,5 @@ export async function addPickupToCalendar(params: {
     notes: params.notes,
     alarms: [{ relativeOffset: -30 }],
   });
-  return true;
+  return 'added';
 }
