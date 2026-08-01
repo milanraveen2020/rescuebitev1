@@ -5,8 +5,8 @@ export interface Coords {
   lng: number;
 }
 
-/** Sensible default (Dublin city centre) when permission is denied. */
-export const DEFAULT_COORDS: Coords = { lat: 53.3498, lng: -6.2603 };
+/** Sensible default (Colombo city centre) when permission is denied. */
+export const DEFAULT_COORDS: Coords = { lat: 6.9271, lng: 79.8612 };
 
 export async function requestLocationPermission(): Promise<boolean> {
   const { granted } = await Location.requestForegroundPermissionsAsync();
