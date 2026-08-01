@@ -6,7 +6,7 @@ import type { NearbyListing } from '@rescuebite/types';
 import { EmptyState, PriceTag } from '@rescuebite/ui/native';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
 import type { Coords } from '../../lib/location';
-import { isExpoGo } from '../../lib/runtime';
+import { hasGoogleMapsKey, isExpoGo } from '../../lib/runtime';
 
 interface Cluster {
   key: string;
@@ -64,6 +64,19 @@ export function ListingsMap({
         <EmptyState
           title="Map needs a dev build"
           description="Switch back to the list view to browse. The map runs in a development or production build."
+        />
+      </View>
+    );
+  }
+
+  // Without a configured Google Maps API key, MapView crashes the native
+  // process on mount (not a catchable JS error) — bail out before rendering it.
+  if (!hasGoogleMapsKey) {
+    return (
+      <View style={[styles.fill, styles.center]}>
+        <EmptyState
+          title="Map unavailable"
+          description="Switch back to the list view to browse. The map needs a Google Maps API key to be configured."
         />
       </View>
     );
