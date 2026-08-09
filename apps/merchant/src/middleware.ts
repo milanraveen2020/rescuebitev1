@@ -1,15 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const REFRESH_COOKIE = 'rb_refresh';
+const SESSION_MARKER = 'rb_session';
 const PUBLIC_PATHS = ['/login'];
 
 /**
- * Coarse route protection: routes require the presence of the refresh cookie.
+ * Coarse route protection: routes require the first-party marker cookie. The
+ * API's httpOnly refresh cookie lives on the API's own domain and is invisible
+ * here whenever the two are deployed separately, so it cannot be the gate.
  * Fine-grained authorization (and token validity) is enforced by the API on each
  * call; this just keeps unauthenticated users out of the app shell.
  */
 export function middleware(request: NextRequest): NextResponse {
-  const hasSession = request.cookies.has(REFRESH_COOKIE);
+  const hasSession = request.cookies.has(SESSION_MARKER);
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
