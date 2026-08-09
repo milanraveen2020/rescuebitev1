@@ -55,6 +55,10 @@ ENV NODE_ENV=production
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/types/dist ./packages/types/dist
 COPY --from=build /app/packages/types/package.json ./packages/types/package.json
+# pnpm isolates dependencies, so zod resolves only through this package's own
+# node_modules — it is not hoisted to the root. Without it the API dies on its
+# first import of @rescuebite/types.
+COPY --from=build /app/packages/types/node_modules ./packages/types/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/api/prisma ./apps/api/prisma
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
