@@ -170,18 +170,32 @@ export class AuthController {
   private setRefreshCookie(res: Response, token: string): void {
     res.cookie(REFRESH_COOKIE, token, {
       httpOnly: true,
-      secure: this.config.isProduction,
-      sameSite: 'lax',
       path: '/',
       maxAge: this.config.refreshTokenTtlDays * 24 * 60 * 60 * 1000,
+      ...this.cookieSiteOptions(),
       ...(this.config.cookieDomain ? { domain: this.config.cookieDomain } : {}),
     });
   }
 
   private clearRefreshCookie(res: Response): void {
+    // Browsers only drop a cookie when these attributes match the ones it was
+    // set with, so clearing has to mirror setRefreshCookie exactly.
     res.clearCookie(REFRESH_COOKIE, {
       path: '/',
+      ...this.cookieSiteOptions(),
       ...(this.config.cookieDomain ? { domain: this.config.cookieDomain } : {}),
     });
+  }
+
+  /**
+   * In production the API and the web apps are on different domains, so the
+   * refresh cookie is cross-site and browsers discard it unless it is
+   * `SameSite=None; Secure`. Locally everything is http://localhost, where
+   * `None` would be rejected for lacking Secure — hence `lax` there.
+   */
+  private cookieSiteOptions(): { sameSite: 'none' | 'lax'; secure: boolean } {
+    return this.config.isProduction
+      ? { sameSite: 'none', secure: true }
+      : { sameSite: 'lax', secure: false };
   }
 }
