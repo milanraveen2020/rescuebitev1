@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode } from 'react';
-import { Button, Modal } from '@rescuebite/ui/web';
+import { Button, Modal, Textarea } from '@rescuebite/ui/web';
 
 interface ReasonField {
   label: string;
@@ -40,22 +40,26 @@ export function ConfirmDialog({
   return (
     <Modal open={open} onClose={onClose} title={title}>
       <div className="space-y-4">
-        {message ? <div className="text-sm text-neutral-600">{message}</div> : null}
+        {message ? <div className="text-sm text-muted-foreground">{message}</div> : null}
 
         {reason ? (
-          <label className="block space-y-1">
-            <span className="text-sm font-medium text-neutral-700">{reason.label}</span>
-            <textarea
-              rows={3}
-              value={reason.value}
-              onChange={(e) => reason.onChange(e.target.value)}
-              placeholder={reason.placeholder}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-            />
-          </label>
+          <Textarea
+            label={reason.label}
+            required={reason.required}
+            rows={3}
+            value={reason.value}
+            onChange={(e) => reason.onChange(e.target.value)}
+            placeholder={reason.placeholder}
+            hint={
+              reason.required
+                ? 'Required — recorded in the audit log.'
+                : 'Optional — recorded in the audit log.'
+            }
+          />
         ) : null}
 
-        <div className="flex justify-end gap-2">
+        {/* Reverse column order on mobile puts the confirm action under the thumb. */}
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
             Cancel
           </Button>

@@ -5,6 +5,7 @@ import type { AppConfigService } from '../config/app-config.service';
 import type { PaymentsService } from '../payments/payments.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { SettingsService } from '../common/settings/settings.service';
+import { PasswordService } from '../auth/password.service';
 import { AuditLogService } from './audit-log.service';
 import { AdminService } from './admin.service';
 
@@ -45,7 +46,14 @@ describe('AdminService (integration)', () => {
     const config = { platformFeeBps: 1000 } as AppConfigService;
     const settings = new SettingsService(prisma, config);
     audit = new AuditLogService(prisma);
-    service = new AdminService(prisma, settings, {} as PaymentsService, audit, new EventEmitter2());
+    service = new AdminService(
+      prisma,
+      settings,
+      {} as PaymentsService,
+      audit,
+      new EventEmitter2(),
+      new PasswordService(),
+    );
     await cleanup();
 
     const admin = await prisma.user.create({

@@ -1,9 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Check, Copy, Trash2, UserPlus, Users } from 'lucide-react';
 import { InviteStaffSchema, type StaffMember } from '@rescuebite/types';
-import { Button, Card, Input, useToast } from '@rescuebite/ui/web';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  ErrorState,
+  Input,
+  PageBody,
+  PageHeader,
+  Section,
+  TableSkeleton,
+  useToast,
+} from '@rescuebite/ui/web';
 import { inviteStaff, listStaff, removeStaff } from '@/features/staff/api';
 import { ApiRequestError } from '@/lib/request';
 
@@ -19,12 +31,12 @@ export default function StaffPage() {
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [inviting, setInviting] = useState(false);
-  const [tempPassword, setTempPassword] = useState<{ email: string; password: string } | null>(
-    null,
-  );
+  const [invited, setInvited] = useState<{ email: string; password: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<StaffMember | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
-  function load(): void {
+  const load = useCallback(() => {
     listStaff()
       .then((staff) => setState({ status: 'ready', staff }))
       .catch((e: unknown) =>
@@ -33,9 +45,9 @@ export default function StaffPage() {
           message: e instanceof ApiRequestError ? e.message : 'Could not load staff.',
         }),
       );
-  }
+  }, []);
 
-  useEffect(load, []);
+  useEffect(load, [load]);
 
   async function onInvite(event: React.FormEvent): Promise<void> {
     event.preventDefault();
@@ -53,7 +65,8 @@ export default function StaffPage() {
     setInviting(true);
     try {
       const result = await inviteStaff(parsed.data);
-      setTempPassword({ email: result.staff.email, password: result.tempPassword });
+      setInvited({ email: result.staff.email, password: result.tempPassword });
+      setCopied(false);
       setName('');
       setEmail('');
       toast('Staff member invited.', 'success');
@@ -66,11 +79,11 @@ export default function StaffPage() {
   }
 
   async function onRemove(member: StaffMember): Promise<void> {
-    if (!window.confirm(`Remove ${member.name} from your store?`)) return;
     setRemovingId(member.id);
     try {
       await removeStaff(member.id);
       toast('Staff member removed.', 'neutral');
+      setRemoveTarget(null);
       load();
     } catch (e) {
       toast(e instanceof ApiRequestError ? e.message : 'Could not remove staff.', 'error');
@@ -79,86 +92,179 @@ export default function StaffPage() {
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Staff</h1>
-        <p className="text-sm text-muted-foreground">
-          Invite staff to verify pickups. They can manage orders but not store settings, listings,
-          or payouts.
-        </p>
-      </header>
+  async function copyPassword(): Promise<void> {
+    if (!invited) return;
+    try {
+      await navigator.clipboard.writeText(invited.password);
+      setCopied(true);
+      toast('Temporary password copied.', 'success');
+    } catch {
+      // Clipboard can be blocked by permissions — the password is on screen anyway.
+      toast('Could not copy. Select the password and copy it manually.', 'error');
+    }
+  }
 
-      <Card>
+  const count = state.status === 'ready' ? state.staff.length : 0;
+
+  return (
+    <PageBody>
+      <PageHeader
+        title="Staff"
+        description="Staff can verify pickups and manage orders. They cannot change store settings, listings, or payouts."
+      />
+
+      {/*
+        A freshly issued temporary password is the one thing on this page that is
+        both time-critical and unrecoverable, so it gets a warning treatment and a
+        copy button rather than a quiet tinted note.
+      */}
+      {invited ? (
+        <Alert
+          tone="warning"
+          title={`Temporary password for ${invited.email}`}
+          action={
+            <Button variant="outline" size="sm" onClick={() => void copyPassword()}>
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4" aria-hidden />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" aria-hidden />
+                  Copy
+                </>
+              )}
+            </Button>
+          }
+        >
+          <p className="nums mt-1 select-all font-mono text-lg font-bold tracking-wider text-neutral-900">
+            {invited.password}
+          </p>
+          <p className="mt-1 text-xs">
+            Share it once — it is not stored and will not be shown again. They must choose their own
+            password the first time they sign in.
+          </p>
+        </Alert>
+      ) : null}
+
+      <Section
+        title="Invite a team member"
+        description="They get a temporary password to sign in at the counter."
+      >
         <form onSubmit={(e) => void onInvite(e)} className="space-y-4" noValidate>
-          <h2 className="font-display text-lg font-semibold text-neutral-900">
-            Invite a team member
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 xl:max-w-3xl">
             <Input
-              label="Name"
+              label="Full name"
+              required
               value={name}
               onChange={(e) => setName(e.target.value)}
               errorText={errors.name}
+              placeholder="Nimal Perera"
+              autoComplete="name"
             />
             <Input
               label="Email"
               type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               errorText={errors.email}
+              placeholder="nimal@store.com"
+              hint="They sign in with this address."
+              autoComplete="email"
             />
           </div>
           <Button type="submit" loading={inviting}>
+            <UserPlus className="h-4 w-4" aria-hidden />
             Send invite
           </Button>
         </form>
+      </Section>
 
-        {tempPassword ? (
-          <div className="mt-4 rounded-md bg-brand-50 p-4 text-sm">
-            <p className="font-medium text-brand-800">
-              Share these credentials with {tempPassword.email}:
-            </p>
-            <p className="mt-1 text-neutral-700">
-              Temporary password:{' '}
-              <span className="font-mono font-semibold">{tempPassword.password}</span>
-            </p>
-            <p className="mt-1 text-xs text-neutral-500">
-              This won&apos;t be shown again. They can change it after signing in.
-            </p>
-          </div>
-        ) : null}
-      </Card>
+      {state.status === 'error' ? <ErrorState message={state.message} onRetry={load} /> : null}
 
-      {state.status === 'loading' ? <p className="text-muted-foreground">Loading…</p> : null}
-      {state.status === 'error' ? <p className="text-danger-600">{state.message}</p> : null}
+      {state.status === 'loading' ? (
+        <Section title="Team" bodyClassName="p-0">
+          <TableSkeleton rows={3} columns={2} />
+        </Section>
+      ) : null}
 
       {state.status === 'ready' ? (
-        state.staff.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No staff yet. Invite your first team member above.
-          </p>
-        ) : (
-          <ul className="divide-y rounded-lg border bg-white">
-            {state.staff.map((member) => (
-              <li key={member.id} className="flex items-center justify-between gap-4 p-4">
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-neutral-900">{member.name}</p>
-                  <p className="truncate text-sm text-neutral-500">{member.email}</p>
-                </div>
-                <button
-                  onClick={() => void onRemove(member)}
-                  disabled={removingId === member.id}
-                  aria-label={`Remove ${member.name}`}
-                  className="flex h-11 w-11 items-center justify-center rounded-md text-neutral-500 hover:bg-danger-50 hover:text-danger-600 disabled:opacity-60"
+        <Section
+          title="Team"
+          description={count > 0 ? `${count} staff member${count === 1 ? '' : 's'}` : undefined}
+          bodyClassName="p-0"
+        >
+          {count === 0 ? (
+            <EmptyState
+              icon={<Users className="h-7 w-7" aria-hidden />}
+              title="No staff yet"
+              description="Invite your first team member above so they can verify pickups at the counter."
+              className="py-[2.5rem]"
+            />
+          ) : (
+            <ul className="divide-y divide-line">
+              {state.staff.map((member) => (
+                <li
+                  key={member.id}
+                  className="flex items-center justify-between gap-4 p-4 transition hover:bg-surface-raised/50"
                 >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span
+                      aria-hidden
+                      className="flex h-[2.25rem] w-[2.25rem] shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-800"
+                    >
+                      {member.name
+                        .split(' ')
+                        .map((p) => p[0])
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase() || '·'}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-neutral-900">{member.name}</p>
+                      <p className="truncate text-sm text-muted-foreground">{member.email}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="subtle"
+                    size="icon"
+                    disabled={removingId === member.id}
+                    aria-label={`Remove ${member.name}`}
+                    title={`Remove ${member.name}`}
+                    onClick={() => setRemoveTarget(member)}
+                    className="hover:bg-danger-50 hover:text-danger-600"
+                  >
+                    <Trash2 className="h-[18px] w-[18px]" aria-hidden />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
       ) : null}
-    </div>
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        title="Remove staff member?"
+        tone="danger"
+        confirmLabel="Remove"
+        loading={removingId === removeTarget?.id}
+        description={
+          removeTarget ? (
+            <>
+              <strong className="text-neutral-800">{removeTarget.name}</strong> will lose access to
+              this store immediately. Their account is kept, so you can re-invite them later.
+            </>
+          ) : null
+        }
+        onCancel={() => setRemoveTarget(null)}
+        onConfirm={() => {
+          if (removeTarget) void onRemove(removeTarget);
+        }}
+      />
+    </PageBody>
   );
 }

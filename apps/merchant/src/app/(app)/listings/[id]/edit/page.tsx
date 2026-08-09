@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import type { Listing } from '@rescuebite/types';
+import { BlockSkeleton, ErrorState, PageBody } from '@rescuebite/ui/web';
 import { ListingForm } from '@/features/listings/ListingForm';
 import { getMyListing, ListingApiError } from '@/features/listings/api';
 
@@ -33,10 +34,22 @@ export default function EditListingPage() {
   }, [params.id]);
 
   if (state.status === 'loading') {
-    return <p className="p-6 text-muted-foreground">Loading…</p>;
+    return (
+      <PageBody>
+        <BlockSkeleton lines={2} />
+        <div className="grid gap-6 xl:grid-cols-2">
+          <BlockSkeleton lines={5} />
+          <BlockSkeleton lines={5} />
+        </div>
+      </PageBody>
+    );
   }
   if (state.status === 'error') {
-    return <p className="p-6 text-red-600">{state.message}</p>;
+    return (
+      <PageBody>
+        <ErrorState message={state.message} onRetry={() => window.location.reload()} />
+      </PageBody>
+    );
   }
   return <ListingForm mode="edit" initial={state.listing} />;
 }

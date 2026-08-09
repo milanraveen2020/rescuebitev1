@@ -5,8 +5,9 @@ import {
   type AdminStore,
   type BulkResult,
   type SortOrder,
+  type UpdateMerchantInput,
 } from '@rescuebite/types';
-import { apiRequest, jsonInit, queryString } from '@/lib/request';
+import { apiRequest, apiRequestVoid, jsonInit, queryString } from '@/lib/request';
 import type { Page } from '@/components/usePagedData';
 
 export interface StoreQuery {
@@ -38,4 +39,19 @@ export async function bulkApproveStores(ids: string[]): Promise<BulkResult> {
   return BulkResultSchema.parse(
     await apiRequest('/admin/stores/bulk-approve', jsonInit('POST', { ids })),
   );
+}
+
+/** Edit a store and, optionally, its owner's contact details. */
+export async function updateMerchant(
+  storeId: string,
+  input: UpdateMerchantInput,
+): Promise<AdminStore> {
+  return AdminStoreSchema.parse(
+    await apiRequest(`/admin/merchants/${storeId}`, jsonInit('PATCH', input)),
+  );
+}
+
+/** Delete a store and its owner. Refused by the API once the store has orders. */
+export async function deleteMerchant(storeId: string): Promise<void> {
+  await apiRequestVoid(`/admin/merchants/${storeId}`, { method: 'DELETE' });
 }

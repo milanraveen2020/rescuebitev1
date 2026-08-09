@@ -7,6 +7,8 @@ import {
   AdminUserQuerySchema,
   AuditLogQuerySchema,
   BulkIdsSchema,
+  CreateMerchantSchema,
+  UpdateMerchantSchema,
   HideReviewSchema,
   RejectStoreSchema,
   SuspendUserSchema,
@@ -31,3 +33,5 @@ export class RejectStoreDto extends createZodDto(RejectStoreSchema) {}
 export class HideReviewDto extends createZodDto(HideReviewSchema) {}
 export class BulkIdsDto extends createZodDto(BulkIdsSchema) {}
 export class UpdateSettingsDto extends createZodDto(UpdateSettingsSchema) {}
+export class CreateMerchantDto extends createZodDto(CreateMerchantSchema) {}
+export class UpdateMerchantDto extends createZodDto(UpdateMerchantSchema) {}

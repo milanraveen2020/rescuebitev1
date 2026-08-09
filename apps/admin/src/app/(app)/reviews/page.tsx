@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
 import type { AdminReview } from '@rescuebite/types';
-import { Badge, Button, useToast } from '@rescuebite/ui/web';
+import { Badge, Button, PageBody, PageHeader, useToast } from '@rescuebite/ui/web';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FilterBar } from '@/components/FilterBar';
@@ -82,7 +82,7 @@ export default function ReviewsPage() {
       header: 'Comment',
       render: (r) => (
         <span className="line-clamp-2 max-w-md text-neutral-700">
-          {r.comment ?? <em className="text-neutral-400">No comment</em>}
+          {r.comment ?? <em className="text-subtle-foreground">No comment</em>}
         </span>
       ),
     },
@@ -124,11 +124,8 @@ export default function ReviewsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Reviews</h1>
-        <p className="text-sm text-muted-foreground">Moderate abusive or inappropriate reviews.</p>
-      </div>
+    <PageBody>
+      <PageHeader title="Reviews" description="Moderate abusive or inappropriate reviews." />
 
       <FilterBar
         search={{
@@ -139,6 +136,7 @@ export default function ReviewsPage() {
         selects={[
           {
             label: 'Visibility',
+            allLabel: 'All reviews',
             value: filters.hidden ?? '',
             onChange: (v) => setFilter('hidden', v),
             options: [
@@ -156,6 +154,7 @@ export default function ReviewsPage() {
         query={query}
         onSort={setSort}
         onPage={setPage}
+        onRetry={reload}
         emptyMessage="No reviews match your filters."
       />
 
@@ -182,6 +181,6 @@ export default function ReviewsPage() {
         onConfirm={() => void onRemove()}
         onClose={() => setRemoveTarget(null)}
       />
-    </div>
+    </PageBody>
   );
 }

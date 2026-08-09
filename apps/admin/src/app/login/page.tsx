@@ -54,7 +54,7 @@ function LoginForm() {
         <form onSubmit={(e) => void onSubmit(e)} className="space-y-5" noValidate>
           <div className="space-y-1">
             <h1 className="font-display text-2xl font-bold text-neutral-900">Mystery Box Admin</h1>
-            <p className="text-sm text-neutral-500">Administrator access only.</p>
+            <p className="text-sm text-muted-foreground">Administrator access only.</p>
           </div>
 
           {error ? (

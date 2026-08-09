@@ -1,6 +1,7 @@
 import {
   ApiErrorResponseSchema,
   ListingSchema,
+  PublicConfigSchema,
   UploadTicketSchema,
   type ApiErrorCode,
   type CreateListingInput,
@@ -64,6 +65,16 @@ async function parseJson(response: Response): Promise<unknown> {
   return json;
 }
 
+/**
+ * Categories the operator currently allows. Read from the platform config rather
+ * than the full `FoodCategory` enum, so a category the admin has switched off is
+ * never offered here and then rejected on save.
+ */
+export async function getEnabledCategories(): Promise<Listing['category'][]> {
+  const json = await parseJson(await authedFetch('/config'));
+  return PublicConfigSchema.parse(json).enabledCategories;
+}
+
 export async function listMyListings(): Promise<Listing[]> {
   const json = await parseJson(await authedFetch('/merchant/listings'));
   return ListingSchema.array().parse(json);
@@ -104,6 +115,20 @@ export async function duplicateListing(listing: Listing): Promise<Listing> {
 /** Publish a listing's content live for today with a default pickup window. */
 export async function publishForToday(listing: Listing): Promise<Listing> {
   return createListing({ ...copyFrom(listing), ...defaultTodayWindow(), status: 'ACTIVE' });
+}
+
+/**
+ * Take an existing draft live as-is, keeping its own pickup window. Distinct from
+ * `publishForToday`, which creates a *new* live copy on today's window — this
+ * flips the listing you already have, which is what the cashier counter needs.
+ */
+export async function publishListing(id: string): Promise<Listing> {
+  return updateListing(id, { status: 'ACTIVE' });
+}
+
+/** Pull a live listing back to a draft so it leaves the counter and discovery. */
+export async function unpublishListing(id: string): Promise<Listing> {
+  return updateListing(id, { status: 'DRAFT' });
 }
 
 /**

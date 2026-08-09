@@ -10,15 +10,26 @@ const button = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-brand-600 text-white hover:bg-brand-700',
-        secondary: 'bg-brand-50 text-brand-800 hover:bg-brand-100',
+        primary: 'bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800',
+        secondary: 'bg-brand-50 text-brand-800 hover:bg-brand-100 active:bg-brand-200',
+        /** Neutral bordered button — the default for secondary table/row actions. */
+        outline:
+          'border border-line-strong bg-surface-card text-neutral-700 hover:bg-surface-raised hover:text-neutral-900 active:bg-surface-sunken',
         ghost: 'bg-transparent text-brand-700 hover:bg-brand-50',
-        danger: 'bg-danger-600 text-white hover:bg-danger-500',
+        /** Quiet neutral action that should not compete with anything. */
+        subtle:
+          'bg-transparent text-muted-foreground hover:bg-surface-raised hover:text-neutral-900',
+        danger: 'bg-danger-600 text-white shadow-sm hover:bg-danger-500 active:bg-danger-700',
+        'danger-outline':
+          'border border-danger-500/30 bg-surface-card text-danger-600 hover:bg-danger-50',
       },
       size: {
-        sm: 'h-9 px-3 text-sm',
+        sm: 'h-[2.25rem] px-3 text-sm',
         md: 'h-11 px-5 text-base',
         lg: 'h-12 px-6 text-base',
+        /** Square icon-only button; pair with an aria-label. */
+        icon: 'h-11 w-11 shrink-0 p-0',
+        'icon-sm': 'h-[2.25rem] w-[2.25rem] shrink-0 p-0',
       },
       block: { true: 'w-full', false: '' },
     },
@@ -27,9 +38,8 @@ const button = cva(
 );
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof button> {
-  loading?: boolean;
+  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof button> {
+  loading?: boolean | undefined;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

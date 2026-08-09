@@ -4,17 +4,29 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 20% 98%;
     --foreground: 222 47% 11%;
-    --primary: 152 82% 39%; /* RescueBite brand green */
+    --primary: 152 82% 39%; /* Mystery Box brand green */
     --primary-foreground: 0 0% 100%;
     --accent: 31 95% 50%; /* playful amber */
     --accent-foreground: 222 47% 11%;
     --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
-    --border: 214 20% 90%;
-    --ring: 152 82% 39%;
     --radius: 0.625rem;
+
+    /*
+     * Admin theme — cool and neutral. Same shared components as the merchant app,
+     * different surface variables: an operator console should read as a tool, not
+     * as the warm storefront-facing product.
+     */
+    --surface-page: 210 20% 98%; /* #f9fafb */
+    --surface-card: 0 0% 100%; /* #ffffff */
+    --surface-raised: 210 20% 96%; /* #f2f4f7 */
+    --surface-sunken: 214 20% 91%; /* #e4e7ec */
+    --border: 214 20% 90%;
+    --border-strong: 213 17% 82%;
+    --muted-foreground: 215 16% 42%;
+    --subtle-foreground: 215 14% 54%;
+    --ring: 152 82% 39%;
   }
 
   * {
@@ -22,7 +34,7 @@
   }
 
   body {
-    background-color: hsl(var(--background));
+    background-color: hsl(var(--surface-page));
     color: hsl(var(--foreground));
     font-family:
       Inter,
@@ -31,6 +43,13 @@
       'Segoe UI',
       Roboto,
       sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tabular figures keep numeric table columns and KPIs vertically aligned. */
+  .nums {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Keyboard-navigation focus ring for every interactive element. */

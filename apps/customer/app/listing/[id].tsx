@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MapPin, Package, Sparkles, Wheat, type LucideIcon } from 'lucide-react-native';
+import { MapPin, Package, Sparkles, Store, Wheat, type LucideIcon } from 'lucide-react-native';
 import { Badge, Button, PickupWindowChip, PriceTag } from '@rescuebite/ui/native';
 import { colors, spacing, typography } from '@rescuebite/ui/tokens';
 import { useListing } from '../../src/api/queries';
@@ -93,8 +93,22 @@ export default function ListingDetailScreen() {
                 </Section>
               ) : null}
 
+              {/*
+                The store's own blurb and opening hours are merchant-managed but
+                were never part of the customer contract, so nothing they wrote
+                reached this screen. Both are optional — render only when set.
+              */}
+              {listing.store.description ? (
+                <Section title={`About ${listing.store.name}`} icon={Store}>
+                  <Text style={styles.paragraph}>{listing.store.description}</Text>
+                </Section>
+              ) : null}
+
               <Section title="Pickup location" icon={MapPin}>
                 <Text style={styles.paragraph}>{listing.store.address}</Text>
+                {listing.store.openingHours ? (
+                  <Text style={styles.hours}>Open {listing.store.openingHours}</Text>
+                ) : null}
               </Section>
             </View>
           </ScrollView>
@@ -161,6 +175,11 @@ const styles = StyleSheet.create({
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: '600', color: colors.neutral[900] },
   paragraph: { fontSize: typography.fontSize.base, color: colors.neutral[600], lineHeight: 22 },
+  hours: {
+    fontSize: typography.fontSize.sm,
+    color: colors.neutral[500],
+    marginTop: spacing[1],
+  },
   footer: {
     position: 'absolute',
     left: 0,

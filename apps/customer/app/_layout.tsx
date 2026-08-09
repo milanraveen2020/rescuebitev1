@@ -38,9 +38,7 @@ export default function RootLayout() {
             <FavoritesProvider>
               <ToastProvider>
                 <StatusBar style="dark" />
-                {showSplash ? (
-                  <SplashScreen onFinish={() => setShowSplash(false)} />
-                ) : null}
+                {showSplash ? <SplashScreen onFinish={() => setShowSplash(false)} /> : null}
                 <Stack
                   screenOptions={{
                     headerShown: false,

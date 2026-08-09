@@ -1,0 +1,26 @@
+{
+  "name": "Mystery Box — Cashier",
+  "short_name": "MB Cashier",
+  "description": "Run Mystery Box sales sessions: monitor orders, validate QR codes, and hand over surprise bags.",
+  "start_url": "/session/active",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ece6dc",
+  "theme_color": "#436b59",
+  "categories": ["business", "food", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

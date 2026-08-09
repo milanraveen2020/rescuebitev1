@@ -29,7 +29,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       if (raw) {
         try {
           const parsed: unknown = JSON.parse(raw);
-          if (Array.isArray(parsed)) setIds(parsed.filter((x): x is string => typeof x === 'string'));
+          if (Array.isArray(parsed))
+            setIds(parsed.filter((x): x is string => typeof x === 'string'));
         } catch {
           // Corrupt value — start fresh.
         }

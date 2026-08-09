@@ -1,6 +1,7 @@
 'use client';
 
 import type { AuditLogEntry } from '@rescuebite/types';
+import { PageBody, PageHeader } from '@rescuebite/ui/web';
 import { DataTable, type Column } from '@/components/DataTable';
 import { FilterBar } from '@/components/FilterBar';
 import { usePagedData } from '@/components/usePagedData';
@@ -38,30 +39,28 @@ export default function AuditPage() {
     {
       key: 'entityId',
       header: 'Target',
-      render: (l) => <span className="font-mono text-xs text-neutral-500">{l.entityId}</span>,
+      render: (l) => <span className="font-mono text-xs text-muted-foreground">{l.entityId}</span>,
     },
     {
       key: 'metadata',
       header: 'Details',
       render: (l) =>
         l.metadata ? (
-          <code className="line-clamp-1 max-w-xs text-xs text-neutral-500">
+          <code className="line-clamp-1 max-w-xs text-xs text-muted-foreground">
             {JSON.stringify(l.metadata)}
           </code>
         ) : (
-          <span className="text-neutral-300">—</span>
+          <span className="text-subtle-foreground">—</span>
         ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Audit log</h1>
-        <p className="text-sm text-muted-foreground">
-          Every administrative action, recorded immutably.
-        </p>
-      </div>
+    <PageBody>
+      <PageHeader
+        title="Audit log"
+        description="Every administrative action, recorded immutably."
+      />
 
       <FilterBar
         search={{
@@ -72,6 +71,7 @@ export default function AuditPage() {
         selects={[
           {
             label: 'Entity',
+            allLabel: 'All entities',
             value: filters.entity ?? '',
             onChange: (v) => setFilter('entity', v),
             options: ENTITIES.map((e) => ({ value: e, label: e })),
@@ -88,6 +88,6 @@ export default function AuditPage() {
         onPage={setPage}
         emptyMessage="No audit entries match your filters."
       />
-    </div>
+    </PageBody>
   );
 }

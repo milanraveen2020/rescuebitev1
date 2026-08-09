@@ -6,11 +6,18 @@ import {
   UserRoleSchema,
   UserStatusSchema,
 } from './enums.js';
+import { EmailSchema, PasswordSchema } from './auth.js';
 import { OrderSchema, ReviewSchema, StoreSchema, UserSchema } from './entities.js';
 import { ListingSchema } from './listings.js';
 import { RevenuePointSchema } from './merchant.js';
 import { OffsetPaginationQuerySchema } from './pagination.js';
-import { CurrencySchema, IdSchema, IsoDateTimeSchema, MinorUnitsSchema } from './primitives.js';
+import {
+  CurrencySchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  MinorUnitsSchema,
+  SupportedCurrencySchema,
+} from './primitives.js';
 
 /**
  * Platform-admin contracts: overview KPIs, moderation queues, audit log, and
@@ -177,6 +184,18 @@ export type BulkResult = z.infer<typeof BulkResultSchema>;
 
 // --- Settings ---------------------------------------------------------------
 
+/**
+ * The subset of platform settings any client may read without authentication.
+ *
+ * Exists so the customer app and the merchant listing form can offer exactly the
+ * categories the operator has switched on, instead of each hardcoding the full
+ * `FoodCategory` enum and silently ignoring the admin's configuration.
+ */
+export const PublicConfigSchema = z.object({
+  enabledCategories: z.array(FoodCategorySchema),
+});
+export type PublicConfig = z.infer<typeof PublicConfigSchema>;
+
 export const PlatformSettingsSchema = z.object({
   commissionBps: z.number().int().min(0).max(10_000),
   enabledCategories: z.array(FoodCategorySchema),
@@ -193,3 +212,56 @@ export const UpdateSettingsSchema = z
   })
   .partial();
 export type UpdateSettingsInput = z.infer<typeof UpdateSettingsSchema>;
+
+// --- Merchant provisioning --------------------------------------------------
+
+/**
+ * Admin-created merchant account. The admin supplies only the essentials plus a
+ * temporary password; the merchant completes store setup after their first
+ * login (which forces a password change).
+ */
+export const CreateMerchantSchema = z.object({
+  name: z.string().min(1).max(120),
+  email: EmailSchema,
+  phone: z.string().min(5).max(20),
+  temporaryPassword: PasswordSchema,
+  /** Store name shown to customers. */
+  storeName: z.string().min(1).max(120),
+  /** Street address. Coordinates are set by the merchant during store setup. */
+  storeAddress: z.string().min(1).max(300),
+});
+export type CreateMerchantInput = z.infer<typeof CreateMerchantSchema>;
+
+/** The provisioned merchant, returned once so the admin can hand over details. */
+export const CreatedMerchantSchema = z.object({
+  user: UserSchema,
+  storeId: IdSchema,
+  storeName: z.string(),
+});
+export type CreatedMerchant = z.infer<typeof CreatedMerchantSchema>;
+
+/**
+ * Admin edit of a merchant: store details plus the owner's contact fields.
+ * Every field is optional — send only what changed.
+ */
+export const UpdateMerchantSchema = z
+  .object({
+    // Store
+    storeName: z.string().min(1).max(120),
+    storeAddress: z.string().min(1).max(300),
+    category: FoodCategorySchema,
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
+    /** Frozen once the store has orders — see `Store.currencyLocked`. */
+    currency: SupportedCurrencySchema,
+    /** Free-text opening hours shown to customers on every bag. */
+    openingHours: z.string().max(200).nullable(),
+    /** Store blurb shown on the customer-facing bag detail. */
+    description: z.string().max(2000).nullable(),
+    // Owner
+    ownerName: z.string().min(1).max(120),
+    ownerEmail: EmailSchema,
+    ownerPhone: z.string().min(5).max(20),
+  })
+  .partial();
+export type UpdateMerchantInput = z.infer<typeof UpdateMerchantSchema>;

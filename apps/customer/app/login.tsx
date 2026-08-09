@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LoginSchema } from '@rescuebite/types';
 import { Button, Input } from '@rescuebite/ui/native';

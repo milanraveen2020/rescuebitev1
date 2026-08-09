@@ -31,6 +31,8 @@ export const UserSchema = z.object({
   name: z.string().min(1).max(120),
   avatarUrl: z.string().url().nullable(),
   status: UserStatusSchema,
+  /** True when an admin provisioned the account and a password change is due. */
+  mustChangePassword: z.boolean(),
   emailVerifiedAt: IsoDateTimeSchema.nullable(),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
@@ -47,7 +49,12 @@ export const StoreSchema = z.object({
   name: z.string().min(1).max(120),
   description: z.string().max(2000).nullable(),
   category: FoodCategorySchema,
-  address: z.string().min(1),
+  /**
+   * Empty until the merchant completes store setup — an admin-provisioned store
+   * has no address yet. `UpdateStoreSchema` still requires a non-empty value,
+   * so a merchant can never blank it out once set.
+   */
+  address: z.string(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   logoUrl: z.string().url().nullable(),
@@ -59,6 +66,13 @@ export const StoreSchema = z.object({
   rating: z.number().min(0).max(5),
   reviewCount: z.number().int().nonnegative(),
   status: StoreStatusSchema,
+  /**
+   * Derived: true once the store has any order. Order rows keep the currency they
+   * were charged in, so the store's currency is frozen from that point on. Exposed
+   * so the merchant and admin forms can disable the control and say why, rather
+   * than letting the save fail.
+   */
+  currencyLocked: z.boolean(),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
 });

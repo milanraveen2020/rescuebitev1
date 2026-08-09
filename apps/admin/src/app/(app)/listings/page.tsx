@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ListingStatusSchema, type AdminListing } from '@rescuebite/types';
-import { Button, useToast } from '@rescuebite/ui/web';
+import { Badge, Button, Modal, PageBody, PageHeader, useToast } from '@rescuebite/ui/web';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -28,6 +28,7 @@ export default function ListingsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [unpublishTarget, setUnpublishTarget] = useState<AdminListing | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [detail, setDetail] = useState<AdminListing | null>(null);
   const [busy, setBusy] = useState(false);
 
   function toggle(id: string): void {
@@ -78,10 +79,10 @@ export default function ListingsPage() {
       header: 'Listing',
       sortKey: 'title',
       render: (l) => (
-        <div>
-          <p className="font-medium text-neutral-900">{l.title}</p>
-          <p className="text-xs text-neutral-500">{l.storeName}</p>
-        </div>
+        <button onClick={() => setDetail(l)} className="text-left">
+          <p className="font-medium text-brand-700 hover:underline">{l.title}</p>
+          <p className="text-xs text-muted-foreground">{l.storeName}</p>
+        </button>
       ),
     },
     { key: 'category', header: 'Category', render: (l) => humanize(l.category) },
@@ -118,13 +119,8 @@ export default function ListingsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Listings</h1>
-        <p className="text-sm text-muted-foreground">
-          Moderate and force-unpublish flagged listings.
-        </p>
-      </div>
+    <PageBody>
+      <PageHeader title="Listings" description="Moderate and force-unpublish flagged listings." />
 
       <FilterBar
         search={{
@@ -135,6 +131,7 @@ export default function ListingsPage() {
         selects={[
           {
             label: 'Status',
+            allLabel: 'All statuses',
             value: filters.status ?? '',
             onChange: (v) => setFilter('status', v),
             options: ListingStatusSchema.options.map((s) => ({ value: s, label: humanize(s) })),
@@ -149,6 +146,7 @@ export default function ListingsPage() {
         query={query}
         onSort={setSort}
         onPage={setPage}
+        onRetry={reload}
         emptyMessage="No listings match your filters."
         selection={{
           selected,
@@ -182,6 +180,73 @@ export default function ListingsPage() {
         onConfirm={() => void onBulk()}
         onClose={() => setBulkOpen(false)}
       />
+
+      {/*
+        Moderation needs the customer-facing content, not just the row summary:
+        the description, allergen text, and photo are exactly what an admin is
+        being asked to judge, and none of it was visible anywhere in this console.
+      */}
+      <Modal open={detail !== null} onClose={() => setDetail(null)} title={detail?.title ?? ''}>
+        {detail ? (
+          <div className="space-y-4 text-sm">
+            {detail.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={detail.imageUrl}
+                alt={`${detail.title} photo`}
+                className="h-40 w-full rounded-md border border-line object-cover"
+              />
+            ) : (
+              <p className="rounded-md border border-dashed border-line-strong bg-surface-raised p-4 text-center text-xs text-muted-foreground">
+                No photo — this bag shows a blank hero in the app.
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge status={detail.status} />
+              <Badge tone="neutral">{humanize(detail.category)}</Badge>
+              <Badge tone={detail.quantityRemaining > 0 ? 'success' : 'warning'}>
+                {detail.quantityRemaining}/{detail.quantityTotal} left
+              </Badge>
+              <Badge tone="info">{detail.discountPercent}% off</Badge>
+            </div>
+
+            <DetailRow label="Store" value={detail.storeName} />
+            <DetailRow
+              label="Price"
+              value={`${formatMoney(detail.price, detail.currency)} (was ${formatMoney(
+                detail.originalPrice,
+                detail.currency,
+              )})`}
+            />
+            <DetailRow
+              label="Pickup window"
+              value={`${new Date(detail.pickupStart).toLocaleString()} → ${new Date(
+                detail.pickupEnd,
+              ).toLocaleString()}`}
+            />
+            <DetailRow
+              label="Description"
+              value={detail.description ?? 'None — the app falls back to generic copy.'}
+            />
+            <DetailRow
+              label="Allergens"
+              value={detail.allergenInfo ?? 'None provided — no allergen section shows in the app.'}
+            />
+          </div>
+        ) : null}
+      </Modal>
+    </PageBody>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-line pb-2 last:border-0">
+      <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-0.5 text-neutral-800">{value}</dd>
     </div>
   );
 }

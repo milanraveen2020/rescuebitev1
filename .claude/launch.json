@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "merchant",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/Raveen/Desktop/TooGood/rescuebitev1/apps/merchant && exec ./node_modules/.bin/next dev --port 3001"
+      ],
+      "port": 3001
+    }
+  ]
+}

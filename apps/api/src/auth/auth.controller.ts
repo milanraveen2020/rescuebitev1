@@ -8,6 +8,7 @@ import { AuthService, type SessionResult } from './auth.service';
 import {
   AuthResponseDto,
   LoginDto,
+  ChangePasswordDto,
   MessageResponseDto,
   RefreshDto,
   RegisterCustomerDto,
@@ -105,6 +106,16 @@ export class AuthController {
   @ApiOkResponse({ schema: UserDto.openApiSchema })
   me(@CurrentUser() user: AuthenticatedUser): Promise<PublicUser> {
     return this.auth.me(user.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('change-password')
+  @ApiOkResponse({ schema: UserDto.openApiSchema })
+  changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<PublicUser> {
+    return this.auth.changePassword(user.id, dto.currentPassword, dto.newPassword);
   }
 
   @Public()

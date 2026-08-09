@@ -68,6 +68,15 @@ export const UpdateListingSchema = withListingRules(
   z
     .object({
       ...writableFields,
+      /**
+       * Optional text and the image are nullable on update so a merchant can
+       * actually clear them. With plain `.optional()` there was no way to express
+       * "remove this" — an omitted key means "leave unchanged", so allergen text
+       * and photos were effectively write-once.
+       */
+      description: z.string().max(1000).nullable(),
+      imageUrl: z.string().url().nullable(),
+      allergenInfo: z.string().max(500).nullable(),
       quantityRemaining: z.number().int().min(0).max(1000),
       status: ListingStatusSchema,
     })
@@ -105,14 +114,24 @@ export type NearbyQuery = z.infer<typeof NearbyQuerySchema>;
 
 // --- Response shapes -------------------------------------------------------
 
+/**
+ * The store fields a customer sees alongside a bag.
+ *
+ * `description`, `openingHours` and `coverUrl` are merchant-managed but were
+ * previously omitted here, so a merchant could fill them in and no customer would
+ * ever see them. They are part of the contract now and rendered on the bag screen.
+ */
 export const StoreSummarySchema = z.object({
   id: IdSchema,
   name: z.string(),
   category: FoodCategorySchema,
+  description: z.string().nullable(),
   address: z.string(),
   lat: z.number(),
   lng: z.number(),
   logoUrl: z.string().url().nullable(),
+  coverUrl: z.string().url().nullable(),
+  openingHours: z.string().nullable(),
   rating: z.number(),
   reviewCount: z.number().int(),
 });

@@ -1,9 +1,21 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Leaf, Receipt, ShoppingBag, Store as StoreIcon, UserPlus } from 'lucide-react';
 import type { AdminOverview } from '@rescuebite/types';
-import { Card } from '@rescuebite/ui/web';
+import {
+  BlockSkeleton,
+  EmptyState,
+  ErrorState,
+  Input,
+  PageBody,
+  PageHeader,
+  Section,
+  SegmentedControl,
+  StatCard,
+  StatGrid,
+  StatGridSkeleton,
+} from '@rescuebite/ui/web';
 import { getOverview } from '@/features/overview/api';
 import { ApiRequestError } from '@/lib/request';
 import { formatMoney, isoDay } from '@/lib/format';
@@ -13,18 +25,26 @@ type State =
   | { status: 'ready'; data: AdminOverview }
   | { status: 'error'; message: string };
 
-function defaultRange(): { from: string; to: string } {
+const PRESETS = [
+  { value: '7', label: '7d' },
+  { value: '30', label: '30d' },
+  { value: '90', label: '90d' },
+  { value: 'custom', label: 'Custom' },
+] as const;
+
+function rangeForDays(days: number): { from: string; to: string } {
   const to = new Date();
   const from = new Date();
-  from.setDate(from.getDate() - 29);
+  from.setDate(from.getDate() - (days - 1));
   return { from: isoDay(from), to: isoDay(to) };
 }
 
 export default function OverviewPage() {
-  const [range, setRange] = useState(defaultRange);
+  const [preset, setPreset] = useState<string>('30');
+  const [range, setRange] = useState(() => rangeForDays(30));
   const [state, setState] = useState<State>({ status: 'loading' });
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let active = true;
     setState({ status: 'loading' });
     getOverview(range.from, range.to)
@@ -42,92 +62,104 @@ export default function OverviewPage() {
     };
   }, [range]);
 
-  return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Overview</h1>
-        <div className="flex items-center gap-2 text-sm">
-          <input
-            type="date"
-            value={range.from}
-            max={range.to}
-            onChange={(e) => setRange((r) => ({ ...r, from: e.target.value }))}
-            aria-label="From date"
-            className="rounded-md border border-neutral-300 px-2 py-1.5"
-          />
-          <span className="text-neutral-400">→</span>
-          <input
-            type="date"
-            value={range.to}
-            min={range.from}
-            onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))}
-            aria-label="To date"
-            className="rounded-md border border-neutral-300 px-2 py-1.5"
-          />
-        </div>
-      </header>
+  useEffect(load, [load]);
 
-      {state.status === 'loading' ? <p className="text-muted-foreground">Loading…</p> : null}
-      {state.status === 'error' ? <p className="text-danger-600">{state.message}</p> : null}
+  function onPreset(next: string): void {
+    setPreset(next);
+    // "Custom" keeps whatever dates are showing so the inputs don't jump.
+    if (next !== 'custom') setRange(rangeForDays(Number(next)));
+  }
+
+  return (
+    <PageBody>
+      <PageHeader
+        title="Overview"
+        description="Platform health across every store."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <SegmentedControl
+              label="Date range preset"
+              value={preset}
+              options={PRESETS}
+              onChange={onPreset}
+            />
+            {preset === 'custom' ? (
+              <div className="flex items-end gap-2">
+                <Input
+                  label="From"
+                  hideLabel
+                  type="date"
+                  className="h-[2.25rem] w-36"
+                  value={range.from}
+                  max={range.to}
+                  onChange={(e) => setRange((r) => ({ ...r, from: e.target.value }))}
+                />
+                <span aria-hidden className="pb-2 text-muted-foreground">
+                  →
+                </span>
+                <Input
+                  label="To"
+                  hideLabel
+                  type="date"
+                  className="h-[2.25rem] w-36"
+                  value={range.to}
+                  min={range.from}
+                  onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))}
+                />
+              </div>
+            ) : null}
+          </div>
+        }
+      />
+
+      {state.status === 'loading' ? (
+        <>
+          <StatGridSkeleton count={5} />
+          <BlockSkeleton lines={6} />
+        </>
+      ) : null}
+
+      {state.status === 'error' ? <ErrorState message={state.message} onRetry={load} /> : null}
 
       {state.status === 'ready' ? (
         <>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-            <Kpi
-              icon={<Receipt className="h-5 w-5" />}
+          <StatGrid>
+            <StatCard
               label="GMV"
               value={formatMoney(state.data.gmvMinor, state.data.currency)}
+              icon={<Receipt className="h-4 w-4" />}
+              hint="Gross merchandise value"
             />
-            <Kpi
-              icon={<ShoppingBag className="h-5 w-5" />}
+            <StatCard
               label="Orders"
               value={String(state.data.orders)}
+              icon={<ShoppingBag className="h-4 w-4" />}
             />
-            <Kpi
-              icon={<StoreIcon className="h-5 w-5" />}
+            <StatCard
               label="Active stores"
               value={String(state.data.activeStores)}
+              icon={<StoreIcon className="h-4 w-4" />}
             />
-            <Kpi
-              icon={<UserPlus className="h-5 w-5" />}
+            <StatCard
               label="New users"
               value={String(state.data.newUsers)}
+              icon={<UserPlus className="h-4 w-4" />}
+              hint="In this period"
             />
-            <Kpi
-              icon={<Leaf className="h-5 w-5" />}
+            <StatCard
               label="Meals rescued"
               value={String(state.data.mealsRescued)}
-              accent
+              icon={<Leaf className="h-4 w-4" />}
+              emphasis
             />
-          </div>
+          </StatGrid>
 
-          <Card>
-            <h2 className="mb-4 font-display text-lg font-semibold text-neutral-900">Revenue</h2>
+          <Section title="Revenue" description={`${range.from} → ${range.to}`}>
             <RevenueBars data={state.data.revenueSeries} currency={state.data.currency} />
-          </Card>
+          </Section>
         </>
       ) : null}
-    </div>
-  );
-}
-
-function Kpi({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <Card className={accent ? 'bg-brand-50' : undefined}>
-      <div className="flex items-center gap-2 text-brand-600">{icon}</div>
-      <p className="mt-3 text-xl font-bold text-neutral-900">{value}</p>
-      <p className="text-sm text-neutral-500">{label}</p>
-    </Card>
+    </PageBody>
   );
 }
 
@@ -138,23 +170,53 @@ function RevenueBars({
   data: AdminOverview['revenueSeries'];
   currency: string;
 }) {
-  const max = Math.max(1, ...data.map((d) => d.revenueMinor));
-  if (data.length === 0)
-    return <p className="text-sm text-neutral-500">No revenue in this range.</p>;
+  const max = Math.max(...data.map((d) => d.revenueMinor), 0);
+
+  if (data.length === 0) {
+    return <EmptyState title="No revenue in this range" className="py-8" />;
+  }
+  // An all-zero series used to render a full-height strip of 1%-tall slivers.
+  if (max === 0) {
+    return (
+      <EmptyState
+        title="No revenue in this range"
+        description="Try a wider date range, or check that stores have active listings."
+        className="py-8"
+      />
+    );
+  }
+
+  const total = data.reduce((sum, d) => sum + d.revenueMinor, 0);
+
   return (
-    <div className="flex h-40 items-end gap-px" role="img" aria-label="Daily revenue">
-      {data.map((d) => (
-        <div
-          key={d.date}
-          className="flex flex-1 items-end"
-          title={`${d.date}: ${formatMoney(d.revenueMinor, currency)}`}
-        >
+    <figure className="m-0">
+      <div className="flex h-48 items-end gap-px" role="img" aria-label="Daily revenue">
+        {data.map((d) => (
           <div
-            className="w-full rounded-t bg-brand-400"
-            style={{ height: `${Math.max((d.revenueMinor / max) * 100, 1)}%` }}
-          />
-        </div>
-      ))}
-    </div>
+            key={d.date}
+            className="group flex flex-1 items-end"
+            title={`${d.date}: ${formatMoney(d.revenueMinor, currency)}`}
+          >
+            <div
+              className="w-full rounded-t bg-brand-400 transition-colors duration-fast group-hover:bg-brand-600"
+              style={{ height: `${Math.max((d.revenueMinor / max) * 100, 1)}%` }}
+            />
+          </div>
+        ))}
+      </div>
+      <figcaption className="nums mt-3 flex flex-wrap gap-x-5 gap-y-1 border-t border-line pt-3 text-xs text-muted-foreground">
+        <span>
+          Total{' '}
+          <strong className="font-semibold text-neutral-800">{formatMoney(total, currency)}</strong>
+        </span>
+        <span>
+          Peak day{' '}
+          <strong className="font-semibold text-neutral-800">{formatMoney(max, currency)}</strong>
+        </span>
+        <span>
+          <strong className="font-semibold text-neutral-800">{data.length}</strong> days
+        </span>
+      </figcaption>
+    </figure>
   );
 }

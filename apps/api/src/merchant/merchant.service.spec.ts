@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ListingStatus, OrderStatus, StoreStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { MerchantService } from './merchant.service';
@@ -9,6 +9,7 @@ const STORE_NAME = 'INTTEST_MERCHANT';
 const OWNER_EMAIL = 'merchant-int-owner@test.local';
 const CUSTOMER_EMAIL = 'merchant-int-customer@test.local';
 const STAFF_EMAIL = 'merchant-int-staff@test.local';
+const STAFF2_EMAIL = 'merchant-int-staff2@test.local';
 
 describe('MerchantService (integration)', () => {
   let prisma: PrismaService;
@@ -18,7 +19,7 @@ describe('MerchantService (integration)', () => {
   let customerId = '';
   let listingId = '';
 
-  const emails = [OWNER_EMAIL, CUSTOMER_EMAIL, STAFF_EMAIL];
+  const emails = [OWNER_EMAIL, CUSTOMER_EMAIL, STAFF_EMAIL, STAFF2_EMAIL];
 
   async function cleanup(): Promise<void> {
     const stores = await prisma.store.findMany({
@@ -140,6 +141,38 @@ describe('MerchantService (integration)', () => {
       const updated = await service.updateStore(ownerId, { openingHours: 'Mon–Fri 9–17' });
       expect(updated.openingHours).toBe('Mon–Fri 9–17');
     });
+
+    /**
+     * Currency drives every customer-facing price. It was absent from the update
+     * contract entirely, so a store was stuck on the `EUR` column default forever.
+     * It becomes read-only once money has moved, because each order row stores the
+     * currency it was charged in.
+     */
+    it('locks the currency once the store has orders, and allows it before', async () => {
+      // The fixture seeds two orders, so the store starts locked.
+      const locked = await service.getStore(ownerId);
+      expect(locked.currencyLocked).toBe(true);
+      await expect(service.updateStore(ownerId, { currency: 'USD' })).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      // The rest of the profile stays editable while locked.
+      expect((await service.updateStore(ownerId, { name: STORE_NAME })).currency).toBe('EUR');
+
+      // With no order history the same change is allowed.
+      const seeded = await prisma.order.findMany({
+        where: { storeId },
+        select: { status: true, quantity: true, totalAmount: true },
+      });
+      await prisma.order.deleteMany({ where: { storeId } });
+      try {
+        const unlocked = await service.getStore(ownerId);
+        expect(unlocked.currencyLocked).toBe(false);
+        expect((await service.updateStore(ownerId, { currency: 'LKR' })).currency).toBe('LKR');
+      } finally {
+        await service.updateStore(ownerId, { currency: 'EUR' });
+        for (const o of seeded) await makeOrder(o.status, o.quantity, o.totalAmount);
+      }
+    });
   });
 
   describe('staff', () => {
@@ -157,6 +190,16 @@ describe('MerchantService (integration)', () => {
 
       await service.removeStaff(ownerId, invite.staff.id);
       expect(await service.listStaff(ownerId)).toHaveLength(0);
+    });
+
+    it('forces an invited staff member to replace the temporary password', async () => {
+      const invite = await service.inviteStaff(ownerId, { email: STAFF2_EMAIL, name: 'New Staff' });
+
+      const created = await prisma.user.findUniqueOrThrow({ where: { id: invite.staff.id } });
+      expect(created.mustChangePassword).toBe(true);
+      expect(created.role).toBe(UserRole.MERCHANT_STAFF);
+
+      await service.removeStaff(ownerId, invite.staff.id);
     });
 
     it('rejects duplicate emails', async () => {

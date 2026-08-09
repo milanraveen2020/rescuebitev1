@@ -11,8 +11,14 @@ import {
 } from 'lucide-react-native';
 import { FoodCategorySchema, type FoodCategory, type ListingSort } from '@rescuebite/types';
 import { colors, radii, spacing, typography } from '@rescuebite/ui/tokens';
+import { useAppConfig } from '../../api/queries';
 
-const CATEGORIES = FoodCategorySchema.options;
+/**
+ * Fallback only. The real list comes from the platform config so a category the
+ * operator has switched off stops being offered — previously these pills were the
+ * full enum, so disabling a category left a pill that returned an empty feed.
+ */
+const ALL_CATEGORIES = FoodCategorySchema.options;
 
 const CATEGORY_ICON: Record<FoodCategory, LucideIcon> = {
   BAKERY: Croissant,
@@ -36,6 +42,11 @@ export function CategoryChips({
   selected: FoodCategory | null;
   onSelect: (category: FoodCategory | null) => void;
 }) {
+  const { data: config } = useAppConfig();
+  // An empty list from the server means "no restriction", matching the API.
+  const categories =
+    config && config.enabledCategories.length > 0 ? config.enabledCategories : ALL_CATEGORIES;
+
   return (
     <ScrollView
       horizontal
@@ -52,7 +63,7 @@ export function CategoryChips({
         text="All"
         Icon={LayoutGrid}
       />
-      {CATEGORIES.map((category) => (
+      {categories.map((category) => (
         <CategoryChip
           key={category}
           active={selected === category}

@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CursorPaginationQuerySchema,
-  OffsetPaginationQuerySchema,
-} from './pagination';
+import { CursorPaginationQuerySchema, OffsetPaginationQuerySchema } from './pagination';
 
 describe('CursorPaginationQuerySchema', () => {
   it('applies the default limit when omitted', () => {

@@ -1,9 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { CheckCircle2, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { CheckCircle2, ClipboardList } from 'lucide-react';
 import type { MerchantOrder, OrderStatus, StoreOrders } from '@rescuebite/types';
-import { Badge, Card, useToast } from '@rescuebite/ui/web';
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  ErrorState,
+  PageBody,
+  PageHeader,
+  Section,
+  TableSkeleton,
+  useToast,
+} from '@rescuebite/ui/web';
 import { useSession } from '@/features/shell/SessionContext';
 import { collectOrder, getStoreOrders, markNoShow } from '@/features/orders/api';
 import { ApiRequestError } from '@/lib/request';
@@ -14,10 +25,10 @@ type State =
   | { status: 'ready'; orders: StoreOrders }
   | { status: 'error'; message: string };
 
-const STATUS_TONE: Record<OrderStatus, 'neutral' | 'brand' | 'accent' | 'danger'> = {
-  RESERVED: 'accent',
-  PAID: 'brand',
-  COLLECTED: 'neutral',
+const STATUS_TONE: Record<OrderStatus, 'neutral' | 'success' | 'warning' | 'danger' | 'info'> = {
+  RESERVED: 'warning',
+  PAID: 'info',
+  COLLECTED: 'success',
   CANCELLED: 'neutral',
   REFUNDED: 'neutral',
   NO_SHOW: 'danger',
@@ -31,8 +42,9 @@ export default function OrdersPage() {
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [noShowTarget, setNoShowTarget] = useState<MerchantOrder | null>(null);
 
-  function load(): void {
+  const load = useCallback(() => {
     getStoreOrders(store.id)
       .then((orders) => setState({ status: 'ready', orders }))
       .catch((e: unknown) =>
@@ -41,9 +53,9 @@ export default function OrdersPage() {
           message: e instanceof ApiRequestError ? e.message : 'Could not load orders.',
         }),
       );
-  }
+  }, [store.id]);
 
-  useEffect(load, [store.id]);
+  useEffect(load, [load]);
 
   async function onVerify(event: React.FormEvent): Promise<void> {
     event.preventDefault();
@@ -96,6 +108,7 @@ export default function OrdersPage() {
     try {
       await markNoShow(order.id);
       toast('Marked as no-show.', 'neutral');
+      setNoShowTarget(null);
       load();
     } catch (e) {
       toast(e instanceof ApiRequestError ? e.message : 'Could not mark no-show.', 'error');
@@ -104,67 +117,76 @@ export default function OrdersPage() {
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Orders</h1>
-        <p className="text-sm text-muted-foreground">
-          Verify pickups and fulfill today&apos;s bags.
-        </p>
-      </header>
+  const todayCount = state.status === 'ready' ? state.orders.today.length : 0;
 
-      {/* Big one-handed pickup verification */}
-      <Card className="bg-brand-50">
+  return (
+    <PageBody>
+      <PageHeader
+        title="Orders"
+        description="Verify pickup codes and fulfil today's bags."
+        actions={
+          state.status === 'ready' ? (
+            <Badge
+              tone={todayCount > 0 ? 'info' : 'neutral'}
+              dot
+              className="h-[2.25rem] px-3 text-sm"
+            >
+              {todayCount} today
+            </Badge>
+          ) : null
+        }
+      />
+
+      {/*
+        The counter task comes first and stays oversized on purpose: it is used
+        one-handed, at speed, often on a phone propped by a till.
+      */}
+      <Section
+        className="border-brand-200 bg-brand-50/70"
+        title="Verify a pickup"
+        description="Type or scan the customer's code to hand the bag over."
+      >
         <form onSubmit={(e) => void onVerify(e)} className="space-y-3">
-          <label
-            htmlFor="pickup-code"
-            className="block font-display text-lg font-semibold text-neutral-900"
-          >
-            Verify pickup code
+          <label htmlFor="pickup-code" className="sr-only">
+            Pickup code
           </label>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400"
-                aria-hidden
-              />
-              <input
-                id="pickup-code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                inputMode="text"
-                autoCapitalize="characters"
-                autoComplete="off"
-                placeholder="e.g. 7F3K2"
-                className="h-14 w-full rounded-lg border border-neutral-300 bg-white pl-11 pr-3 text-2xl font-bold uppercase tracking-widest text-neutral-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={verifying}
-              className="flex h-14 items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 text-lg font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:w-auto"
-            >
-              <CheckCircle2 className="h-6 w-6" aria-hidden />
-              {verifying ? 'Verifying…' : 'Collect'}
-            </button>
+            <input
+              id="pickup-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              inputMode="text"
+              autoCapitalize="characters"
+              autoComplete="off"
+              placeholder="7F3K2"
+              aria-invalid={verifyError ? true : undefined}
+              aria-describedby={verifyError ? 'pickup-code-error' : undefined}
+              className="nums h-14 flex-1 rounded-lg border border-line-strong bg-surface-card px-4 text-2xl font-bold uppercase tracking-[0.25em] text-neutral-900 outline-none transition placeholder:tracking-[0.25em] placeholder:text-subtle-foreground focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+            />
+            <Button type="submit" size="lg" loading={verifying} className="h-14 sm:w-44">
+              <CheckCircle2 className="h-5 w-5" aria-hidden />
+              Collect
+            </Button>
           </div>
           {verifyError ? (
-            <p role="alert" className="text-sm font-medium text-danger-600">
+            <p
+              id="pickup-code-error"
+              role="alert"
+              className="text-sm font-semibold text-danger-600"
+            >
               {verifyError}
             </p>
           ) : null}
         </form>
-      </Card>
+      </Section>
 
-      {state.status === 'loading' ? <p className="text-muted-foreground">Loading orders…</p> : null}
-      {state.status === 'error' ? (
-        <div className="space-y-3">
-          <p className="text-danger-600">{state.message}</p>
-          <button onClick={load} className="rounded-md border px-4 py-2 text-sm font-medium">
-            Retry
-          </button>
-        </div>
+      {state.status === 'loading' ? (
+        <Section title="Today" bodyClassName="p-0">
+          <TableSkeleton rows={3} columns={3} />
+        </Section>
       ) : null}
+
+      {state.status === 'error' ? <ErrorState message={state.message} onRetry={load} /> : null}
 
       {state.status === 'ready' ? (
         <>
@@ -174,7 +196,7 @@ export default function OrdersPage() {
             emptyText="No pickups scheduled for today."
             busyId={busyId}
             onCollect={onCollect}
-            onNoShow={onNoShow}
+            onRequestNoShow={setNoShowTarget}
           />
           <OrderGroup
             title="Upcoming"
@@ -182,11 +204,32 @@ export default function OrdersPage() {
             emptyText="No upcoming orders."
             busyId={busyId}
             onCollect={onCollect}
-            onNoShow={onNoShow}
+            onRequestNoShow={setNoShowTarget}
           />
         </>
       ) : null}
-    </div>
+
+      <ConfirmDialog
+        open={noShowTarget !== null}
+        title="Mark as no-show?"
+        tone="danger"
+        confirmLabel="Mark no-show"
+        loading={busyId === noShowTarget?.id}
+        description={
+          noShowTarget ? (
+            <>
+              {noShowTarget.customer.name} did not collect{' '}
+              <strong className="text-neutral-800">{noShowTarget.listing.title}</strong>. This
+              closes the order and cannot be undone.
+            </>
+          ) : null
+        }
+        onCancel={() => setNoShowTarget(null)}
+        onConfirm={() => {
+          if (noShowTarget) void onNoShow(noShowTarget);
+        }}
+      />
+    </PageBody>
   );
 }
 
@@ -196,72 +239,83 @@ function OrderGroup({
   emptyText,
   busyId,
   onCollect,
-  onNoShow,
+  onRequestNoShow,
 }: {
   title: string;
   orders: MerchantOrder[];
   emptyText: string;
   busyId: string | null;
   onCollect: (o: MerchantOrder) => Promise<void>;
-  onNoShow: (o: MerchantOrder) => Promise<void>;
+  onRequestNoShow: (o: MerchantOrder) => void;
 }) {
   return (
-    <section className="space-y-3">
-      <h2 className="font-display text-lg font-semibold text-neutral-900">
-        {title} <span className="text-neutral-400">({orders.length})</span>
-      </h2>
+    <Section
+      title={title}
+      description={
+        orders.length > 0 ? `${orders.length} order${orders.length === 1 ? '' : 's'}` : undefined
+      }
+      bodyClassName="p-0"
+    >
       {orders.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{emptyText}</p>
+        <EmptyState
+          icon={<ClipboardList className="h-7 w-7" aria-hidden />}
+          title={emptyText}
+          className="py-[2.5rem]"
+        />
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-line">
           {orders.map((order) => {
             const windowPassed = new Date(order.listing.pickupEnd) < new Date();
             const busy = busyId === order.id;
             return (
-              <li key={order.id}>
-                <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="truncate font-medium text-neutral-900">{order.listing.title}</p>
-                      <Badge tone={STATUS_TONE[order.status]}>{humanize(order.status)}</Badge>
-                    </div>
-                    <p className="text-sm text-neutral-500">
-                      {order.customer.name} · {order.quantity}× ·{' '}
-                      {formatMoney(order.totalAmount, order.currency)}
-                    </p>
-                    <p className="text-sm text-neutral-500">
-                      {formatTimeRange(order.listing.pickupStart, order.listing.pickupEnd)} · Code{' '}
-                      <span className="font-mono font-semibold tracking-wider text-neutral-700">
-                        {order.pickupCode}
-                      </span>
-                    </p>
-                  </div>
-                  {order.status === 'PAID' ? (
-                    <div className="flex shrink-0 gap-2">
-                      <button
-                        onClick={() => void onCollect(order)}
+              <li
+                key={order.id}
+                className="flex flex-col gap-3 p-4 transition hover:bg-surface-raised/50 lg:flex-row lg:items-center lg:gap-6"
+              >
+                {/* The code is what staff match against, so it leads the row. */}
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="nums rounded-md border border-line bg-surface-raised px-3 py-2 font-mono text-base font-bold tracking-[0.15em] text-neutral-800">
+                    {order.pickupCode}
+                  </span>
+                  <Badge tone={STATUS_TONE[order.status]} dot>
+                    {humanize(order.status)}
+                  </Badge>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-neutral-900">{order.listing.title}</p>
+                  <p className="nums mt-0.5 text-sm text-muted-foreground">
+                    {order.customer.name}
+                    <span className="mx-1.5 text-line-strong">·</span>
+                    {order.quantity}×<span className="mx-1.5 text-line-strong">·</span>
+                    {formatMoney(order.totalAmount, order.currency)}
+                    <span className="mx-1.5 text-line-strong">·</span>
+                    {formatTimeRange(order.listing.pickupStart, order.listing.pickupEnd)}
+                  </p>
+                </div>
+
+                {order.status === 'PAID' ? (
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <Button size="sm" disabled={busy} onClick={() => void onCollect(order)}>
+                      Mark collected
+                    </Button>
+                    {windowPassed ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
                         disabled={busy}
-                        className="min-h-11 rounded-md bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+                        onClick={() => onRequestNoShow(order)}
                       >
-                        Mark collected
-                      </button>
-                      {windowPassed ? (
-                        <button
-                          onClick={() => void onNoShow(order)}
-                          disabled={busy}
-                          className="min-h-11 rounded-md border border-neutral-300 px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-100 disabled:opacity-60"
-                        >
-                          No-show
-                        </button>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </Card>
+                        No-show
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
               </li>
             );
           })}
         </ul>
       )}
-    </section>
+    </Section>
   );
 }

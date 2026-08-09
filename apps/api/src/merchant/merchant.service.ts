@@ -46,11 +46,22 @@ export class MerchantService {
   }
 
   async getStore(userId: string): Promise<StoreDto> {
-    return toStore(await this.resolveStore(userId));
+    const store = await this.resolveStore(userId);
+    return toStore(store, await this.hasOrders(store.id));
+  }
+
+  /** Whether any order exists — the condition that freezes the store currency. */
+  private async hasOrders(storeId: string): Promise<boolean> {
+    return (await this.prisma.order.count({ where: { storeId } })) > 0;
   }
 
   async updateStore(userId: string, input: UpdateStoreInput): Promise<StoreDto> {
     const store = await this.resolveOwnedStore(userId);
+
+    if (input.currency !== undefined && input.currency !== store.currency) {
+      await this.assertCurrencyChangeAllowed(store.id);
+    }
+
     const updated = await this.prisma.store.update({
       where: { id: store.id },
       data: {
@@ -63,9 +74,24 @@ export class MerchantService {
         logoUrl: input.logoUrl === undefined ? undefined : input.logoUrl,
         coverUrl: input.coverUrl === undefined ? undefined : input.coverUrl,
         openingHours: input.openingHours === undefined ? undefined : input.openingHours,
+        currency: input.currency ?? undefined,
       },
     });
-    return toStore(updated);
+    return toStore(updated, await this.hasOrders(updated.id));
+  }
+
+  /**
+   * Order rows persist their own currency at purchase time, so switching a store's
+   * currency after it has taken money would make historical totals ambiguous
+   * (a €5 order and a Rs 5 order would render identically). Lock it once there is
+   * any order history — support can migrate deliberately if a store really moves.
+   */
+  private async assertCurrencyChangeAllowed(storeId: string): Promise<void> {
+    if (await this.hasOrders(storeId)) {
+      throw new ConflictException(
+        'This store already has orders, so its currency can no longer be changed. Contact support if the store has genuinely changed market.',
+      );
+    }
   }
 
   // --- Dashboard -----------------------------------------------------------
@@ -224,7 +250,9 @@ export class MerchantService {
     const existing = await this.prisma.user.findUnique({ where: { email: input.email } });
     if (existing) throw new ConflictException('A user with this email already exists.');
 
-    // Generate a one-time temporary password to share; the staff can reset it later.
+    // Generate a one-time temporary password to share. `mustChangePassword` forces
+    // the staff member to replace it on first sign-in, so the password the owner
+    // saw in plain text stops being a valid credential.
     const tempPassword = randomBytes(6).toString('base64url');
     const passwordHash = await argon2.hash(tempPassword, { type: argon2.argon2id });
     const staff = await this.prisma.user.create({
@@ -234,6 +262,7 @@ export class MerchantService {
         passwordHash,
         role: UserRole.MERCHANT_STAFF,
         staffStoreId: store.id,
+        mustChangePassword: true,
       },
     });
     return {
@@ -261,8 +290,9 @@ function isoDay(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function toStore(store: Store): StoreDto {
+function toStore(store: Store, currencyLocked: boolean): StoreDto {
   return {
+    currencyLocked,
     id: store.id,
     ownerId: store.ownerId,
     name: store.name,

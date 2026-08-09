@@ -1,6 +1,9 @@
 import {
   AdminUserPageSchema,
   AdminUserSchema,
+  CreatedMerchantSchema,
+  type CreateMerchantInput,
+  type CreatedMerchant,
   type AdminUser,
   type SortOrder,
   type UserRole,
@@ -38,4 +41,12 @@ export async function updateUserRole(id: string, role: UserRole): Promise<AdminU
   return AdminUserSchema.parse(
     await apiRequest(`/admin/users/${id}/role`, jsonInit('PATCH', { role })),
   );
+}
+
+/**
+ * Provision a merchant account. The API creates the owner (with a forced
+ * password change) and their store together, already approved.
+ */
+export async function createMerchant(input: CreateMerchantInput): Promise<CreatedMerchant> {
+  return CreatedMerchantSchema.parse(await apiRequest('/admin/merchants', jsonInit('POST', input)));
 }

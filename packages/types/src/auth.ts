@@ -8,10 +8,7 @@ import { UserSchema } from './entities.js';
  * of UserSchema). Dates are serialized ISO strings.
  */
 
-export const PasswordSchema = z
-  .string()
-  .min(8, 'Password must be at least 8 characters')
-  .max(100);
+export const PasswordSchema = z.string().min(8, 'Password must be at least 8 characters').max(100);
 
 export const EmailSchema = z.string().email().toLowerCase();
 
@@ -46,6 +43,13 @@ export const RegisterMerchantSchema = z.object({
 export type RegisterMerchantInput = z.infer<typeof RegisterMerchantSchema>;
 
 // --- Session ---------------------------------------------------------------
+
+/** Change password while signed in (also clears a forced first-login change). */
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: PasswordSchema,
+});
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 
 export const LoginSchema = z.object({
   email: EmailSchema,

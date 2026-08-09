@@ -2,11 +2,13 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Store, User } from '@rescuebite/types';
+import type { ApiErrorCode, Store, User } from '@rescuebite/types';
+import { Button } from '@rescuebite/ui/web';
 import { AuthError, logout, refreshSession } from '@/lib/auth';
 import { setAccessToken } from '@/lib/session';
 import { getStore } from '@/features/store/api';
 import { initMonitoring } from '@/lib/monitoring';
+import { ChangePassword } from './ChangePassword';
 
 // Initialize error monitoring once on the client (no-op unless a DSN is set).
 initMonitoring();
@@ -19,6 +21,9 @@ interface SessionValue {
   setStore: (store: Store) => void;
   signOut: () => Promise<void>;
 }
+
+/** Error codes that mean the session itself is rejected, not that the call failed. */
+const SESSION_GONE_CODES: readonly ApiErrorCode[] = ['unauthenticated', 'forbidden'];
 
 const SessionCtx = createContext<SessionValue | null>(null);
 
@@ -48,10 +53,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         if (active) setState({ status: 'ready', user: session.user, store });
       } catch (e) {
         if (!active) return;
-        // An auth failure means the session is gone. Clear the (now-stale) refresh
-        // cookie first — otherwise the middleware keeps seeing it and bounces us
-        // back from /login to /, looping forever on "Loading your store…".
-        if (e instanceof AuthError) {
+        // Only a rejected session should bounce to /login: logout() clears the
+        // httpOnly refresh cookie so the middleware stops seeing it. An
+        // unreachable API can't clear it, so redirecting would loop /login → /
+        // forever on "Loading your store…" — fall through to the error state.
+        if (e instanceof AuthError && SESSION_GONE_CODES.includes(e.code)) {
           setAccessToken(null);
           await logout();
           router.replace('/login');
@@ -72,7 +78,35 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return <CenteredNote>Loading your store…</CenteredNote>;
   }
   if (state.status === 'error') {
-    return <CenteredNote>{state.message}</CenteredNote>;
+    // Always offer a way out: the refresh cookie is still set, so the middleware
+    // would bounce a manual trip to /login straight back here.
+    return (
+      <CenteredNote>
+        <p>{state.message}</p>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            void (async () => {
+              await logout();
+              setAccessToken(null);
+              router.replace('/login');
+              router.refresh();
+            })();
+          }}
+        >
+          Sign out
+        </Button>
+      </CenteredNote>
+    );
+  }
+
+  // An admin-provisioned account must set its own password before anything else.
+  if (state.user.mustChangePassword) {
+    return (
+      <ChangePassword
+        onDone={(user) => setState((s) => (s.status === 'ready' ? { ...s, user } : s))}
+      />
+    );
   }
 
   const value: SessionValue = {
@@ -93,7 +127,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
 function CenteredNote({ children }: { children: ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6 text-muted-foreground">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-6 text-center text-muted-foreground">
       {children}
     </main>
   );

@@ -21,6 +21,7 @@
     "dev:merchant": "turbo run dev --filter=@rescuebite/merchant",
     "dev:admin": "turbo run dev --filter=@rescuebite/admin",
     "dev:api": "turbo run dev --filter=@rescuebite/api",
+    "dev:cashier": "turbo run dev --filter=@rescuebite/cashier",
     "db:generate": "turbo run db:generate --filter=@rescuebite/api",
     "db:migrate": "turbo run db:migrate --filter=@rescuebite/api"
   },

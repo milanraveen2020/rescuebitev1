@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { FoodCategorySchema } from './enums.js';
-import { CurrencySchema, IdSchema, IsoDateTimeSchema, MinorUnitsSchema } from './primitives.js';
+import {
+  CurrencySchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  MinorUnitsSchema,
+  SupportedCurrencySchema,
+} from './primitives.js';
 
 /** Merchant dashboard, analytics, store-profile, and staff contracts. */
 
@@ -17,6 +23,13 @@ export const UpdateStoreSchema = z
     logoUrl: z.string().url().nullable(),
     coverUrl: z.string().url().nullable(),
     openingHours: z.string().max(200).nullable(),
+    /**
+     * Settlement currency. Every price the customer sees is rendered with the
+     * store's currency, so this was previously stuck on the `EUR` column default
+     * with no way for anyone to correct it. The API refuses to change it once the
+     * store has orders, because historical order rows store their own currency.
+     */
+    currency: SupportedCurrencySchema,
   })
   .partial();
 export type UpdateStoreInput = z.infer<typeof UpdateStoreSchema>;

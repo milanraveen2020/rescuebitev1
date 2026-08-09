@@ -1,13 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Button, SearchInput, Select, Toolbar } from '@rescuebite/ui/web';
 
 interface SelectFilter {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
+  /**
+   * Text for the "no filter" option. English pluralisation is too irregular to
+   * derive ("Status" → "Statuses", "Visibility" → "Visibilities"), so callers
+   * name it.
+   */
+  allLabel?: string;
 }
 
 interface FilterBarProps {
@@ -17,10 +23,16 @@ interface FilterBarProps {
     placeholder?: string;
   };
   selects?: SelectFilter[];
+  /** Result count or other context, right-aligned. */
+  trailing?: ReactNode;
 }
 
-/** Search box (submitted on a short debounce) + dropdown filters for a table. */
-export function FilterBar({ search, selects }: FilterBarProps) {
+/**
+ * Search box (debounced) plus dropdown filters for a table. Now built on the
+ * shared `Toolbar`/`SearchInput`/`Select` primitives so control heights, focus
+ * rings, and spacing match the merchant app instead of being restyled inline.
+ */
+export function FilterBar({ search, selects, trailing }: FilterBarProps) {
   const [term, setTerm] = useState(search?.value ?? '');
 
   // Debounce the search so we don't refetch on every keystroke.
@@ -33,41 +45,58 @@ export function FilterBar({ search, selects }: FilterBarProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [term]);
 
+  const active =
+    (search ? term.trim() !== '' : false) || (selects ?? []).some((s) => s.value !== '');
+
+  function clearAll(): void {
+    setTerm('');
+    search?.onChange('');
+    for (const sel of selects ?? []) sel.onChange('');
+  }
+
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <Toolbar
+      trailing={
+        <>
+          {/* Only offer a reset once there is something to reset. */}
+          {active ? (
+            <Button variant="subtle" size="sm" onClick={clearAll}>
+              Clear filters
+            </Button>
+          ) : null}
+          {trailing}
+        </>
+      }
+    >
       {search ? (
-        <div className="relative min-w-[14rem] flex-1">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
-            aria-hidden
-          />
-          <input
+        <div className="min-w-[16rem] flex-1 sm:max-w-sm">
+          <SearchInput
+            label={search.placeholder ?? 'Search'}
+            placeholder={search.placeholder ?? 'Search'}
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder={search.placeholder ?? 'Search'}
-            aria-label={search.placeholder ?? 'Search'}
-            className="h-10 w-full rounded-md border border-neutral-300 bg-white pl-9 pr-3 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            onClear={() => setTerm('')}
           />
         </div>
       ) : null}
 
       {(selects ?? []).map((sel) => (
-        <label key={sel.label} className="flex flex-col gap-1 text-xs font-medium text-neutral-500">
-          {sel.label}
-          <select
+        <div key={sel.label} className="sm:w-48">
+          <Select
+            label={sel.label}
+            hideLabel
             value={sel.value}
             onChange={(e) => sel.onChange(e.target.value)}
-            className="h-10 rounded-md border border-neutral-300 bg-white px-2 text-sm text-neutral-800"
           >
-            <option value="">All</option>
+            <option value="">{sel.allLabel ?? `All ${sel.label.toLowerCase()}`}</option>
             {sel.options.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </div>
       ))}
-    </div>
+    </Toolbar>
   );
 }

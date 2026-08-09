@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+  '/config': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['PublicConfigController_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/register/customer': {
     parameters: {
       query?: never;
@@ -94,6 +110,22 @@ export interface paths {
     get: operations['AuthController_me'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/change-password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AuthController_changePassword'];
     delete?: never;
     options?: never;
     head?: never;
@@ -194,6 +226,38 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/admin/merchants': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['AdminController_createMerchant'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/merchants/{storeId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['AdminController_deleteMerchant'];
+    options?: never;
+    head?: never;
+    patch: operations['AdminController_updateMerchant'];
     trace?: never;
   };
   '/admin/users/{id}/suspend': {
@@ -1016,13 +1080,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    PublicConfigDto: Record<string, never>;
     RegisterCustomerDto: Record<string, never>;
     RegisterMerchantDto: Record<string, never>;
     LoginDto: Record<string, never>;
     RefreshDto: Record<string, never>;
+    ChangePasswordDto: Record<string, never>;
     RequestPasswordResetDto: Record<string, never>;
     ResetPasswordDto: Record<string, never>;
     VerifyEmailDto: Record<string, never>;
+    CreateMerchantDto: Record<string, never>;
+    UpdateMerchantDto: Record<string, never>;
     SuspendUserDto: Record<string, never>;
     UpdateUserRoleDto: Record<string, never>;
     RejectStoreDto: Record<string, never>;
@@ -1049,6 +1117,25 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  PublicConfigController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PublicConfigDto'];
+        };
+      };
+    };
+  };
   AuthController_registerCustomer: {
     parameters: {
       query?: never;
@@ -1084,6 +1171,7 @@ export interface operations {
               avatarUrl: string | null;
               /** @enum {string} */
               status: 'ACTIVE' | 'SUSPENDED';
+              mustChangePassword: boolean;
               /** Format: date-time */
               emailVerifiedAt: string | null;
               /** Format: date-time */
@@ -1131,6 +1219,7 @@ export interface operations {
               avatarUrl: string | null;
               /** @enum {string} */
               status: 'ACTIVE' | 'SUSPENDED';
+              mustChangePassword: boolean;
               /** Format: date-time */
               emailVerifiedAt: string | null;
               /** Format: date-time */
@@ -1178,6 +1267,7 @@ export interface operations {
               avatarUrl: string | null;
               /** @enum {string} */
               status: 'ACTIVE' | 'SUSPENDED';
+              mustChangePassword: boolean;
               /** Format: date-time */
               emailVerifiedAt: string | null;
               /** Format: date-time */
@@ -1225,6 +1315,7 @@ export interface operations {
               avatarUrl: string | null;
               /** @enum {string} */
               status: 'ACTIVE' | 'SUSPENDED';
+              mustChangePassword: boolean;
               /** Format: date-time */
               emailVerifiedAt: string | null;
               /** Format: date-time */
@@ -1289,6 +1380,50 @@ export interface operations {
             avatarUrl: string | null;
             /** @enum {string} */
             status: 'ACTIVE' | 'SUSPENDED';
+            mustChangePassword: boolean;
+            /** Format: date-time */
+            emailVerifiedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+    };
+  };
+  AuthController_changePassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChangePasswordDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            phone: string | null;
+            /** @enum {string} */
+            role: 'CUSTOMER' | 'MERCHANT_OWNER' | 'MERCHANT_STAFF' | 'ADMIN';
+            name: string;
+            /** Format: uri */
+            avatarUrl: string | null;
+            /** @enum {string} */
+            status: 'ACTIVE' | 'SUSPENDED';
+            mustChangePassword: boolean;
             /** Format: date-time */
             emailVerifiedAt: string | null;
             /** Format: date-time */
@@ -1419,6 +1554,69 @@ export interface operations {
       cookie?: never;
     };
     requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_createMerchant: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateMerchantDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_deleteMerchant: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        storeId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminController_updateMerchant: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        storeId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateMerchantDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -2002,11 +2200,15 @@ export interface operations {
                 name: string;
                 /** @enum {string} */
                 category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                description: string | null;
                 address: string;
                 lat: number;
                 lng: number;
                 /** Format: uri */
                 logoUrl: string | null;
+                /** Format: uri */
+                coverUrl: string | null;
+                openingHours: string | null;
                 rating: number;
                 reviewCount: number;
               };
@@ -2071,11 +2273,15 @@ export interface operations {
                 name: string;
                 /** @enum {string} */
                 category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                description: string | null;
                 address: string;
                 lat: number;
                 lng: number;
                 /** Format: uri */
                 logoUrl: string | null;
+                /** Format: uri */
+                coverUrl: string | null;
+                openingHours: string | null;
                 rating: number;
                 reviewCount: number;
               };
@@ -2163,11 +2369,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };
@@ -2252,11 +2462,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };
@@ -2341,11 +2555,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };
@@ -2430,11 +2648,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };
@@ -2673,11 +2895,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };
@@ -2762,11 +2988,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };
@@ -2841,11 +3071,15 @@ export interface operations {
                 name: string;
                 /** @enum {string} */
                 category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+                description: string | null;
                 address: string;
                 lat: number;
                 lng: number;
                 /** Format: uri */
                 logoUrl: string | null;
+                /** Format: uri */
+                coverUrl: string | null;
+                openingHours: string | null;
                 rating: number;
                 reviewCount: number;
               };
@@ -2907,11 +3141,15 @@ export interface operations {
               name: string;
               /** @enum {string} */
               category: 'BAKERY' | 'GROCERY' | 'RESTAURANT' | 'CAFE' | 'PRODUCE' | 'OTHER';
+              description: string | null;
               address: string;
               lat: number;
               lng: number;
               /** Format: uri */
               logoUrl: string | null;
+              /** Format: uri */
+              coverUrl: string | null;
+              openingHours: string | null;
               rating: number;
               reviewCount: number;
             };

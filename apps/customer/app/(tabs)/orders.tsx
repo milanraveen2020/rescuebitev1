@@ -208,7 +208,12 @@ function OrderRow({ order, onPress }: { order: OrderDetail; onPress: () => void 
 const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[3] },
   heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.brand[700] },
-  content: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[6], gap: spacing[5] },
+  content: {
+    paddingHorizontal: spacing[4],
+    paddingTop: spacing[2],
+    paddingBottom: spacing[6],
+    gap: spacing[5],
+  },
   center: { flex: 1, justifyContent: 'center' },
   tabEmpty: { paddingTop: spacing[8] },
   tabBar: {
