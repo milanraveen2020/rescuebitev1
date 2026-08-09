@@ -20,6 +20,42 @@ This is a Turborepo monorepo managed with pnpm.
 
 > **Read [`CLAUDE.md`](./CLAUDE.md) before contributing.** It defines the conventions every change must follow.
 
+## Architecture
+
+Three frontends talk to one NestJS API through a shared typed client; the API owns
+all persistence and every third-party integration.
+
+```mermaid
+flowchart TB
+  subgraph Clients
+    CUST["📱 Customer<br/>Expo / React Native"]
+    MERCH["🏪 Merchant<br/>Next.js"]
+    ADMIN["🛠️ Admin<br/>Next.js"]
+  end
+
+  AC["packages/api-client<br/>typed client"]
+  CUST --> AC
+  MERCH --> AC
+  ADMIN --> AC
+  AC -->|HTTPS REST · Zod-validated| API["⚙️ API · NestJS<br/>auth · listings · orders<br/>payments · notifications"]
+
+  API -->|Prisma| DB[("🐘 PostgreSQL")]
+  API -->|payments + webhooks| STRIPE{{"💳 Stripe Connect"}}
+  API -->|transactional email| RESEND{{"✉️ Resend"}}
+  API -->|push notifications| EXPO{{"🔔 Expo Push"}}
+  API -->|listing images| S3{{"🖼️ AWS S3"}}
+  API -->|error monitoring| SENTRY{{"🛰️ Sentry"}}
+
+  classDef ext fill:#fde68a,stroke:#b45309,color:#111827;
+  classDef db fill:#bfdbfe,stroke:#1d4ed8,color:#111827;
+  class STRIPE,RESEND,EXPO,S3,SENTRY ext;
+  class DB db;
+```
+
+> Every third-party integration degrades to a logged/stub fallback in local dev, so the
+> whole app runs without any real keys. See **[`docs/integrations.md`](./docs/integrations.md)**
+> for the detailed integration map and the Stripe Connect payment-flow sequence diagram.
+
 ## Prerequisites
 
 - **Node.js 22** (see `.nvmrc` — run `nvm use`)

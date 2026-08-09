@@ -308,11 +308,11 @@ export class NotificationsDispatcher {
 }
 
 function formatWindow(start: Date, end: Date): string {
-  const day = new Intl.DateTimeFormat('en-IE', {
+  const day = new Intl.DateTimeFormat('en-LK', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
   }).format(start);
-  const time = new Intl.DateTimeFormat('en-IE', { hour: 'numeric', minute: '2-digit' });
+  const time = new Intl.DateTimeFormat('en-LK', { hour: 'numeric', minute: '2-digit' });
   return `${day}, ${time.format(start)} – ${time.format(end)}`;
 }

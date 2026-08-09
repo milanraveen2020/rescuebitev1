@@ -84,7 +84,7 @@ async function main(): Promise<void> {
   const admin = await prisma.user.create({
     data: {
       email: 'admin@rescuebite.test',
-      phone: '+10000000000',
+      phone: '+94110000000',
       passwordHash,
       role: UserRole.ADMIN,
       name: 'Ada Admin',
@@ -96,38 +96,38 @@ async function main(): Promise<void> {
   const storeSeeds = [
     {
       ownerEmail: 'owner1@rescuebite.test',
-      ownerName: 'Bruno Baker',
+      ownerName: 'Nuwan Perera',
       store: {
-        name: 'Crumbs & Co. Bakery',
-        description: 'Artisan sourdough, pastries, and end-of-day bread bags.',
+        name: 'Perera Family Bakers',
+        description: 'Fresh kimbula banis, rolls, and end-of-day bread bags.',
         category: FoodCategory.BAKERY,
-        address: '12 Mill Lane, Dublin',
-        lat: 53.3498,
-        lng: -6.2603,
+        address: '142 Galle Road, Colombo 03',
+        lat: 6.9147,
+        lng: 79.8524,
       },
     },
     {
       ownerEmail: 'owner2@rescuebite.test',
-      ownerName: 'Giulia Verde',
+      ownerName: 'Dilani Fernando',
       store: {
-        name: 'Verde Grocer',
-        description: 'Neighbourhood grocery rescuing fresh produce daily.',
+        name: 'Green Cabin Grocer',
+        description: 'Neighbourhood grocer rescuing fresh produce daily.',
         category: FoodCategory.GROCERY,
-        address: '8 Market Street, Dublin',
-        lat: 53.3441,
-        lng: -6.2675,
+        address: '55 Marine Drive, Colombo 04',
+        lat: 6.8905,
+        lng: 79.8565,
       },
     },
     {
       ownerEmail: 'owner3@rescuebite.test',
-      ownerName: 'Theo Kafe',
+      ownerName: 'Tharindu Silva',
       store: {
-        name: 'Morning Owl Café',
-        description: 'Specialty coffee and lunch surplus boxes.',
+        name: 'Ceylon Coffee House',
+        description: 'Ceylon tea, specialty coffee, and lunch surplus boxes.',
         category: FoodCategory.CAFE,
-        address: '45 Dawson Street, Dublin',
-        lat: 53.3402,
-        lng: -6.2589,
+        address: '30 Horton Place, Colombo 07',
+        lat: 6.9061,
+        lng: 79.8636,
       },
     },
   ] as const;
@@ -162,19 +162,19 @@ async function main(): Promise<void> {
       email: 'owner4@rescuebite.test',
       passwordHash,
       role: UserRole.MERCHANT_OWNER,
-      name: 'Pat Pending',
+      name: 'Ishan Jayawardena',
       status: UserStatus.ACTIVE,
     },
   });
   await prisma.store.create({
     data: {
       ownerId: pendingOwner.id,
-      name: 'Fresh Start Deli',
-      description: 'Awaiting approval to start rescuing food.',
+      name: 'Colombo Kottu Kitchen',
+      description: 'Kottu, rice & curry, and short eats — awaiting approval.',
       category: FoodCategory.RESTAURANT,
-      address: '2 Quay Road, Dublin',
-      lat: 53.3478,
-      lng: -6.2497,
+      address: '210 High Level Road, Nugegoda',
+      lat: 6.8649,
+      lng: 79.8997,
       currency: 'LKR',
       status: StoreStatus.PENDING,
     },
@@ -182,14 +182,15 @@ async function main(): Promise<void> {
 
   // --- Listings (~21) across pickup windows and statuses -------------------
   // Each store gets 7 listings: 2 expired (past), 4 active (live/upcoming), 1 sold-out, plus 1 draft.
+  // Prices are LKR minor units (rupee-cents): e.g. 70000 = Rs 700.00.
   const listingTemplates = [
-    { title: 'Surprise Bakery Bag', category: FoodCategory.BAKERY, original: 1500, price: 499 },
-    { title: 'Pastry Box', category: FoodCategory.BAKERY, original: 1200, price: 399 },
-    { title: 'Fresh Produce Box', category: FoodCategory.PRODUCE, original: 1800, price: 599 },
-    { title: 'Pantry Rescue Bag', category: FoodCategory.GROCERY, original: 2000, price: 699 },
-    { title: 'Lunch Surplus Box', category: FoodCategory.RESTAURANT, original: 1400, price: 499 },
-    { title: 'Coffee & Treats Bag', category: FoodCategory.CAFE, original: 1000, price: 349 },
-    { title: 'Chef’s Mystery Bag', category: FoodCategory.OTHER, original: 2500, price: 799 },
+    { title: 'Surprise Bakery Bag', category: FoodCategory.BAKERY, original: 200000, price: 70000 },
+    { title: 'Pastry Box', category: FoodCategory.BAKERY, original: 150000, price: 55000 },
+    { title: 'Fresh Produce Box', category: FoodCategory.PRODUCE, original: 250000, price: 85000 },
+    { title: 'Pantry Rescue Bag', category: FoodCategory.GROCERY, original: 300000, price: 100000 },
+    { title: 'Lunch Surplus Box', category: FoodCategory.RESTAURANT, original: 220000, price: 75000 },
+    { title: 'Coffee & Treats Bag', category: FoodCategory.CAFE, original: 120000, price: 45000 },
+    { title: 'Chef’s Mystery Bag', category: FoodCategory.OTHER, original: 350000, price: 120000 },
   ] as const;
 
   const allergenOptions = [
