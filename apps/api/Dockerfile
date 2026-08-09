@@ -16,15 +16,25 @@ WORKDIR /app
 # --- deps: install once, cached across builds unless lockfiles change -------
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Every workspace importer in pnpm-lock.yaml must be present or --frozen-lockfile
+# refuses to install, so the frontend manifests are copied even though only the
+# API is built here. Their dependencies are pruned out of the runtime stage.
 COPY packages/types/package.json packages/types/
 COPY packages/api-client/package.json packages/api-client/
 COPY packages/ui/package.json packages/ui/
 COPY packages/config/package.json packages/config/
 COPY apps/api/package.json apps/api/
+COPY apps/admin/package.json apps/admin/
+COPY apps/cashier/package.json apps/cashier/
+COPY apps/customer/package.json apps/customer/
+COPY apps/merchant/package.json apps/merchant/
 # Native deps (argon2) need a C++ toolchain to build during install.
 RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ openssl \
   && rm -rf /var/lib/apt/lists/*
-RUN pnpm install --frozen-lockfile
+# Filtered to the API and what it depends on: installing every workspace would
+# pull Expo/React Native for the customer app — hundreds of MB this image never
+# runs, plus native postinstall steps that have no business in a server build.
+RUN pnpm install --frozen-lockfile --filter @rescuebite/api...
 
 # --- build: compile the workspace types package, then the API --------------
 FROM deps AS build
