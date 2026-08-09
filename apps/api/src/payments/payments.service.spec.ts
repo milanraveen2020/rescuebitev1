@@ -124,13 +124,11 @@ describe('PaymentsService checkout (mocked Stripe)', () => {
       store: { stripeAccountId: 'acct_123', payoutsEnabled: true },
     };
     const paymentIntents = {
-      create: jest
-        .fn()
-        .mockResolvedValue({
-          id: 'pi_new',
-          client_secret: 'secret_123',
-          status: 'requires_payment_method',
-        }),
+      create: jest.fn().mockResolvedValue({
+        id: 'pi_new',
+        client_secret: 'secret_123',
+        status: 'requires_payment_method',
+      }),
       retrieve: jest.fn(),
     };
     const stripe = { paymentIntents } as unknown as StripeClient;

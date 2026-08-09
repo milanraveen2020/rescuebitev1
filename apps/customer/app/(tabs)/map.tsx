@@ -47,5 +47,11 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing[4], paddingTop: spacing[2], paddingBottom: spacing[3] },
   heading: { fontSize: typography.fontSize['2xl'], fontWeight: '700', color: colors.neutral[900] },
   sub: { fontSize: typography.fontSize.sm, color: colors.neutral[500], marginTop: spacing[1] },
-  mapWrap: { flex: 1, marginHorizontal: spacing[4], marginBottom: spacing[4], borderRadius: 28, overflow: 'hidden' },
+  mapWrap: {
+    flex: 1,
+    marginHorizontal: spacing[4],
+    marginBottom: spacing[4],
+    borderRadius: 28,
+    overflow: 'hidden',
+  },
 });

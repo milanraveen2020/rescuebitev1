@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { AdminStore } from '@rescuebite/types';
-import { Button, useToast } from '@rescuebite/ui/web';
+import { Button, PageBody, PageHeader, useToast } from '@rescuebite/ui/web';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -82,7 +82,7 @@ export default function ApprovalsPage() {
       render: (s) => (
         <div>
           <p className="font-medium text-neutral-900">{s.name}</p>
-          <p className="text-xs text-neutral-500">{s.address}</p>
+          <p className="text-xs text-muted-foreground">{s.address}</p>
         </div>
       ),
     },
@@ -122,13 +122,11 @@ export default function ApprovalsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">
-          Merchant approvals
-        </h1>
-        <p className="text-sm text-muted-foreground">Pending stores awaiting review.</p>
-      </div>
+    <PageBody>
+      <PageHeader
+        title="Merchant approvals"
+        description="Stores awaiting review before they can sell."
+      />
 
       <DataTable
         state={state}
@@ -137,6 +135,7 @@ export default function ApprovalsPage() {
         query={query}
         onSort={setSort}
         onPage={setPage}
+        onRetry={reload}
         emptyMessage="No stores are awaiting approval."
         selection={{
           selected,
@@ -179,6 +178,6 @@ export default function ApprovalsPage() {
         onConfirm={() => void onConfirm()}
         onClose={() => setDialog(null)}
       />
-    </div>
+    </PageBody>
   );
 }

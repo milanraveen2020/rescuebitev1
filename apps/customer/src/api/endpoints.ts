@@ -7,6 +7,7 @@ import {
   NotificationPreferencesSchema,
   NotificationSchema,
   OrderDetailSchema,
+  PublicConfigSchema,
   OrderHistorySchema,
   ReviewSchema,
   UnreadCountSchema,
@@ -24,6 +25,7 @@ import {
   type NotificationPreferences,
   type OrderDetail,
   type OrderHistory,
+  type PublicConfig,
   type RegisterCustomerInput,
   type RegisterDeviceInput,
   type Review,
@@ -66,6 +68,17 @@ export const authApi = {
   },
   async me(): Promise<User> {
     return UserSchema.parse(await unwrap(() => api.GET('/auth/me')));
+  },
+};
+
+/**
+ * Operator configuration the app needs before it can render filters. The category
+ * pills used to hardcode the full `FoodCategory` enum, so a category the operator
+ * had switched off still appeared and returned an empty feed.
+ */
+export const configApi = {
+  async get(): Promise<PublicConfig> {
+    return PublicConfigSchema.parse(await unwrap(() => api.GET('/config', {} as Init)));
   },
 };
 

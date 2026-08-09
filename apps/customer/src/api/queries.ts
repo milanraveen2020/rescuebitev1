@@ -13,7 +13,7 @@ import type {
   NotificationPage,
   UpdateNotificationPreferencesInput,
 } from '@rescuebite/types';
-import { listingsApi, notificationsApi, ordersApi } from './endpoints';
+import { configApi, listingsApi, notificationsApi, ordersApi } from './endpoints';
 
 export const queryKeys = {
   nearby: (q: NearbyFeedQuery) => ['listings', 'nearby', q] as const,
@@ -23,7 +23,21 @@ export const queryKeys = {
   notifications: () => ['notifications'] as const,
   unreadCount: () => ['notifications', 'unread-count'] as const,
   notificationPreferences: () => ['notifications', 'preferences'] as const,
+  config: () => ['config'] as const,
 };
+
+/**
+ * Operator configuration (currently the enabled category list). Cached for the
+ * session — it changes rarely, and a stale read only affects which filter pills
+ * show, never what the server will accept.
+ */
+export function useAppConfig() {
+  return useQuery({
+    queryKey: queryKeys.config(),
+    queryFn: () => configApi.get(),
+    staleTime: 10 * 60 * 1000,
+  });
+}
 
 export type NearbyFeedQuery = Omit<NearbyQuery, 'cursor' | 'limit'>;
 

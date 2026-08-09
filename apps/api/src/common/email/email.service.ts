@@ -101,7 +101,9 @@ export class EmailService {
          <p>You can update your store details and reapply.</p>`;
     await this.send({
       to: args.email,
-      subject: args.approved ? 'Your Mystery Box store is approved' : 'About your Mystery Box store',
+      subject: args.approved
+        ? 'Your Mystery Box store is approved'
+        : 'About your Mystery Box store',
       html: layout(args.approved ? 'You’re approved! 🎉' : 'Store application update', body),
     });
   }

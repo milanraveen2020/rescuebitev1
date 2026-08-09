@@ -9,11 +9,18 @@ export interface PriceTagProps {
 }
 
 /** Shows the discounted price with the original struck through + a discount badge. */
-export function PriceTag({ originalMinor, priceMinor, currency = 'EUR', className }: PriceTagProps) {
+export function PriceTag({
+  originalMinor,
+  priceMinor,
+  currency = 'EUR',
+  className,
+}: PriceTagProps) {
   const percent = discountPercent(originalMinor, priceMinor);
   return (
     <div className={cn('flex items-baseline gap-2', className)}>
-      <span className="text-lg font-bold text-neutral-900">{formatPrice(priceMinor, currency)}</span>
+      <span className="text-lg font-bold text-neutral-900">
+        {formatPrice(priceMinor, currency)}
+      </span>
       {percent > 0 ? (
         <>
           <span className="text-sm text-neutral-400 line-through">

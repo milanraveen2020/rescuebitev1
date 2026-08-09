@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { OrderStatusSchema, type AdminOrder } from '@rescuebite/types';
-import { Button, Modal, useToast } from '@rescuebite/ui/web';
+import { Button, Modal, PageBody, PageHeader, useToast } from '@rescuebite/ui/web';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -49,7 +49,7 @@ export default function OrdersPage() {
       render: (o) => (
         <button onClick={() => setDetail(o)} className="text-left">
           <span className="font-mono font-medium text-brand-700">{o.pickupCode}</span>
-          <p className="text-xs text-neutral-500">{o.listingTitle}</p>
+          <p className="text-xs text-muted-foreground">{o.listingTitle}</p>
         </button>
       ),
     },
@@ -92,13 +92,11 @@ export default function OrdersPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Orders</h1>
-        <p className="text-sm text-muted-foreground">
-          Search orders, inspect payments, and issue refunds.
-        </p>
-      </div>
+    <PageBody>
+      <PageHeader
+        title="Orders"
+        description="Search orders, inspect payments, and issue refunds."
+      />
 
       <FilterBar
         search={{
@@ -109,6 +107,7 @@ export default function OrdersPage() {
         selects={[
           {
             label: 'Status',
+            allLabel: 'All statuses',
             value: filters.status ?? '',
             onChange: (v) => setFilter('status', v),
             options: OrderStatusSchema.options.map((s) => ({ value: s, label: humanize(s) })),
@@ -123,6 +122,7 @@ export default function OrdersPage() {
         query={query}
         onSort={setSort}
         onPage={setPage}
+        onRetry={reload}
         emptyMessage="No orders match your filters."
       />
 
@@ -164,14 +164,14 @@ export default function OrdersPage() {
         onConfirm={() => void onRefund()}
         onClose={() => setRefundTarget(null)}
       />
-    </div>
+    </PageBody>
   );
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-neutral-100 pb-2 last:border-0">
-      <span className="text-neutral-500">{label}</span>
+    <div className="flex items-start justify-between gap-4 border-b border-line pb-2 last:border-0">
+      <span className="text-muted-foreground">{label}</span>
       <span className="break-all text-right font-medium text-neutral-800">{value}</span>
     </div>
   );

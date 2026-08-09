@@ -35,7 +35,9 @@ export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPr
           accessibilityRole="button"
           accessibilityState={{ selected: favorite }}
           accessibilityLabel={
-            favorite ? `Remove ${listing.title} from favorites` : `Save ${listing.title} to favorites`
+            favorite
+              ? `Remove ${listing.title} from favorites`
+              : `Save ${listing.title} to favorites`
           }
           style={styles.heart}
         >

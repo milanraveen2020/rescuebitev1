@@ -1,15 +1,34 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ImagePlus, Loader2 } from 'lucide-react';
 import {
   CreateListingSchema,
   FoodCategorySchema,
   UpdateListingSchema,
   type Listing,
 } from '@rescuebite/types';
-import { Button, Input, PriceTag } from '@rescuebite/ui/web';
-import { ListingApiError, createListing, updateListing, uploadListingImage } from './api';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  FormActions,
+  Input,
+  PageBody,
+  PageHeader,
+  PriceTag,
+  Section,
+  Select,
+  Textarea,
+} from '@rescuebite/ui/web';
+import {
+  ListingApiError,
+  createListing,
+  getEnabledCategories,
+  updateListing,
+  uploadListingImage,
+} from './api';
 
 interface Props {
   mode: 'create' | 'edit';
@@ -23,9 +42,12 @@ interface FormState {
   originalPrice: string; // major units, e.g. "15.00"
   price: string;
   quantityTotal: string;
+  /** Live stock, editable only when editing an existing listing. */
+  quantityRemaining: string;
   pickupStart: string; // datetime-local
   pickupEnd: string;
   imageUrl: string;
+  allergenInfo: string;
   publish: boolean;
 }
 
@@ -51,9 +73,11 @@ function initialState(initial?: Listing): FormState {
     originalPrice: initial ? toMajor(initial.originalPrice) : '',
     price: initial ? toMajor(initial.price) : '',
     quantityTotal: initial ? String(initial.quantityTotal) : '1',
+    quantityRemaining: initial ? String(initial.quantityRemaining) : '',
     pickupStart: initial ? toLocalInput(initial.pickupStart) : '',
     pickupEnd: initial ? toLocalInput(initial.pickupEnd) : '',
     imageUrl: initial?.imageUrl ?? '',
+    allergenInfo: initial?.allergenInfo ?? '',
     publish: initial ? initial.status === 'ACTIVE' : false,
   };
 }
@@ -65,6 +89,29 @@ export function ListingForm({ mode, initial }: Props) {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  /**
+   * Categories the operator currently allows. Starts as the full enum so the
+   * select is never empty, then narrows once the platform config arrives. The
+   * listing's own category is always kept so editing an existing bag in a
+   * since-disabled category still shows its real value.
+   */
+  const [categories, setCategories] = useState<readonly string[]>(CATEGORIES);
+
+  useEffect(() => {
+    let active = true;
+    getEnabledCategories()
+      .then((enabled) => {
+        if (!active || enabled.length === 0) return;
+        const withCurrent =
+          initial && !enabled.includes(initial.category) ? [...enabled, initial.category] : enabled;
+        setCategories(withCurrent);
+      })
+      // A config read failure must not block publishing; the server still validates.
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [initial]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -104,7 +151,12 @@ export function ListingForm({ mode, initial }: Props) {
       pickupStart: form.pickupStart ? new Date(form.pickupStart).toISOString() : '',
       pickupEnd: form.pickupEnd ? new Date(form.pickupEnd).toISOString() : '',
       imageUrl: form.imageUrl || undefined,
+      allergenInfo: form.allergenInfo.trim() === '' ? undefined : form.allergenInfo,
       status: form.publish ? ('ACTIVE' as const) : ('DRAFT' as const),
+      // Create derives remaining from the total; only an edit can adjust live stock.
+      ...(mode === 'edit' && form.quantityRemaining !== ''
+        ? { quantityRemaining: Number.parseInt(form.quantityRemaining, 10) }
+        : {}),
     };
   }
 
@@ -154,162 +206,253 @@ export function ListingForm({ mode, initial }: Props) {
   }
 
   return (
-    <form onSubmit={(e) => void onSubmit(e)} className="mx-auto max-w-2xl space-y-5 p-6" noValidate>
-      <h1 className="font-display text-2xl font-bold text-brand-700">
-        {mode === 'create' ? 'New surprise bag' : 'Edit surprise bag'}
-      </h1>
-
-      {formError ? (
-        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {formError}
-        </p>
-      ) : null}
-
-      <Input
-        label="Title"
-        value={form.title}
-        onChange={(e) => set('title', e.target.value)}
-        errorText={errors.title}
-        placeholder="e.g. Bakery Surprise Bag"
+    <PageBody>
+      <PageHeader
+        title={mode === 'create' ? 'New surprise bag' : 'Edit surprise bag'}
+        description="Describe the bag, set the price and the pickup window, then publish when you're ready."
+        eyebrow={
+          <button
+            type="button"
+            onClick={() => router.push('/listings')}
+            className="rounded text-sm font-medium text-brand-700 hover:underline"
+          >
+            ← Back to listings
+          </button>
+        }
       />
 
-      <Field label="Description" error={errors.description}>
-        <textarea
-          className={inputClass}
-          rows={3}
-          value={form.description}
-          onChange={(e) => set('description', e.target.value)}
-          placeholder="What might be inside?"
-        />
-      </Field>
-
-      <Field label="Category" error={errors.category}>
-        <select
-          className={inputClass}
-          value={form.category}
-          onChange={(e) => set('category', e.target.value)}
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c.charAt(0) + c.slice(1).toLowerCase()}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Original price (€)"
-          inputMode="decimal"
-          value={form.originalPrice}
-          onChange={(e) => set('originalPrice', e.target.value)}
-          errorText={errors.originalPrice}
-          placeholder="15.00"
-        />
-        <Input
-          label="Discounted price (€)"
-          inputMode="decimal"
-          value={form.price}
-          onChange={(e) => set('price', e.target.value)}
-          errorText={errors.price}
-          placeholder="5.00"
-        />
-      </div>
-
-      {preview ? (
-        preview.invalid ? (
-          <p className="rounded-md bg-danger-50 p-3 text-sm text-danger-600">
-            Discounted price cannot exceed the original price.
-          </p>
-        ) : (
-          <div className="rounded-md bg-brand-50 p-3">
-            <PriceTag originalMinor={preview.original} priceMinor={preview.price} />
-          </div>
-        )
-      ) : null}
-
-      <Input
-        label="Quantity available"
-        type="number"
-        min={1}
-        value={form.quantityTotal}
-        onChange={(e) => set('quantityTotal', e.target.value)}
-        errorText={errors.quantityTotal}
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Pickup start"
-          type="datetime-local"
-          value={form.pickupStart}
-          onChange={(e) => set('pickupStart', e.target.value)}
-          errorText={errors.pickupStart}
-        />
-        <Input
-          label="Pickup end"
-          type="datetime-local"
-          value={form.pickupEnd}
-          onChange={(e) => set('pickupEnd', e.target.value)}
-          errorText={errors.pickupEnd}
-        />
-      </div>
-
-      <Field label="Image" error={undefined}>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(e) => void onImageChange(e.target.files?.[0])}
-          className="text-sm"
-        />
-        {uploading ? <p className="text-sm text-muted-foreground">Uploading…</p> : null}
-        {form.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={form.imageUrl}
-            alt="Listing preview"
-            className="mt-2 h-24 rounded-md object-cover"
-          />
+      <form onSubmit={(e) => void onSubmit(e)} noValidate>
+        {formError ? (
+          <Alert tone="error" className="mb-6">
+            {formError}
+          </Alert>
         ) : null}
-      </Field>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={form.publish}
-          onChange={(e) => set('publish', e.target.checked)}
-        />
-        Publish now (otherwise saved as draft)
-      </label>
+        {/*
+          Two columns on desktop: what the bag *is* on the left, and the
+          commercial terms (price, stock, window) on the right — the two things
+          merchants tweak most, no longer buried at the bottom of a long scroll.
+        */}
+        <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
+          <Section title="What's in the bag" description="This is what customers see first.">
+            <div className="space-y-4">
+              <Input
+                label="Title"
+                required
+                value={form.title}
+                onChange={(e) => set('title', e.target.value)}
+                errorText={errors.title}
+                placeholder="Bakery Surprise Bag"
+              />
+              <Textarea
+                label="Description"
+                rows={4}
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+                errorText={errors.description}
+                placeholder="A mix of whatever's left at close — usually sourdough, pastries and rolls."
+                hint="Hint at the contents without promising specific items."
+              />
+              <Select
+                label="Category"
+                value={form.category}
+                onChange={(e) => set('category', e.target.value)}
+                errorText={errors.category}
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c.charAt(0) + c.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </Select>
 
-      <div className="flex gap-3">
-        <Button type="submit" loading={submitting} disabled={uploading}>
-          {mode === 'create' ? 'Create listing' : 'Save changes'}
-        </Button>
-        <Button type="button" variant="ghost" onClick={() => router.push('/listings')}>
-          Cancel
-        </Button>
-      </div>
-    </form>
-  );
-}
+              {/*
+                Allergens were already stored and already rendered on the customer
+                bag screen, but there was no field anywhere to enter them — so the
+                section simply never appeared in the app.
+              */}
+              <Textarea
+                label="Allergen information"
+                rows={3}
+                value={form.allergenInfo}
+                onChange={(e) => set('allergenInfo', e.target.value)}
+                errorText={errors.allergenInfo}
+                placeholder="Contains wheat, milk, eggs. May contain traces of nuts."
+                hint="Shown to customers in its own “Allergens” section. Leave blank if genuinely not applicable."
+              />
 
-const inputClass =
-  'w-full rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500';
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-neutral-800">Photo</p>
+                <div className="flex items-center gap-4">
+                  {form.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={form.imageUrl}
+                      alt="Listing preview"
+                      className="h-20 w-28 shrink-0 rounded-md border border-line object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-md border border-dashed border-line-strong bg-surface-raised text-subtle-foreground">
+                      <ImagePlus className="h-5 w-5" aria-hidden />
+                    </div>
+                  )}
+                  <div>
+                    <label className="inline-flex min-h-[2.25rem] cursor-pointer items-center rounded-md border border-line-strong bg-surface-card px-3 text-sm font-semibold text-neutral-700 transition hover:bg-surface-raised focus-within:ring-2 focus-within:ring-brand-500">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(e) => void onImageChange(e.target.files?.[0])}
+                        className="sr-only"
+                      />
+                      {form.imageUrl ? 'Replace photo' : 'Upload photo'}
+                    </label>
+                    {uploading ? (
+                      <p
+                        role="status"
+                        className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground"
+                      >
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                        Uploading…
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        Optional, but bags with photos sell noticeably faster.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Section>
 
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error: string | undefined;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block space-y-1">
-      <span className="text-sm font-medium text-neutral-700">{label}</span>
-      {children}
-      {error ? <span className="block text-xs text-red-600">{error}</span> : null}
-    </label>
+          <div className="space-y-6">
+            <Section title="Price & stock">
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Input
+                    label="Original value"
+                    required
+                    inputMode="decimal"
+                    className="nums"
+                    leading="€"
+                    value={form.originalPrice}
+                    onChange={(e) => set('originalPrice', e.target.value)}
+                    errorText={errors.originalPrice}
+                    placeholder="15.00"
+                    hint="What it would normally cost."
+                  />
+                  <Input
+                    label="Customer pays"
+                    required
+                    inputMode="decimal"
+                    className="nums"
+                    leading="€"
+                    value={form.price}
+                    onChange={(e) => set('price', e.target.value)}
+                    errorText={errors.price}
+                    placeholder="5.00"
+                    hint="Usually a third of the original."
+                  />
+                </div>
+
+                {preview ? (
+                  preview.invalid ? (
+                    <Alert tone="error">
+                      The discounted price cannot exceed the original value.
+                    </Alert>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3 rounded-md border border-brand-200 bg-brand-50 p-3">
+                      <PriceTag originalMinor={preview.original} priceMinor={preview.price} />
+                      <span className="nums shrink-0 text-sm font-semibold text-brand-800">
+                        {preview.percent}% off
+                      </span>
+                    </div>
+                  )
+                ) : null}
+
+                <Input
+                  label="Bags available"
+                  required
+                  type="number"
+                  min={1}
+                  className="nums"
+                  value={form.quantityTotal}
+                  onChange={(e) => set('quantityTotal', e.target.value)}
+                  errorText={errors.quantityTotal}
+                  hint="How many of this bag you can put together in total."
+                />
+
+                {/*
+                  `quantityRemaining` was already accepted by UpdateListingSchema but
+                  had no field, so a merchant who made extra bags mid-session — or
+                  who broke one — had no way to correct live stock.
+                */}
+                {mode === 'edit' && initial ? (
+                  <Input
+                    label="Still available now"
+                    type="number"
+                    min={0}
+                    max={Number(form.quantityTotal) || undefined}
+                    className="nums"
+                    value={form.quantityRemaining}
+                    onChange={(e) => set('quantityRemaining', e.target.value)}
+                    errorText={errors.quantityRemaining}
+                    hint={`${initial.quantityTotal - initial.quantityRemaining} sold so far. Adjust if you made extra bags or lost some — customers see this count immediately.`}
+                  />
+                ) : null}
+              </div>
+            </Section>
+
+            <Section
+              title="Pickup window"
+              description="When customers can collect. Bags expire at the end of the window."
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Starts"
+                  required
+                  type="datetime-local"
+                  value={form.pickupStart}
+                  onChange={(e) => set('pickupStart', e.target.value)}
+                  errorText={errors.pickupStart}
+                />
+                <Input
+                  label="Ends"
+                  required
+                  type="datetime-local"
+                  value={form.pickupEnd}
+                  onChange={(e) => set('pickupEnd', e.target.value)}
+                  errorText={errors.pickupEnd}
+                />
+              </div>
+            </Section>
+
+            <Section title="Visibility">
+              <Checkbox
+                boxed
+                checked={form.publish}
+                onChange={(e) => set('publish', e.target.checked)}
+                label="Publish now"
+                hint="Live listings are the only ones customers and the counter can see. Leave this off to save a draft."
+              />
+
+              <FormActions>
+                <Button type="submit" loading={submitting} disabled={uploading}>
+                  {mode === 'create' ? 'Create listing' : 'Save changes'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => router.push('/listings')}
+                  disabled={submitting}
+                >
+                  Cancel
+                </Button>
+              </FormActions>
+            </Section>
+          </div>
+        </div>
+      </form>
+    </PageBody>
   );
 }

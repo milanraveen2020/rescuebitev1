@@ -18,7 +18,17 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { cn } from '@rescuebite/ui/web';
+import {
+  ShellContent,
+  ShellDrawer,
+  ShellFrame,
+  ShellMain,
+  ShellNav,
+  ShellNavGroup,
+  ShellSidebar,
+  ShellTopbar,
+  cn,
+} from '@rescuebite/ui/web';
 import { useSession } from './SessionContext';
 
 interface NavItem {
@@ -27,17 +37,39 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-const NAV: NavItem[] = [
-  { href: '/', label: 'Overview', icon: LayoutDashboard },
-  { href: '/approvals', label: 'Approvals', icon: BadgeCheck },
-  { href: '/users', label: 'Users', icon: Users },
-  { href: '/stores', label: 'Stores', icon: StoreIcon },
-  { href: '/listings', label: 'Listings', icon: Package },
-  { href: '/orders', label: 'Orders', icon: ClipboardList },
-  { href: '/reviews', label: 'Reviews', icon: Star },
-  { href: '/audit', label: 'Audit log', icon: FileClock },
-  { href: '/settings', label: 'Settings', icon: Settings },
+/**
+ * Grouped by administrative job: the queue you work daily, the entities you
+ * manage, and the platform-level records. A flat nine-item list gave no sense of
+ * which items belong together or which one is the daily driver.
+ */
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'Monitor',
+    items: [
+      { href: '/', label: 'Overview', icon: LayoutDashboard },
+      { href: '/approvals', label: 'Approvals', icon: BadgeCheck },
+    ],
+  },
+  {
+    label: 'Manage',
+    items: [
+      { href: '/stores', label: 'Stores', icon: StoreIcon },
+      { href: '/users', label: 'Users', icon: Users },
+      { href: '/listings', label: 'Listings', icon: Package },
+      { href: '/orders', label: 'Orders', icon: ClipboardList },
+      { href: '/reviews', label: 'Reviews', icon: Star },
+    ],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { href: '/audit', label: 'Audit log', icon: FileClock },
+      { href: '/settings', label: 'Settings', icon: Settings },
+    ],
+  },
 ];
+
+const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, signOut } = useSession();
@@ -48,90 +80,158 @@ export function AppShell({ children }: { children: ReactNode }) {
     return href === '/' ? pathname === '/' : pathname.startsWith(href);
   }
 
+  const current = ALL_ITEMS.filter((i) => isActive(i.href)).sort(
+    (a, b) => b.href.length - a.href.length,
+  )[0];
+
   const nav = (
-    <nav className="flex flex-col gap-0.5" aria-label="Main">
-      {NAV.map((item) => {
-        const Icon = item.icon;
-        const active = isActive(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setMenuOpen(false)}
-            aria-current={active ? 'page' : undefined}
-            className={cn(
-              'flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition',
-              active ? 'bg-neutral-800 text-white' : 'text-neutral-300 hover:bg-neutral-800/60',
-            )}
-          >
-            <Icon className="h-5 w-5 shrink-0" aria-hidden />
-            {item.label}
-          </Link>
-        );
-      })}
+    <nav aria-label="Main">
+      {NAV_GROUPS.map((group) => (
+        <ShellNavGroup key={group.label} label={group.label}>
+          {group.items.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'group relative flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition duration-fast ease-standard',
+                  active
+                    ? 'bg-neutral-800 text-white'
+                    : 'text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-100',
+                )}
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    'absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-500 transition-opacity duration-fast',
+                    active ? 'opacity-100' : 'opacity-0',
+                  )}
+                />
+                <Icon
+                  className={cn(
+                    'h-[18px] w-[18px] shrink-0 transition-colors',
+                    active ? 'text-brand-400' : 'text-neutral-500 group-hover:text-neutral-300',
+                  )}
+                  aria-hidden
+                />
+                {item.label}
+              </Link>
+            );
+          })}
+        </ShellNavGroup>
+      ))}
     </nav>
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50 md:flex">
-      {/* Desktop sidebar — dark, to distinguish the operator console */}
-      <aside className="hidden w-56 shrink-0 flex-col bg-neutral-900 p-4 md:flex">
-        <Brand />
-        <div className="mt-6 flex-1">{nav}</div>
-        <SignOut email={user.email} onSignOut={signOut} />
-      </aside>
-
-      {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between bg-neutral-900 px-4 py-3 md:hidden">
-        <Brand />
-        <button
-          type="button"
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          className="flex h-10 w-10 items-center justify-center rounded-md text-neutral-200 hover:bg-neutral-800"
-        >
-          {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </header>
-
-      {menuOpen ? (
-        <div className="bg-neutral-900 p-4 md:hidden">
-          {nav}
-          <div className="mt-4 border-t border-neutral-800 pt-4">
-            <SignOut email={user.email} onSignOut={signOut} />
-          </div>
+    <ShellFrame>
+      <ShellSidebar tone="dark">
+        <div className="flex h-14 shrink-0 items-center border-b border-neutral-800 px-4">
+          <Brand />
         </div>
-      ) : null}
+        <ShellNav>{nav}</ShellNav>
+        <AccountBlock email={user.email} name={user.name} onSignOut={signOut} />
+      </ShellSidebar>
 
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
-      </main>
-    </div>
+      <ShellDrawer open={menuOpen} onClose={() => setMenuOpen(false)} tone="dark" label="Main menu">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-800 px-4">
+          <Brand />
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Close menu"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-neutral-300 transition hover:bg-neutral-800"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <ShellNav>{nav}</ShellNav>
+        <AccountBlock email={user.email} name={user.name} onSignOut={signOut} />
+      </ShellDrawer>
+
+      <ShellMain>
+        <ShellTopbar>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            className="-ml-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-neutral-700 transition hover:bg-surface-raised lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <span className="truncate text-sm font-semibold text-neutral-700">
+              {current?.label ?? 'Overview'}
+            </span>
+          </div>
+          {/* Persistent reminder of which console and which identity you're in. */}
+          <span className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
+            <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-semibold uppercase tracking-wide text-white">
+              Admin
+            </span>
+            <span className="max-w-[220px] truncate">{user.email}</span>
+          </span>
+        </ShellTopbar>
+
+        <ShellContent>{children}</ShellContent>
+      </ShellMain>
+    </ShellFrame>
   );
 }
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2">
-      <span className="font-display text-lg font-bold text-white">Mystery Box</span>
-      <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+    <div className="flex min-w-0 items-center gap-2">
+      <span className="truncate font-display text-base font-bold text-white">Mystery Box</span>
+      <span className="shrink-0 rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
         Admin
       </span>
     </div>
   );
 }
 
-function SignOut({ email, onSignOut }: { email: string; onSignOut: () => Promise<void> }) {
+function AccountBlock({
+  email,
+  name,
+  onSignOut,
+}: {
+  email: string;
+  name: string;
+  onSignOut: () => Promise<void>;
+}) {
+  const initials = name
+    .split(' ')
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
   return (
-    <div className="space-y-2">
-      <p className="truncate px-3 text-xs text-neutral-400">{email}</p>
+    <div className="shrink-0 border-t border-neutral-800 p-3">
+      <div className="flex items-center gap-2.5 px-1 py-1.5">
+        <span
+          aria-hidden
+          className="flex h-[2.25rem] w-[2.25rem] shrink-0 items-center justify-center rounded-full bg-neutral-800 text-xs font-bold text-neutral-200"
+        >
+          {initials || '·'}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-neutral-100">{name}</p>
+          <p className="truncate text-xs text-neutral-400">{email}</p>
+        </div>
+      </div>
       <button
         type="button"
         onClick={() => void onSignOut()}
-        className="flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-neutral-300 hover:bg-neutral-800/60"
+        className="mt-1 flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-neutral-400 transition hover:bg-neutral-800/60 hover:text-neutral-100"
       >
-        <LogOut className="h-5 w-5" aria-hidden />
+        <LogOut className="h-[18px] w-[18px]" aria-hidden />
         Sign out
       </button>
     </div>

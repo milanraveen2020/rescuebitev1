@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { UserRoleSchema, UserStatusSchema, type AdminUser, type UserRole } from '@rescuebite/types';
-import { Button, Modal, useToast } from '@rescuebite/ui/web';
+import { Button, Modal, PageBody, PageHeader, Select, useToast } from '@rescuebite/ui/web';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -31,7 +31,6 @@ export default function UsersPage() {
   const [reason, setReason] = useState('');
   const [nextRole, setNextRole] = useState<UserRole>('CUSTOMER');
   const [busy, setBusy] = useState(false);
-
   async function onReactivate(user: AdminUser): Promise<void> {
     try {
       await reactivateUser(user.id);
@@ -81,34 +80,54 @@ export default function UsersPage() {
       render: (u) => (
         <div>
           <p className="font-medium text-neutral-900">{u.name}</p>
-          <p className="text-xs text-neutral-500">{u.email}</p>
+          <p className="text-xs text-muted-foreground">{u.email}</p>
         </div>
       ),
     },
-    { key: 'role', header: 'Role', sortKey: 'role', render: (u) => humanize(u.role) },
+    {
+      key: 'role',
+      header: 'Role',
+      sortKey: 'role',
+      hideBelow: 'sm',
+      render: (u) => <span className="text-neutral-800">{humanize(u.role)}</span>,
+    },
     {
       key: 'status',
       header: 'Status',
       sortKey: 'status',
       render: (u) => <StatusBadge status={u.status} />,
     },
-    { key: 'orders', header: 'Orders', align: 'right', render: (u) => u.orderCount },
-    { key: 'stores', header: 'Stores', align: 'right', render: (u) => u.storeCount },
+    {
+      key: 'orders',
+      header: 'Orders',
+      align: 'right',
+      hideBelow: 'lg',
+      render: (u) => u.orderCount,
+    },
+    {
+      key: 'stores',
+      header: 'Stores',
+      align: 'right',
+      hideBelow: 'lg',
+      render: (u) => u.storeCount,
+    },
     {
       key: 'joined',
       header: 'Joined',
       sortKey: 'createdAt',
-      render: (u) => formatDate(u.createdAt),
+      hideBelow: 'md',
+      render: (u) => <span className="nums">{formatDate(u.createdAt)}</span>,
     },
     {
       key: 'actions',
-      header: '',
+      header: 'Actions',
       align: 'right',
+      width: '1%',
       render: (u) => (
         <div className="flex justify-end gap-2">
           <Button
             size="sm"
-            variant="ghost"
+            variant="outline"
             onClick={() => {
               setRoleTarget(u);
               setNextRole(u.role);
@@ -116,12 +135,13 @@ export default function UsersPage() {
           >
             Role
           </Button>
+          {/* Reactivate is constructive; suspend is destructive but not the default. */}
           {u.status === 'SUSPENDED' ? (
             <Button size="sm" onClick={() => void onReactivate(u)}>
               Reactivate
             </Button>
           ) : (
-            <Button size="sm" variant="danger" onClick={() => setSuspendTarget(u)}>
+            <Button size="sm" variant="danger-outline" onClick={() => setSuspendTarget(u)}>
               Suspend
             </Button>
           )}
@@ -131,11 +151,11 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Users</h1>
-        <p className="text-sm text-muted-foreground">Search, moderate, and manage roles.</p>
-      </div>
+    <PageBody>
+      <PageHeader
+        title="Users"
+        description="Search, moderate, and manage roles across the platform."
+      />
 
       <FilterBar
         search={{
@@ -146,12 +166,14 @@ export default function UsersPage() {
         selects={[
           {
             label: 'Role',
+            allLabel: 'All roles',
             value: filters.role ?? '',
             onChange: (v) => setFilter('role', v),
             options: UserRoleSchema.options.map((r) => ({ value: r, label: humanize(r) })),
           },
           {
             label: 'Status',
+            allLabel: 'All statuses',
             value: filters.status ?? '',
             onChange: (v) => setFilter('status', v),
             options: UserStatusSchema.options.map((s) => ({ value: s, label: humanize(s) })),
@@ -166,7 +188,9 @@ export default function UsersPage() {
         query={query}
         onSort={setSort}
         onPage={setPage}
+        onRetry={reload}
         emptyMessage="No users match your filters."
+        emptyDescription="Try clearing the search or filters above."
       />
 
       <ConfirmDialog
@@ -195,21 +219,19 @@ export default function UsersPage() {
         title={`Change role — ${roleTarget?.name ?? ''}`}
       >
         <div className="space-y-4">
-          <label className="block space-y-1">
-            <span className="text-sm font-medium text-neutral-700">Role</span>
-            <select
-              value={nextRole}
-              onChange={(e) => setNextRole(e.target.value as UserRole)}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-            >
-              {UserRoleSchema.options.map((r) => (
-                <option key={r} value={r}>
-                  {humanize(r)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="flex justify-end gap-2">
+          <Select
+            label="Role"
+            value={nextRole}
+            onChange={(e) => setNextRole(e.target.value as UserRole)}
+            hint="Changing a role takes effect the next time they sign in."
+          >
+            {UserRoleSchema.options.map((r) => (
+              <option key={r} value={r}>
+                {humanize(r)}
+              </option>
+            ))}
+          </Select>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="ghost" onClick={() => setRoleTarget(null)} disabled={busy}>
               Cancel
             </Button>
@@ -219,6 +241,6 @@ export default function UsersPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </PageBody>
   );
 }

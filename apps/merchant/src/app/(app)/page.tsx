@@ -1,10 +1,20 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, ClipboardList, TrendingUp, Receipt } from 'lucide-react';
+import { ArrowRight, ClipboardList, Package, Receipt, TrendingUp } from 'lucide-react';
 import type { MerchantDashboard } from '@rescuebite/types';
-import { Card } from '@rescuebite/ui/web';
+import {
+  Badge,
+  ErrorState,
+  PageBody,
+  PageHeader,
+  Section,
+  StatCard,
+  StatGrid,
+  StatGridSkeleton,
+  BlockSkeleton,
+} from '@rescuebite/ui/web';
 import { useSession } from '@/features/shell/SessionContext';
 import { RevenueChart } from '@/features/dashboard/RevenueChart';
 import { getDashboard } from '@/features/dashboard/api';
@@ -20,8 +30,9 @@ export default function DashboardPage() {
   const { store, isOwner } = useSession();
   const [state, setState] = useState<State>({ status: 'loading' });
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let active = true;
+    setState({ status: 'loading' });
     getDashboard()
       .then((data) => active && setState({ status: 'ready', data }))
       .catch((e: unknown) =>
@@ -37,99 +48,89 @@ export default function DashboardPage() {
     };
   }, []);
 
-  return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Today</h1>
-        <p className="text-sm text-muted-foreground">{store.name}</p>
-      </header>
+  useEffect(load, [load]);
 
-      {state.status === 'loading' ? <p className="text-muted-foreground">Loading…</p> : null}
-      {state.status === 'error' ? <p className="text-danger-600">{state.message}</p> : null}
+  const pending = state.status === 'ready' ? state.data.ordersToFulfill : 0;
+
+  return (
+    <PageBody>
+      <PageHeader
+        title="Today"
+        description={`How ${store.name} is doing right now.`}
+        actions={
+          // The store's live state belongs beside the title, not buried below the
+          // chart where the old duplicate action buttons used to sit.
+          pending > 0 ? (
+            <Link href="/orders" className="focus-visible:outline-none">
+              <Badge tone="warning" dot className="h-[2.25rem] px-3 text-sm">
+                {pending} order{pending === 1 ? '' : 's'} to fulfil
+              </Badge>
+            </Link>
+          ) : (
+            <Badge tone="success" dot className="h-[2.25rem] px-3 text-sm">
+              All caught up
+            </Badge>
+          )
+        }
+      />
+
+      {state.status === 'loading' ? (
+        <>
+          <StatGridSkeleton count={4} />
+          <BlockSkeleton lines={5} />
+        </>
+      ) : null}
+
+      {state.status === 'error' ? <ErrorState message={state.message} onRetry={load} /> : null}
 
       {state.status === 'ready' ? (
         <>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Stat
-              icon={<Package className="h-5 w-5" />}
-              label="Active listings"
-              value={String(state.data.activeListings)}
-            />
-            <Stat
-              icon={<ClipboardList className="h-5 w-5" />}
-              label="Orders to fulfill"
+          <StatGrid>
+            <StatCard
+              label="Orders to fulfil"
               value={String(state.data.ordersToFulfill)}
-              href="/orders"
+              icon={<ClipboardList className="h-4 w-4" />}
+              hint={pending > 0 ? 'Waiting at the counter' : 'Nothing waiting'}
+              emphasis={pending > 0}
             />
-            <Stat
-              icon={<Receipt className="h-5 w-5" />}
+            <StatCard
               label="Revenue today"
               value={formatMoney(state.data.revenueTodayMinor, state.data.currency)}
+              icon={<Receipt className="h-4 w-4" />}
             />
-            <Stat
-              icon={<TrendingUp className="h-5 w-5" />}
+            <StatCard
+              label="Active listings"
+              value={String(state.data.activeListings)}
+              icon={<Package className="h-4 w-4" />}
+              hint={state.data.activeListings === 0 ? 'Nothing on sale' : undefined}
+            />
+            <StatCard
               label="Sell-through"
               value={`${state.data.sellThroughPercent}%`}
+              icon={<TrendingUp className="h-4 w-4" />}
+              hint="Of today's stock"
             />
-          </div>
+          </StatGrid>
 
-          <Card>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold text-neutral-900">Last 7 days</h2>
-              {isOwner ? (
-                <Link href="/analytics" className="text-sm font-medium text-brand-600">
-                  Analytics →
+          <Section
+            title="Last 7 days"
+            description="Daily revenue across your surprise bags."
+            actions={
+              isOwner ? (
+                <Link
+                  href="/analytics"
+                  className="inline-flex min-h-[2.25rem] items-center gap-1 rounded-md px-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+                >
+                  Analytics
+                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
-              ) : null}
-            </div>
+              ) : null
+            }
+          >
             <RevenueChart data={state.data.revenueSeries} currency={state.data.currency} />
-          </Card>
-
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/orders"
-              className="rounded-md bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
-            >
-              Verify a pickup
-            </Link>
-            {isOwner ? (
-              <Link
-                href="/listings/new"
-                className="rounded-md border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
-              >
-                New listing
-              </Link>
-            ) : null}
-          </div>
+          </Section>
         </>
       ) : null}
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  label,
-  value,
-  href,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  href?: string;
-}) {
-  const body = (
-    <Card className="h-full">
-      <div className="flex items-center gap-2 text-brand-600">{icon}</div>
-      <p className="mt-3 text-2xl font-bold text-neutral-900">{value}</p>
-      <p className="text-sm text-neutral-500">{label}</p>
-    </Card>
-  );
-  return href ? (
-    <Link href={href} className="block transition hover:opacity-90">
-      {body}
-    </Link>
-  ) : (
-    body
+    </PageBody>
   );
 }

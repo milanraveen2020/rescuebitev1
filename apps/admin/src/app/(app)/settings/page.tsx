@@ -1,9 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Flag, Plus, X } from 'lucide-react';
 import { FoodCategorySchema, type FoodCategory, type PlatformSettings } from '@rescuebite/types';
-import { Button, Card, Input, useToast } from '@rescuebite/ui/web';
+import {
+  Badge,
+  BlockSkeleton,
+  Button,
+  Checkbox,
+  EmptyState,
+  ErrorState,
+  Input,
+  PageBody,
+  PageHeader,
+  Section,
+  useToast,
+} from '@rescuebite/ui/web';
 import { getSettings, updateSettings } from '@/features/settings/api';
 import { ApiRequestError } from '@/lib/request';
 import { humanize } from '@/lib/format';
@@ -27,8 +39,9 @@ export default function SettingsPage() {
     setFlags(settings.featureFlags);
   }
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let active = true;
+    setState({ status: 'loading' });
     getSettings()
       .then((settings) => {
         if (!active) return;
@@ -47,6 +60,8 @@ export default function SettingsPage() {
       active = false;
     };
   }, []);
+
+  useEffect(load, [load]);
 
   function toggleCategory(cat: FoodCategory): void {
     setCategories((prev) => {
@@ -95,35 +110,50 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Settings</h1>
-        <p className="text-sm text-muted-foreground">Platform-wide configuration.</p>
-      </div>
+    <PageBody>
+      <PageHeader
+        title="Settings"
+        description="Platform-wide configuration. Changes apply to every store."
+        actions={
+          state.status === 'ready' ? (
+            <Button onClick={() => void onSave()} loading={saving}>
+              Save settings
+            </Button>
+          ) : null
+        }
+      />
 
-      {state.status === 'loading' ? <p className="text-muted-foreground">Loading…</p> : null}
-      {state.status === 'error' ? <p className="text-danger-600">{state.message}</p> : null}
+      {state.status === 'loading' ? (
+        <>
+          <BlockSkeleton lines={2} />
+          <BlockSkeleton lines={3} />
+        </>
+      ) : null}
+      {state.status === 'error' ? <ErrorState message={state.message} onRetry={load} /> : null}
 
       {state.status === 'ready' ? (
-        <div className="space-y-6">
-          <Card className="space-y-4">
-            <h2 className="font-display text-lg font-semibold text-neutral-900">Commission</h2>
+        <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
+          <Section
+            title="Commission"
+            description="The platform's cut of each sale, applied at checkout."
+          >
             <div className="max-w-xs">
               <Input
-                label="Platform commission (%)"
+                label="Platform commission"
                 inputMode="decimal"
+                className="nums"
+                trailing={<span className="pr-2 text-sm text-muted-foreground">%</span>}
                 value={commissionPct}
                 onChange={(e) => setCommissionPct(e.target.value)}
-                hint="Applied to each sale at checkout."
+                hint="For example 10 means the platform keeps 10% of every order."
               />
             </div>
-          </Card>
+          </Section>
 
-          <Card className="space-y-4">
-            <h2 className="font-display text-lg font-semibold text-neutral-900">Categories</h2>
-            <p className="text-sm text-neutral-500">
-              Categories enabled for new listings across the platform.
-            </p>
+          <Section
+            title="Categories"
+            description="Categories merchants can choose for new listings."
+          >
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((cat) => {
                 const on = categories.has(cat);
@@ -133,10 +163,10 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => toggleCategory(cat)}
                     aria-pressed={on}
-                    className={`min-h-9 rounded-full border px-3 text-sm font-medium ${
+                    className={`min-h-[2.25rem] rounded-pill border px-3.5 text-sm font-semibold transition duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                       on
-                        ? 'border-brand-500 bg-brand-50 text-brand-800'
-                        : 'border-neutral-300 text-neutral-500'
+                        ? 'border-brand-300 bg-brand-50 text-brand-800'
+                        : 'border-line-strong text-muted-foreground hover:bg-surface-raised hover:text-neutral-800'
                     }`}
                   >
                     {humanize(cat)}
@@ -144,60 +174,79 @@ export default function SettingsPage() {
                 );
               })}
             </div>
-          </Card>
+            <p className="mt-3 nums text-xs text-muted-foreground">
+              {categories.size} of {CATEGORIES.length} enabled
+            </p>
+          </Section>
 
-          <Card className="space-y-4">
-            <h2 className="font-display text-lg font-semibold text-neutral-900">Feature flags</h2>
+          <Section
+            title="Feature flags"
+            description="Toggle platform behaviour without a deploy."
+            className="xl:col-span-2"
+            bodyClassName="p-0"
+          >
             {Object.keys(flags).length === 0 ? (
-              <p className="text-sm text-neutral-500">No feature flags yet.</p>
+              <EmptyState
+                icon={<Flag className="h-7 w-7" aria-hidden />}
+                title="No feature flags yet"
+                description="Add a key below to create your first flag."
+                className="py-[2.5rem]"
+              />
             ) : (
-              <ul className="divide-y divide-neutral-100">
+              <ul className="divide-y divide-line">
                 {Object.entries(flags).map(([key, value]) => (
-                  <li key={key} className="flex items-center justify-between py-2">
-                    <span className="font-mono text-sm text-neutral-800">{key}</span>
-                    <div className="flex items-center gap-3">
-                      <label className="inline-flex items-center gap-2 text-sm text-neutral-600">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          onChange={(e) =>
-                            setFlags((prev) => ({ ...prev, [key]: e.target.checked }))
-                          }
-                        />
+                  <li key={key} className="flex items-center justify-between gap-4 px-5 py-3">
+                    <span className="min-w-0 flex-1 truncate font-mono text-sm text-neutral-800">
+                      {key}
+                    </span>
+                    <div className="flex shrink-0 items-center gap-3">
+                      {/* Badge makes the on/off state readable at a glance down the list. */}
+                      <Badge tone={value ? 'success' : 'neutral'} dot>
                         {value ? 'On' : 'Off'}
-                      </label>
-                      <button
-                        type="button"
+                      </Badge>
+                      <Checkbox
+                        label={`Enable ${key}`}
+                        className="[&_span]:sr-only"
+                        checked={value}
+                        onChange={(e) => setFlags((prev) => ({ ...prev, [key]: e.target.checked }))}
+                      />
+                      <Button
+                        variant="subtle"
+                        size="icon-sm"
                         onClick={() => removeFlag(key)}
                         aria-label={`Remove ${key}`}
-                        className="flex h-8 w-8 items-center justify-center rounded-md text-neutral-400 hover:bg-danger-50 hover:text-danger-600"
+                        className="hover:bg-danger-50 hover:text-danger-600"
                       >
-                        <X className="h-4 w-4" />
-                      </button>
+                        <X className="h-4 w-4" aria-hidden />
+                      </Button>
                     </div>
                   </li>
                 ))}
               </ul>
             )}
-            <div className="flex gap-2">
-              <input
-                value={newFlag}
-                onChange={(e) => setNewFlag(e.target.value)}
-                placeholder="new_flag_key"
-                aria-label="New feature flag key"
-                className="h-10 flex-1 rounded-md border border-neutral-300 px-3 text-sm font-mono outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              />
-              <Button type="button" variant="secondary" onClick={addFlag}>
-                <Plus className="h-4 w-4" /> Add
+            <div className="flex flex-col gap-2 border-t border-line p-5 sm:flex-row">
+              <div className="flex-1">
+                <Input
+                  label="New feature flag key"
+                  hideLabel
+                  value={newFlag}
+                  onChange={(e) => setNewFlag(e.target.value)}
+                  placeholder="new_flag_key"
+                  className="font-mono"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addFlag}
+                disabled={newFlag.trim() === ''}
+              >
+                <Plus className="h-4 w-4" aria-hidden /> Add flag
               </Button>
             </div>
-          </Card>
-
-          <Button onClick={() => void onSave()} loading={saving}>
-            Save settings
-          </Button>
+          </Section>
         </div>
       ) : null}
-    </div>
+    </PageBody>
   );
 }

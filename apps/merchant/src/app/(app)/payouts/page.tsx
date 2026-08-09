@@ -1,8 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { AlertCircle, Banknote, CheckCircle2, ExternalLink } from 'lucide-react';
 import type { ConnectStatus, Transfer } from '@rescuebite/types';
-import { Badge, Button, Card } from '@rescuebite/ui/web';
+import {
+  Alert,
+  Badge,
+  BlockSkeleton,
+  Button,
+  EmptyState,
+  ErrorState,
+  PageBody,
+  PageHeader,
+  Section,
+  StatCard,
+  StatGrid,
+} from '@rescuebite/ui/web';
 import { getConnectStatus, listTransfers, startOnboarding } from '@/features/payouts/api';
 import { ApiRequestError } from '@/lib/request';
 import { formatMoney } from '@/lib/format';
@@ -17,7 +30,7 @@ export default function PayoutsPage() {
   const [redirecting, setRedirecting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  function load(): void {
+  const load = useCallback(() => {
     setState({ status: 'loading' });
     Promise.all([getConnectStatus(), listTransfers().catch(() => [])])
       .then(([connect, transfers]) => setState({ status: 'ready', connect, transfers }))
@@ -27,9 +40,9 @@ export default function PayoutsPage() {
           message: e instanceof ApiRequestError ? e.message : 'Failed to load payouts.',
         }),
       );
-  }
+  }, []);
 
-  useEffect(load, []);
+  useEffect(load, [load]);
 
   async function onConnect(): Promise<void> {
     setActionError(null);
@@ -43,96 +56,147 @@ export default function PayoutsPage() {
     }
   }
 
+  const connect = state.status === 'ready' ? state.connect : null;
+  const transfers = state.status === 'ready' ? state.transfers : [];
+  const paidOut = transfers.reduce((sum, t) => sum + t.amountMinor, 0);
+
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold text-neutral-900 sm:text-3xl">Payouts</h1>
-        <p className="text-sm text-muted-foreground">
-          Connect Stripe to accept payments and receive payouts. Mystery Box takes a small platform
-          commission on each sale.
-        </p>
-      </header>
+    <PageBody>
+      <PageHeader
+        title="Payouts"
+        description="Connect Stripe to accept payments and receive payouts. Mystery Box takes a small platform commission on each sale."
+        actions={
+          connect ? (
+            <Badge
+              tone={connect.payoutsEnabled ? 'success' : 'warning'}
+              dot
+              className="h-[2.25rem] px-3 text-sm"
+            >
+              {connect.payoutsEnabled ? 'Payouts enabled' : 'Setup incomplete'}
+            </Badge>
+          ) : null
+        }
+      />
 
-      {state.status === 'loading' ? <p className="text-muted-foreground">Loading…</p> : null}
-      {state.status === 'error' ? (
-        <div className="space-y-3">
-          <p className="text-danger-600">{state.message}</p>
-          <button onClick={load} className="rounded-md border px-4 py-2 text-sm font-medium">
-            Retry
-          </button>
-        </div>
-      ) : null}
+      {state.status === 'loading' ? <BlockSkeleton lines={4} /> : null}
+      {state.status === 'error' ? <ErrorState message={state.message} onRetry={load} /> : null}
 
-      {state.status === 'ready' ? (
+      {state.status === 'ready' && connect ? (
         <>
-          <Card className="space-y-5">
-            <Row
+          {/*
+            The blocking condition leads the page. Previously you had to read three
+            neutral status rows and infer that you could not get paid yet.
+          */}
+          {!connect.payoutsEnabled ? (
+            <Alert
+              tone="warning"
+              title={connect.connected ? 'Finish your Stripe setup' : 'Connect Stripe to get paid'}
+              action={
+                <Button onClick={() => void onConnect()} loading={redirecting}>
+                  {connect.connected ? 'Continue setup' : 'Connect with Stripe'}
+                  <ExternalLink className="h-4 w-4" aria-hidden />
+                </Button>
+              }
+            >
+              Customers cannot pay for your bags until Stripe onboarding is complete.
+            </Alert>
+          ) : (
+            <Alert tone="success" title="You're all set">
+              Orders are being accepted and payouts land in your connected account.
+            </Alert>
+          )}
+
+          {actionError ? <Alert tone="error">{actionError}</Alert> : null}
+
+          <StatGrid>
+            <StatCard
+              label="Total paid out"
+              value={formatMoney(paidOut, transfers[0]?.currency ?? 'EUR')}
+              icon={<Banknote className="h-4 w-4" />}
+              hint={`${transfers.length} transfer${transfers.length === 1 ? '' : 's'}`}
+            />
+            <StatCard
               label="Stripe account"
-              value={state.connect.connected ? 'Connected' : 'Not connected'}
-              ok={state.connect.connected}
+              value={connect.connected ? 'Connected' : 'Not connected'}
+              icon={
+                connect.connected ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )
+              }
             />
-            <Row
+            <StatCard
               label="Details submitted"
-              value={state.connect.detailsSubmitted ? 'Yes' : 'Incomplete'}
-              ok={state.connect.detailsSubmitted}
+              value={connect.detailsSubmitted ? 'Complete' : 'Incomplete'}
+              icon={
+                connect.detailsSubmitted ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )
+              }
             />
-            <Row
-              label="Payouts enabled"
-              value={state.connect.payoutsEnabled ? 'Enabled' : 'Disabled'}
-              ok={state.connect.payoutsEnabled}
+            <StatCard
+              label="Payouts"
+              value={connect.payoutsEnabled ? 'Enabled' : 'Disabled'}
+              icon={
+                connect.payoutsEnabled ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )
+              }
+              emphasis={connect.payoutsEnabled}
             />
+          </StatGrid>
 
-            {actionError ? <p className="text-sm text-danger-600">{actionError}</p> : null}
-
-            {state.connect.payoutsEnabled ? (
-              <p className="text-sm text-brand-700">
-                You&apos;re all set to accept orders and receive payouts.
-              </p>
+          <Section
+            title="Recent transfers"
+            description={transfers.length > 0 ? 'Money sent to your bank account.' : undefined}
+            bodyClassName="p-0"
+          >
+            {transfers.length === 0 ? (
+              <EmptyState
+                icon={<Banknote className="h-7 w-7" aria-hidden />}
+                title="No transfers yet"
+                description="Payouts appear here once you start making sales."
+                className="py-[2.5rem]"
+              />
             ) : (
-              <Button onClick={() => void onConnect()} loading={redirecting}>
-                {state.connect.connected ? 'Continue Stripe onboarding' : 'Connect with Stripe'}
-              </Button>
+              <table className="w-full text-sm">
+                <caption className="sr-only">Recent Stripe transfers</caption>
+                <thead>
+                  <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <th scope="col" className="px-5 py-3 font-semibold">
+                      Date
+                    </th>
+                    <th scope="col" className="px-5 py-3 text-right font-semibold">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {transfers.map((t) => (
+                    <tr key={t.id} className="transition hover:bg-surface-raised/50">
+                      <td className="px-5 py-3 text-muted-foreground">
+                        {new Date(t.createdAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      <td className="nums px-5 py-3 text-right font-semibold text-neutral-900">
+                        {formatMoney(t.amountMinor, t.currency)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-          </Card>
-
-          <section className="space-y-3">
-            <h2 className="font-display text-lg font-semibold text-neutral-900">
-              Recent transfers
-            </h2>
-            {state.transfers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No transfers yet. Payouts appear here once you start making sales.
-              </p>
-            ) : (
-              <ul className="divide-y rounded-lg border bg-white">
-                {state.transfers.map((t) => (
-                  <li key={t.id} className="flex items-center justify-between p-4">
-                    <span className="text-sm text-neutral-600">
-                      {new Date(t.createdAt).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                    <span className="font-medium text-neutral-900">
-                      {formatMoney(t.amountMinor, t.currency)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          </Section>
         </>
       ) : null}
-    </div>
-  );
-}
-
-function Row({ label, value, ok }: { label: string; value: string; ok: boolean }) {
-  return (
-    <div className="flex items-center justify-between border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
-      <span className="text-sm text-neutral-700">{label}</span>
-      <Badge tone={ok ? 'brand' : 'neutral'}>{value}</Badge>
-    </div>
+    </PageBody>
   );
 }

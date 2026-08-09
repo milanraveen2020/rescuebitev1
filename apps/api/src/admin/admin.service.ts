@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  FoodCategory,
   ListingStatus,
   OrderStatus,
   StoreStatus,
+  UserRole,
   UserStatus,
   type Listing,
   type Order,
@@ -26,6 +28,9 @@ import type {
   AdminUser,
   AdminUserQuery,
   BulkResult,
+  CreateMerchantInput,
+  CreatedMerchant,
+  UpdateMerchantInput,
   HideReviewInput,
   OrderDetail,
   PlatformSettings,
@@ -34,6 +39,7 @@ import type {
   UpdateSettingsInput,
   UpdateUserRoleInput,
 } from '@rescuebite/types';
+import { PasswordService } from '../auth/password.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { SettingsService } from '../common/settings/settings.service';
 import { toOffsetFindArgs, toOffsetPage, type OffsetPage } from '../common/pagination/pagination';
@@ -55,6 +61,7 @@ export class AdminService {
     private readonly payments: PaymentsService,
     private readonly audit: AuditLogService,
     private readonly events: EventEmitter2,
+    private readonly passwords: PasswordService,
   ) {}
 
   // --- Overview ------------------------------------------------------------
@@ -142,6 +149,180 @@ export class AdminService {
     });
     if (!user) throw new NotFoundException('User not found.');
     return toAdminUser(user);
+  }
+
+  /**
+   * Provision a merchant account. The admin supplies only the essentials plus a
+   * temporary password; the merchant completes store setup after first login,
+   * which is gated on `mustChangePassword`.
+   *
+   * The store is created APPROVED — an admin creating the account *is* the
+   * approval, so there is nothing left to review.
+   */
+  async createMerchant(adminId: string, input: CreateMerchantInput): Promise<CreatedMerchant> {
+    const existing = await this.prisma.user.findFirst({
+      where: { OR: [{ email: input.email }, { phone: input.phone }] },
+      select: { email: true, phone: true },
+    });
+    if (existing) {
+      throw new ConflictException(
+        existing.email === input.email
+          ? 'A user with that email already exists.'
+          : 'A user with that phone number already exists.',
+      );
+    }
+
+    const passwordHash = await this.passwords.hash(input.temporaryPassword);
+    const { user, storeId } = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: input.email,
+          phone: input.phone,
+          name: input.name,
+          passwordHash,
+          role: UserRole.MERCHANT_OWNER,
+          mustChangePassword: true,
+        },
+      });
+      const store = await tx.store.create({
+        data: {
+          ownerId: created.id,
+          name: input.storeName,
+          address: input.storeAddress,
+          // The merchant sets category and map coordinates during store setup;
+          // until coordinates are set the store cannot appear in customer search.
+          category: FoodCategory.OTHER,
+          lat: 0,
+          lng: 0,
+          status: StoreStatus.APPROVED,
+        },
+      });
+      return { user: created, storeId: store.id };
+    });
+
+    await this.audit.record({
+      actorId: adminId,
+      action: 'merchant.create',
+      entity: 'User',
+      entityId: user.id,
+      metadata: { email: user.email, storeId },
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        status: user.status,
+        mustChangePassword: user.mustChangePassword,
+        emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+      storeId,
+      storeName: input.storeName,
+    };
+  }
+
+  /** Edit a store and, optionally, its owner's contact details. */
+  async updateMerchant(
+    adminId: string,
+    storeId: string,
+    input: UpdateMerchantInput,
+  ): Promise<AdminStore> {
+    const store = await this.prisma.store.findUnique({ where: { id: storeId } });
+    if (!store) throw new NotFoundException('Store not found.');
+
+    // A duplicate email or phone would break the owner's ability to sign in.
+    if (input.ownerEmail || input.ownerPhone) {
+      const clash = await this.prisma.user.findFirst({
+        where: {
+          id: { not: store.ownerId },
+          OR: [
+            ...(input.ownerEmail ? [{ email: input.ownerEmail }] : []),
+            ...(input.ownerPhone ? [{ phone: input.ownerPhone }] : []),
+          ],
+        },
+        select: { email: true },
+      });
+      if (clash) {
+        throw new ConflictException('Another user already has that email or phone number.');
+      }
+    }
+
+    // Same rule the merchant is held to: order rows keep the currency they were
+    // charged in, so the store's currency is frozen once money has moved.
+    if (input.currency !== undefined && input.currency !== store.currency) {
+      const orders = await this.prisma.order.count({ where: { storeId } });
+      if (orders > 0) {
+        throw new ConflictException(
+          'This store already has orders, so its currency can no longer be changed.',
+        );
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.store.update({
+        where: { id: storeId },
+        data: {
+          ...(input.storeName === undefined ? {} : { name: input.storeName }),
+          ...(input.storeAddress === undefined ? {} : { address: input.storeAddress }),
+          ...(input.category === undefined ? {} : { category: input.category }),
+          ...(input.lat === undefined ? {} : { lat: input.lat }),
+          ...(input.lng === undefined ? {} : { lng: input.lng }),
+          ...(input.currency === undefined ? {} : { currency: input.currency }),
+          ...(input.openingHours === undefined ? {} : { openingHours: input.openingHours }),
+          ...(input.description === undefined ? {} : { description: input.description }),
+        },
+      });
+      const owner = {
+        ...(input.ownerName === undefined ? {} : { name: input.ownerName }),
+        ...(input.ownerEmail === undefined ? {} : { email: input.ownerEmail }),
+        ...(input.ownerPhone === undefined ? {} : { phone: input.ownerPhone }),
+      };
+      if (Object.keys(owner).length > 0) {
+        await tx.user.update({ where: { id: store.ownerId }, data: owner });
+      }
+    });
+
+    await this.audit.record({
+      actorId: adminId,
+      action: 'merchant.update',
+      entity: 'Store',
+      entityId: storeId,
+      metadata: { fields: Object.keys(input) },
+    });
+    return this.getStore(storeId);
+  }
+
+  /**
+   * Delete a store and its owner. Refused once the store has orders — deleting
+   * would cascade away paid/collected history and corrupt platform reporting.
+   */
+  async deleteMerchant(adminId: string, storeId: string): Promise<void> {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      include: { _count: { select: { orders: true } } },
+    });
+    if (!store) throw new NotFoundException('Store not found.');
+    if (store._count.orders > 0) {
+      throw new ConflictException(
+        `This store has ${store._count.orders} order(s) and can't be deleted. Reject or suspend it instead.`,
+      );
+    }
+
+    await this.audit.record({
+      actorId: adminId,
+      action: 'merchant.delete',
+      entity: 'Store',
+      entityId: storeId,
+      metadata: { name: store.name, ownerId: store.ownerId },
+    });
+    // Store rows cascade from the owner; removing the owner clears both.
+    await this.prisma.user.delete({ where: { id: store.ownerId } });
   }
 
   async suspendUser(adminId: string, id: string, input: SuspendUserInput): Promise<AdminUser> {
@@ -531,6 +712,7 @@ function toAdminUser(user: UserWithCounts): AdminUser {
     name: user.name,
     avatarUrl: user.avatarUrl,
     status: user.status,
+    mustChangePassword: user.mustChangePassword,
     emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
@@ -562,6 +744,8 @@ function toAdminStore(store: StoreWithRels): AdminStore {
     rating: store.rating,
     reviewCount: store.reviewCount,
     status: store.status,
+    // Already counted for the table, so no extra query is needed here.
+    currencyLocked: store._count.orders > 0,
     createdAt: store.createdAt.toISOString(),
     updatedAt: store.updatedAt.toISOString(),
     ownerEmail: store.owner.email,

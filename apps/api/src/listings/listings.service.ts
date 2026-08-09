@@ -23,6 +23,7 @@ import type {
   UpdateListingInput,
 } from '@rescuebite/types';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SettingsService } from '../common/settings/settings.service';
 import { ListingEvents, type ListingEventPayload } from '../events/order-events';
 
 type ListingWithStore = DbListing & { store: Store };
@@ -32,12 +33,14 @@ export class ListingsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
+    private readonly settings: SettingsService,
   ) {}
 
   // --- Merchant CRUD (scoped to the caller's own store) --------------------
 
   async create(ownerId: string, input: CreateListingInput): Promise<Listing> {
     const store = await this.requireOwnedStore(ownerId);
+    await this.settings.assertCategoryEnabled(input.category);
     const pickupEnd = new Date(input.pickupEnd);
     const listing = await this.prisma.listing.create({
       data: {
@@ -63,6 +66,11 @@ export class ListingsService {
 
   async update(ownerId: string, listingId: string, input: UpdateListingInput): Promise<Listing> {
     const existing = await this.requireOwnedListing(ownerId, listingId);
+    // Only re-check when the category is actually being changed, so a listing in a
+    // now-disabled category can still be edited or unpublished.
+    if (input.category !== undefined && input.category !== existing.category) {
+      await this.settings.assertCategoryEnabled(input.category);
+    }
 
     const originalPrice = input.originalPrice ?? existing.originalPrice;
     const price = input.price ?? existing.price;
@@ -85,7 +93,8 @@ export class ListingsService {
       where: { id: listingId },
       data: {
         title: input.title ?? undefined,
-        description: input.description ?? undefined,
+        // `undefined` means "unchanged"; an explicit `null` clears the column.
+        description: input.description === undefined ? undefined : input.description,
         category: input.category ?? undefined,
         originalPrice,
         price,
@@ -93,8 +102,8 @@ export class ListingsService {
         quantityRemaining,
         pickupStart,
         pickupEnd,
-        imageUrl: input.imageUrl ?? undefined,
-        allergenInfo: input.allergenInfo ?? undefined,
+        imageUrl: input.imageUrl === undefined ? undefined : input.imageUrl,
+        allergenInfo: input.allergenInfo === undefined ? undefined : input.allergenInfo,
         status: normalizeStatus(input.status ?? existing.status, pickupEnd, quantityRemaining),
       },
       include: { store: true },
@@ -191,7 +200,9 @@ export class ListingsService {
         ${distanceSql} AS distance_km,
         s.id AS store_id, s.name AS store_name, s.category AS store_category,
         s.address AS store_address, s.lat AS store_lat, s.lng AS store_lng,
-        s."logoUrl" AS store_logo_url, s.rating AS store_rating,
+        s."logoUrl" AS store_logo_url, s."coverUrl" AS store_cover_url,
+        s.description AS store_description, s."openingHours" AS store_opening_hours,
+        s.rating AS store_rating,
         s."reviewCount" AS store_review_count, s.currency AS store_currency
       FROM "Listing" l
       JOIN "Store" s ON s.id = l."storeId"
@@ -307,6 +318,9 @@ interface NearbyRow {
   store_lat: number;
   store_lng: number;
   store_logo_url: string | null;
+  store_cover_url: string | null;
+  store_description: string | null;
+  store_opening_hours: string | null;
   store_rating: number;
   store_review_count: number;
   store_currency: string;
@@ -356,10 +370,13 @@ function toStoreSummary(store: Store): StoreSummary {
     id: store.id,
     name: store.name,
     category: store.category,
+    description: store.description,
     address: store.address,
     lat: store.lat,
     lng: store.lng,
     logoUrl: store.logoUrl,
+    coverUrl: store.coverUrl,
+    openingHours: store.openingHours,
     rating: store.rating,
     reviewCount: store.reviewCount,
   };
@@ -390,10 +407,13 @@ function toNearbyListing(row: NearbyRow): NearbyListing {
       id: row.store_id,
       name: row.store_name,
       category: row.store_category as StoreSummary['category'],
+      description: row.store_description,
       address: row.store_address,
       lat: Number(row.store_lat),
       lng: Number(row.store_lng),
       logoUrl: row.store_logo_url,
+      coverUrl: row.store_cover_url,
+      openingHours: row.store_opening_hours,
       rating: Number(row.store_rating),
       reviewCount: Number(row.store_review_count),
     },

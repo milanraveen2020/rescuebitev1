@@ -13,9 +13,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type {
+  AdminStore,
   AdminOverview,
   AuditLogEntry,
   BulkResult,
+  CreatedMerchant,
   OrderDetail,
   PlatformSettings,
 } from '@rescuebite/types';
@@ -34,6 +36,8 @@ import {
   AdminUserQueryDto,
   AuditLogQueryDto,
   BulkIdsDto,
+  CreateMerchantDto,
+  UpdateMerchantDto,
   HideReviewDto,
   RejectStoreDto,
   SuspendUserDto,
@@ -67,6 +71,33 @@ export class AdminController {
   @Get('users/:id')
   getUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.admin.getUser(id);
+  }
+
+  @Post('merchants')
+  @HttpCode(HttpStatus.CREATED)
+  createMerchant(
+    @CurrentUser() admin: AuthenticatedUser,
+    @Body() dto: CreateMerchantDto,
+  ): Promise<CreatedMerchant> {
+    return this.admin.createMerchant(admin.id, dto);
+  }
+
+  @Patch('merchants/:storeId')
+  updateMerchant(
+    @CurrentUser() admin: AuthenticatedUser,
+    @Param('storeId', ParseUUIDPipe) storeId: string,
+    @Body() dto: UpdateMerchantDto,
+  ): Promise<AdminStore> {
+    return this.admin.updateMerchant(admin.id, storeId, dto);
+  }
+
+  @Delete('merchants/:storeId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteMerchant(
+    @CurrentUser() admin: AuthenticatedUser,
+    @Param('storeId', ParseUUIDPipe) storeId: string,
+  ): Promise<void> {
+    return this.admin.deleteMerchant(admin.id, storeId);
   }
 
   @Post('users/:id/suspend')

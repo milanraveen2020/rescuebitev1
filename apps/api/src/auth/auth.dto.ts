@@ -1,4 +1,5 @@
 import {
+  ChangePasswordSchema,
   AuthResponseSchema,
   LoginSchema,
   MessageResponseSchema,
@@ -25,3 +26,4 @@ export class VerifyEmailDto extends createZodDto(VerifyEmailSchema) {}
 export class AuthResponseDto extends createZodDto(AuthResponseSchema) {}
 export class MessageResponseDto extends createZodDto(MessageResponseSchema) {}
 export class UserDto extends createZodDto(UserSchema) {}
+export class ChangePasswordDto extends createZodDto(ChangePasswordSchema) {}

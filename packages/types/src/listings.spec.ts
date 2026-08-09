@@ -44,11 +44,19 @@ describe('UpdateListingSchema', () => {
 describe('NearbyQuerySchema', () => {
   it('coerces query-string params and applies defaults', () => {
     const parsed = NearbyQuerySchema.parse({ lat: '53.34', lng: '-6.26' });
-    expect(parsed).toMatchObject({ lat: 53.34, lng: -6.26, radiusKm: 5, sort: 'distance', limit: 20 });
+    expect(parsed).toMatchObject({
+      lat: 53.34,
+      lng: -6.26,
+      radiusKm: 5,
+      sort: 'distance',
+      limit: 20,
+    });
   });
 
   it('parses availableNow only from "true"/"false"', () => {
-    expect(NearbyQuerySchema.parse({ lat: 0, lng: 0, availableNow: 'true' }).availableNow).toBe(true);
+    expect(NearbyQuerySchema.parse({ lat: 0, lng: 0, availableNow: 'true' }).availableNow).toBe(
+      true,
+    );
     expect(NearbyQuerySchema.parse({ lat: 0, lng: 0, availableNow: 'false' }).availableNow).toBe(
       false,
     );

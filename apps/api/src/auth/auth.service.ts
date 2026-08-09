@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -151,6 +152,28 @@ export class AuthService {
     await this.tokens.revokeAllForUser(userId);
   }
 
+  /**
+   * Change the password of a signed-in user. Also clears `mustChangePassword`,
+   * which is how an admin-provisioned temporary password gets retired. The
+   * current session is intentionally kept so the user can continue straight on.
+   */
+  async changePassword(userId: string, current: string, next: string): Promise<PublicUser> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Session is no longer valid.');
+
+    const valid = await this.passwords.verify(user.passwordHash, current);
+    if (!valid) throw new BadRequestException('Your current password is incorrect.');
+    if (current === next) {
+      throw new BadRequestException('Choose a password different from your current one.');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await this.passwords.hash(next), mustChangePassword: false },
+    });
+    return toPublicUser(updated);
+  }
+
   async verifyEmail(rawToken: string): Promise<void> {
     const userId = await this.tokens.consumeVerificationToken(
       rawToken,
@@ -200,6 +223,7 @@ export function toPublicUser(user: User): PublicUser {
     name: user.name,
     avatarUrl: user.avatarUrl,
     status: user.status,
+    mustChangePassword: user.mustChangePassword,
     emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),

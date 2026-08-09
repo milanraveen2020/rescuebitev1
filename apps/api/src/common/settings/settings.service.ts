@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { FoodCategory, type Prisma } from '@prisma/client';
 import type { PlatformSettings, UpdateSettingsInput } from '@rescuebite/types';
 import { AppConfigService } from '../../config/app-config.service';
@@ -35,6 +35,27 @@ export class SettingsService {
   /** The live platform commission in basis points, used by checkout. */
   async getCommissionBps(): Promise<number> {
     return (await this.getSettings()).commissionBps;
+  }
+
+  /** Categories a merchant may publish into right now. */
+  async getEnabledCategories(): Promise<FoodCategory[]> {
+    return (await this.getSettings()).enabledCategories;
+  }
+
+  /**
+   * Reject a listing in a category the operator has switched off.
+   *
+   * `enabledCategories` was previously stored and edited but never consulted
+   * anywhere, so turning a category off had no effect at all. An empty list is
+   * treated as "no restriction" rather than "nothing may be sold", which avoids
+   * a mis-save silently blocking every merchant on the platform.
+   */
+  async assertCategoryEnabled(category: FoodCategory): Promise<void> {
+    const enabled = await this.getEnabledCategories();
+    if (enabled.length === 0 || enabled.includes(category)) return;
+    throw new BadRequestException(
+      `The ${category.charAt(0) + category.slice(1).toLowerCase()} category is not currently available on Mystery Box. Pick another category.`,
+    );
   }
 
   async updateSettings(input: UpdateSettingsInput): Promise<PlatformSettings> {

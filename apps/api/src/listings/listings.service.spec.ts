@@ -1,7 +1,10 @@
+import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ListingStatus, StoreStatus, type FoodCategory } from '@prisma/client';
 import type { NearbyQuery } from '@rescuebite/types';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SettingsService } from '../common/settings/settings.service';
+import { AppConfigService } from '../config/app-config.service';
 import { ListingsService } from './listings.service';
 
 /**
@@ -91,7 +94,10 @@ describe('ListingsService (integration)', () => {
   beforeAll(async () => {
     prisma = new PrismaService();
     await prisma.$connect();
-    service = new ListingsService(prisma, new EventEmitter2());
+    // Real SettingsService so category gating is exercised rather than stubbed.
+    // Only `platformFeeBps` is read, and only when seeding the singleton row.
+    const config = { platformFeeBps: 1000 } as unknown as AppConfigService;
+    service = new ListingsService(prisma, new EventEmitter2(), new SettingsService(prisma, config));
     await cleanup();
 
     await makeStore('near', 10, 10);
@@ -161,6 +167,81 @@ describe('ListingsService (integration)', () => {
 
       const allIds = [...first.items, ...second.items].map((i) => i.id);
       expect(new Set(allIds).size).toBe(3);
+    });
+  });
+
+  describe('merchant content fields', () => {
+    const base = {
+      title: 'Allergen Bag',
+      category: 'BAKERY' as const,
+      originalPrice: 1000,
+      price: 400,
+      quantityTotal: 4,
+      pickupStart: new Date(Date.now() + HOUR).toISOString(),
+      pickupEnd: new Date(Date.now() + 3 * HOUR).toISOString(),
+      status: 'DRAFT' as const,
+    };
+
+    /**
+     * `allergenInfo` was already stored and already rendered on the customer bag
+     * screen, but nothing could write it. It also has to be clearable: with a
+     * non-nullable optional there was no way to express "remove this".
+     */
+    it('round-trips and clears allergen info', async () => {
+      const created = await service.create(owner.near, {
+        ...base,
+        allergenInfo: 'Contains wheat and milk.',
+      });
+      expect(created.allergenInfo).toBe('Contains wheat and milk.');
+
+      const cleared = await service.update(owner.near, created.id, { allergenInfo: null });
+      expect(cleared.allergenInfo).toBeNull();
+
+      await service.remove(owner.near, created.id);
+    });
+
+    it('adjusts live stock without touching the total', async () => {
+      const created = await service.create(owner.near, base);
+      const adjusted = await service.update(owner.near, created.id, { quantityRemaining: 1 });
+      expect(adjusted.quantityRemaining).toBe(1);
+      expect(adjusted.quantityTotal).toBe(4);
+
+      // The service still refuses remaining > total.
+      await expect(
+        service.update(owner.near, created.id, { quantityRemaining: 99 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      await service.remove(owner.near, created.id);
+    });
+
+    /**
+     * `enabledCategories` was stored and admin-editable but never consulted, so
+     * switching a category off had no effect anywhere on the platform.
+     */
+    it('refuses a category the operator has disabled', async () => {
+      const original = await prisma.platformSettings.findUnique({ where: { id: 'singleton' } });
+      await prisma.platformSettings.upsert({
+        where: { id: 'singleton' },
+        update: { enabledCategories: ['BAKERY'] },
+        create: { id: 'singleton', enabledCategories: ['BAKERY'], featureFlags: {} },
+      });
+      try {
+        await expect(
+          service.create(owner.near, { ...base, category: 'RESTAURANT' }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+
+        // An enabled category still works.
+        const ok = await service.create(owner.near, { ...base, category: 'BAKERY' });
+        expect(ok.category).toBe('BAKERY');
+        await service.remove(owner.near, ok.id);
+      } finally {
+        if (original) {
+          await prisma.platformSettings.update({
+            where: { id: 'singleton' },
+            data: { enabledCategories: original.enabledCategories },
+          });
+        }
+      }
     });
   });
 

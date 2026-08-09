@@ -44,15 +44,37 @@ async function post(path: string, body?: unknown): Promise<unknown> {
   return json;
 }
 
+/**
+ * Marker cookie so middleware can keep signed-out users out of the app shell.
+ * The real session cookie is httpOnly and set by the API on its own domain, so
+ * in a split deployment (API and dashboard on different hosts) middleware
+ * running here can never see it. This first-party marker carries no authority —
+ * the API still authorizes every call — it only drives routing.
+ */
+const SESSION_MARKER = 'rb_session';
+
+function setSessionMarker(): void {
+  document.cookie = `${SESSION_MARKER}=1; path=/; samesite=lax`;
+}
+
+function clearSessionMarker(): void {
+  document.cookie = `${SESSION_MARKER}=; path=/; max-age=0`;
+}
+
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  return AuthResponseSchema.parse(await post('/auth/login', { email, password }));
+  const session = AuthResponseSchema.parse(await post('/auth/login', { email, password }));
+  setSessionMarker();
+  return session;
 }
 
 /** Exchange the refresh cookie for a fresh access token + user (used on load). */
 export async function refreshSession(): Promise<AuthResponse> {
-  return AuthResponseSchema.parse(await post('/auth/refresh'));
+  const session = AuthResponseSchema.parse(await post('/auth/refresh'));
+  setSessionMarker();
+  return session;
 }
 
 export async function logout(): Promise<void> {
   await post('/auth/logout').catch(() => undefined);
+  clearSessionMarker();
 }
