@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import QRCode from 'react-native-qrcode-svg';
 import {
   Badge,
   Button,
@@ -126,6 +127,10 @@ export default function OrderScreen() {
         {showCode ? (
           <Card style={styles.codeCard}>
             <Text style={styles.codeLabel}>Show this code at pickup</Text>
+            <View style={styles.qrWrap}>
+              <QRCode value={order.pickupCode} size={180} backgroundColor="white" />
+            </View>
+            <Text style={styles.codeHint}>Or read out the code below</Text>
             <Text style={styles.code}>{order.pickupCode}</Text>
             <PickupWindowChip
               start={order.listing.pickupStart}
@@ -208,7 +213,15 @@ const styles = StyleSheet.create({
   countdown: { fontSize: typography.fontSize.sm, color: colors.neutral[600], fontWeight: '500' },
   codeCard: { alignItems: 'center', gap: spacing[3], backgroundColor: colors.brand[50] },
   codeLabel: { fontSize: typography.fontSize.sm, color: colors.brand[800] },
-  code: { fontSize: 44, fontWeight: '800', letterSpacing: 6, color: colors.brand[800] },
+  qrWrap: {
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+  },
+  codeHint: { fontSize: 13, color: colors.neutral[500], textAlign: 'center', marginBottom: 2 },
+  code: { fontSize: 36, fontWeight: '800', letterSpacing: 6, color: colors.brand[800] },
   pickupChip: { alignSelf: 'center' },
   infoCard: { gap: spacing[1] },
   reviewCard: { gap: spacing[3] },
