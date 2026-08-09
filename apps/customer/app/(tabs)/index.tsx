@@ -24,9 +24,11 @@ import { ErrorView, ListingsSkeleton } from '../../src/components/States';
 import { CategoryChips, SortChips } from '../../src/features/home/Filters';
 import { ListingCard } from '../../src/features/home/ListingCard';
 import { getCurrentCoords, type Coords } from '../../src/lib/location';
+import { useTapGuard } from '../../src/lib/navigation';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { guard, locked } = useTapGuard();
   const [coords, setCoords] = useState<Coords | null>(null);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<FoodCategory | null>(null);
@@ -57,7 +59,7 @@ export default function HomeScreen() {
     );
   }, [items, search]);
 
-  const open = (listing: NearbyListing) => router.push(`/listing/${listing.id}`);
+  const open = (listing: NearbyListing) => guard(() => router.push(`/listing/${listing.id}`));
 
   // Fetch the next page as the user nears the bottom (replaces FlatList's
   // onEndReached now that the feed scrolls inside a ScrollView).
@@ -137,7 +139,12 @@ export default function HomeScreen() {
         ) : (
           <View style={styles.list}>
             {filtered.map((item) => (
-              <ListingCard key={item.id} listing={item} onPress={() => open(item)} />
+              <ListingCard
+                key={item.id}
+                listing={item}
+                disabled={locked}
+                onPress={() => open(item)}
+              />
             ))}
             {feed.isFetchingNextPage ? (
               <ActivityIndicator color={colors.brand[700]} style={styles.more} />

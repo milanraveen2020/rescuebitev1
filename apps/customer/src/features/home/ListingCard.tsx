@@ -10,13 +10,22 @@ function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
 }
 
-export function ListingCard({ listing, onPress }: { listing: NearbyListing; onPress: () => void }) {
+export function ListingCard({
+  listing,
+  onPress,
+  disabled,
+}: {
+  listing: NearbyListing;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   const { isFavorite, toggle } = useFavorites();
   const favorite = isFavorite(listing.id);
 
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={`${listing.title} from ${listing.store.name}`}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}

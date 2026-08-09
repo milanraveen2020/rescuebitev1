@@ -9,9 +9,11 @@ import { ErrorView, ListingsSkeleton } from '../../src/components/States';
 import { ListingCard } from '../../src/features/home/ListingCard';
 import { useFavorites } from '../../src/favorites/FavoritesContext';
 import { getCurrentCoords, type Coords } from '../../src/lib/location';
+import { useTapGuard } from '../../src/lib/navigation';
 
 export default function FavoritesScreen() {
   const router = useRouter();
+  const { guard, locked } = useTapGuard();
   const { ids, ready } = useFavorites();
   const [coords, setCoords] = useState<Coords | null>(null);
 
@@ -54,7 +56,11 @@ export default function FavoritesScreen() {
           data={items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <ListingCard listing={item} onPress={() => router.push(`/listing/${item.id}`)} />
+            <ListingCard
+              listing={item}
+              disabled={locked}
+              onPress={() => guard(() => router.push(`/listing/${item.id}`))}
+            />
           )}
           contentContainerStyle={styles.content}
           ItemSeparatorComponent={() => <View style={{ height: spacing[4] }} />}

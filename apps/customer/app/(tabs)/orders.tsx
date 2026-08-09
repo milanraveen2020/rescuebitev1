@@ -10,12 +10,14 @@ import { useOrders } from '../../src/api/queries';
 import { useAuth } from '../../src/auth/AuthContext';
 import { Screen } from '../../src/components/Screen';
 import { ErrorView, ListingsSkeleton } from '../../src/components/States';
+import { useTapGuard } from '../../src/lib/navigation';
 import { useCountdown } from '../../src/lib/time';
 
 type Tab = 'active' | 'past';
 
 export default function OrdersScreen() {
   const router = useRouter();
+  const { guard, locked } = useTapGuard();
   const { isAuthenticated } = useAuth();
   const { data, isLoading, isError, refetch, isRefetching } = useOrders();
   const [tab, setTab] = useState<Tab>('active');
@@ -87,7 +89,8 @@ export default function OrdersScreen() {
                   <OrderRow
                     key={order.id}
                     order={order}
-                    onPress={() => router.push(`/order/${order.id}`)}
+                    disabled={locked}
+                    onPress={() => guard(() => router.push(`/order/${order.id}`))}
                   />
                 ))}
               </View>
@@ -175,13 +178,21 @@ const STATUS_TONE = {
   NO_SHOW: 'danger',
 } as const;
 
-function OrderRow({ order, onPress }: { order: OrderDetail; onPress: () => void }) {
+function OrderRow({
+  order,
+  onPress,
+  disabled,
+}: {
+  order: OrderDetail;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   const active = order.status === 'RESERVED' || order.status === 'PAID';
   const countdown = useCountdown(order.listing.pickupStart);
   const canReview = order.status === 'COLLECTED' && order.review === null;
 
   return (
-    <Pressable onPress={onPress} style={styles.row} accessibilityRole="button">
+    <Pressable onPress={onPress} disabled={disabled} style={styles.row} accessibilityRole="button">
       <Image source={order.listing.imageUrl ?? undefined} style={styles.thumb} contentFit="cover" />
       <View style={styles.rowBody}>
         <View style={styles.rowTop}>
