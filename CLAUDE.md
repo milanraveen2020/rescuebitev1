@@ -12,17 +12,18 @@
 
 ## Stack
 
-| Layer            | Technology                                                        | Location         |
-| ---------------- | ----------------------------------------------------------------- | ---------------- |
-| Customer app     | React Native + Expo (Expo Router), TypeScript                     | `apps/customer`  |
-| Merchant web     | Next.js (App Router), TypeScript, Tailwind, shadcn/ui             | `apps/merchant`  |
-| Admin web        | Next.js (App Router), TypeScript, Tailwind, shadcn/ui             | `apps/admin`     |
-| API              | NestJS, TypeScript, Prisma, PostgreSQL                            | `apps/api`       |
-| Shared types     | Domain types + Zod schemas (single source of truth)               | `packages/types` |
-| API client       | Typed client used by all three frontends                          | `packages/api-client` |
-| Design tokens    | Colors, spacing, radii, typography                                | `packages/ui`    |
-| Shared config    | ESLint, tsconfig, Prettier                                        | `packages/config`|
-| Monorepo         | Turborepo + pnpm workspaces                                       | repo root        |
+| Layer         | Technology                                                       | Location              |
+| ------------- | ---------------------------------------------------------------- | --------------------- |
+| Customer app  | React Native + Expo (Expo Router), TypeScript                    | `apps/customer`       |
+| Merchant web  | Next.js (App Router), TypeScript, Tailwind, shadcn/ui            | `apps/merchant`       |
+| Admin web     | Next.js (App Router), TypeScript, Tailwind, shadcn/ui            | `apps/admin`          |
+| Cashier web   | Next.js (App Router) PWA, TypeScript, Tailwind                   | `apps/cashier`        |
+| API           | NestJS, TypeScript, Prisma, PostgreSQL                           | `apps/api`            |
+| Shared types  | Domain types + Zod schemas (single source of truth)              | `packages/types`      |
+| API client    | Typed client used by the customer, merchant, and admin frontends | `packages/api-client` |
+| Design tokens | Colors, spacing, radii, typography                               | `packages/ui`         |
+| Shared config | ESLint, tsconfig, Prettier                                       | `packages/config`     |
+| Monorepo      | Turborepo + pnpm workspaces                                      | repo root             |
 
 ## Repository layout
 
@@ -32,6 +33,7 @@ rescuebite/
 │  ├─ customer/   Expo app. Screens in app/ (Expo Router). Feature code in src/features/<feature>.
 │  ├─ merchant/   Next.js. Routes in src/app/. Feature code in src/features/<feature>.
 │  ├─ admin/      Next.js. Same structure as merchant.
+│  ├─ cashier/    Next.js PWA for in-store pickup (QR scan, collect orders, shift sessions). Same structure as merchant.
 │  └─ api/        NestJS. One folder per feature module under src/. Cross-cutting code in src/common.
 ├─ packages/
 │  ├─ types/      Zod schemas + inferred TS types. THE source of truth for every data shape.
@@ -79,13 +81,14 @@ rescuebite/
 
 ## Local development & testing
 
-Code is written on a headless Linux box, but **features are tested on an Android emulator (AVD) on the developer's host PC** — that is the canonical test loop. "Works" means *works on the host AVD*, not merely a green typecheck/lint/test.
+Code is written on a headless Linux box, but **features are tested on an Android emulator (AVD) on the developer's host PC** — that is the canonical test loop. "Works" means _works on the host AVD_, not merely a green typecheck/lint/test.
 
 - **Run order (all on the host):** (1) PostgreSQL 16 with role/password/db all `rescuebite` on `:5432` (matches the default `DATABASE_URL`); (2) API — `pnpm --filter @rescuebite/api dev` → `http://localhost:4000` (health at `/health`); (3) customer app — `cd apps/customer && npx expo run:android`.
-- **Emulator API URL.** The customer app reads its API base URL from `apps/customer/app.json` → `expo.extra.apiBaseUrl` (the `EXPO_PUBLIC_API_BASE_URL` in `.env` is currently **unused**). For the Android emulator this must be **`http://10.0.2.2:4000`** — `10.0.2.2` is the host's loopback as seen from the AVD; `localhost` points at the emulator itself. A physical device uses the host's LAN IP.
-- **No Expo Go — dev build only.** The app bundles native modules (`@stripe/stripe-react-native`, `expo-dev-client`, `react-native-maps`), so it runs only as a **dev build** via `expo run:android` (the first run does an implicit `expo prebuild`; `android/` is not committed). Adding a native module forces a rebuild — call it out in the PR. **On Windows, `expo run:android` does NOT work as-is — follow the *Windows host build* recipe below instead.**
+- **Emulator API URL.** In dev builds (`__DEV__`), `apps/customer/src/api/client.ts` ignores config and calls **`http://<Metro host>:4000`**, taking the host from Metro's `hostUri` (the address the device loaded the JS bundle from) and falling back to `localhost` if it's missing. Non-dev builds use `expo.extra.apiBaseUrl`, which `app.config.ts` resolves as `EXPO_PUBLIC_API_BASE_URL` from `apps/customer/.env` → the `app.json` default **`http://10.0.2.2:4000`** (`10.0.2.2` is the host's loopback as seen from the AVD; `localhost` points at the emulator itself).
+- **No Expo Go — dev build only.** The app bundles native modules (`@stripe/stripe-react-native`, `expo-dev-client`, `react-native-maps`), so it runs only as a **dev build** via `expo run:android` (the first run does an implicit `expo prebuild`; `android/` is not committed). Adding a native module forces a rebuild — call it out in the PR. **On Windows, `expo run:android` does NOT work as-is — follow the _Windows host build_ recipe below instead.**
 - **Env files are gitignored** (only `*.env.example` is tracked). After cloning, create `apps/api/.env` from `apps/api/.env.example`; build the shared packages (`types`, `api-client`, `ui`) before running the app so it resolves their `dist/`.
-- **Known gaps when testing:** payments don't complete (Stripe keys are placeholders; PayHere is unbuilt), and seed data is around Dublin (`53.3478, -6.2497`).
+- **Known gaps when testing:** payments don't complete (Stripe keys are placeholders; PayHere is unbuilt), and seed data is in Colombo, Sri Lanka (the customer app's fallback location in `src/lib/location.ts` is `6.9271, 79.8612`).
+- **Cashier app** (`pnpm dev:cashier` → `http://localhost:3003`) doesn't follow every convention yet: it calls the API through its own `src/lib/api-session.ts` `fetch` wrapper instead of `packages/api-client`, and uses a self-contained Tailwind theme instead of the `packages/ui` preset.
 
 ### Windows host build (customer app) — known-good recipe
 
@@ -93,7 +96,7 @@ Building the customer dev client on **Windows** hits several native-toolchain tr
 
 **One-time host setup:**
 
-1. **Short project path.** Clone to a short root like `D:\myst` — *not* a deep path like `C:\Users\<you>\Work\...`. pnpm's virtual-store folder names are very long; combined with a deep path they blow past Windows' 260-char and CMake's 250-char object-path limits, and native builds fail with "cannot find file" / "manifest 'build.ninja' still dirty".
+1. **Short project path.** Clone to a short root like `D:\myst` — _not_ a deep path like `C:\Users\<you>\Work\...`. pnpm's virtual-store folder names are very long; combined with a deep path they blow past Windows' 260-char and CMake's 250-char object-path limits, and native builds fail with "cannot find file" / "manifest 'build.ninja' still dirty".
 2. **`.npmrc` ships `virtual-store-dir-max-length=40`** (already committed) — shortens `node_modules/.pnpm/*` names, the single biggest cause of the path-length failures. If it's ever missing, add it, delete `node_modules`, and re-run `pnpm install`.
 3. **Enable Windows long paths once** (admin PowerShell), then reboot:
    ```powershell
@@ -104,7 +107,7 @@ Building the customer dev client on **Windows** hits several native-toolchain tr
    - `JAVA_HOME` → Android Studio's bundled JDK, `<AndroidStudioInstall>\jbr`; add `%JAVA_HOME%\bin` to `PATH`.
    - Remove any stale Oracle Java from the **System** `PATH` — a broken `C:\ProgramData\Oracle\Java\javapath` shadows the JDK and makes `java` fail (`could not find java.dll`). Verify with `where java` (the `jbr` one must be first) and `java -version`.
 5. **pnpm via Corepack** (admin terminal for the first two): `corepack enable`, `corepack prepare pnpm@9.12.0 --activate`. If PowerShell blocks `pnpm.ps1`, run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
-6. **CMake 3.31.6** — install via Android Studio → SDK Manager → SDK Tools → (tick *Show Package Details*) → CMake. Emulator: a lightweight AVD (e.g. Pixel 6a, **Google APIs** image — not Play Store, non-"16 KB Page Size"), Graphics = Hardware, and on Optimus laptops point `emulator.exe` at the discrete GPU in the NVIDIA Control Panel.
+6. **CMake 3.31.6** — install via Android Studio → SDK Manager → SDK Tools → (tick _Show Package Details_) → CMake. Emulator: a lightweight AVD (e.g. Pixel 6a, **Google APIs** image — not Play Store, non-"16 KB Page Size"), Graphics = Hardware, and on Optimus laptops point `emulator.exe` at the discrete GPU in the NVIDIA Control Panel.
 
 **Build + run (the important part):**
 
@@ -125,7 +128,7 @@ npx expo start                                 # then press "a" to open on the e
 **Gotchas / recovery:**
 
 - **Gradle fails reading `metadata.bin` or a transform** → the `%USERPROFILE%\.gradle\caches` is corrupted (usually an interrupted delete). Fix: `.\gradlew.bat --stop`, then delete `%USERPROFILE%\.gradle\caches`, then rebuild (re-downloads Gradle bits). If files are locked, `taskkill /F /IM java.exe` first (close Android Studio too).
-- **Getting new builds later:** only re-run the *Build + run* block when **native** code changes — a new native module, an `app.json` plugin/config change, or after `expo prebuild`. Everyday JS/TS/UI edits hot-reload through `npx expo start` on the already-installed APK; **no rebuild needed**. After pulling a PR that adds a native dependency, do a fresh `expo prebuild` + `gradlew assembleDebug` (delete `apps/customer/android` first if it's stale).
+- **Getting new builds later:** only re-run the _Build + run_ block when **native** code changes — a new native module, an `app.json` plugin/config change, or after `expo prebuild`. Everyday JS/TS/UI edits hot-reload through `npx expo start` on the already-installed APK; **no rebuild needed**. After pulling a PR that adds a native dependency, do a fresh `expo prebuild` + `gradlew assembleDebug` (delete `apps/customer/android` first if it's stale).
 - **Disk hygiene:** Gradle caches (`%USERPROFILE%\.gradle`) and AVD data (`%USERPROFILE%\.android\avd`) default to C:. Keep the Gradle cache (it speeds up rebuilds); reclaim emulator space via Device Manager → Wipe Data. To stop them growing C: at all, set `GRADLE_USER_HOME` and `ANDROID_AVD_HOME` to D: paths.
 
 ## Git & commit authorship
@@ -145,8 +148,7 @@ A change is done only when **all** of these hold:
 1. **Typechecks** — `pnpm typecheck` passes with no errors and no new `any`.
 2. **Lints** — `pnpm lint` passes (including the no-`any`, named-export, and no-silent-catch rules).
 3. **Tested** — business logic has unit tests; boundary validation and error mapping are covered.
-4. **All states handled** — every async UI surface handles **loading, empty, and error** states (not just the happy path). Customer-app changes are exercised on the **host Android emulator** (dev build), not just unit-tested (see *Local development & testing*).
+4. **All states handled** — every async UI surface handles **loading, empty, and error** states (not just the happy path). Customer-app changes are exercised on the **host Android emulator** (dev build), not just unit-tested (see _Local development & testing_).
 5. **Formatted** — `pnpm format` has been run.
 6. **Conventions honored** — types live in `packages/types`, network calls go through `packages/api-client`, styling uses `packages/ui` tokens, and accessibility (labels, contrast, touch targets) is verified.
-7. **Commit hygiene** — authored as `ParaBoyLord <>` with **no email, no credentials, and no `Co-Authored-By`/attribution trailer** (see *Git & commit authorship*).
-```
+7. **Commit hygiene** — authored as `ParaBoyLord <>` with **no email, no credentials, and no `Co-Authored-By`/attribution trailer** (see _Git & commit authorship_).
